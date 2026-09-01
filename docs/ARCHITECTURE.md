@@ -51,15 +51,31 @@ Toda decisión de plan pasa por `FeatureAccessService`. Un módulo consumidor pr
 por una capacidad o límite y no evalúa nombres de planes. El consumo mensual todavía
 no se contabiliza; cuando se implemente, vivirá detrás de este mismo límite de dominio.
 
-Los planes no se siembran automáticamente todavía. Cuando el modelo se estabilice se
-recomienda introducir Flyway y datos de referencia versionados.
+El plan `FREE` se inicializa de forma idempotente al arrancar. El registro público
+siempre crea un usuario con rol `USER` y una única suscripción `FREE` dentro de la
+misma transacción. Rol (`USER`/`ADMIN`) y plan son conceptos independientes.
+
+## Autenticación y autorización
+
+Spring Security mantiene una API sin sesión de servidor. Las contraseñas se almacenan
+con BCrypt y el login entrega un JWT firmado con `JWT_SECRET`. El filtro valida el
+token y vuelve a obtener rol y estado desde PostgreSQL. Registro, login y `/api/test`
+son públicos; `/api/users/**` requiere autenticación y `/api/admin/**` requiere rol
+`ADMIN`. El frontend conserva el token y reconstruye el usuario con `/api/users/me`.
+
+El administrador inicial sólo puede crearse mediante variables `ADMIN_*` durante el
+arranque. No existe registro público de administradores ni se acepta un rol del cliente.
 
 ## Frontend por features
 
-`src/app` compone la aplicación y alojará router/providers. `src/features/<feature>`
-agrupa páginas, componentes, hooks, servicios y tipos propios. `src/shared` contiene
-solo piezas reutilizadas por varias features. Las llamadas HTTP comunes viven en
-`shared/services`; una API exclusiva de una feature debe permanecer dentro de ella.
+`src/app` compone la aplicación. `app/router/AppRouter.tsx` declara las rutas públicas
+`/login` y `/register`, el dashboard `/home` y placeholders para módulos futuros.
+`src/features/<feature>` agrupa páginas, componentes, datos, servicios y tipos propios;
+actualmente `auth` contiene formularios, cliente HTTP, contexto y rutas protegidas, mientras `dashboard` contiene
+el layout y sus datos mock centralizados. `src/shared` conserva componentes y servicios
+reutilizados por varias features. La URL HTTP se resuelve en `shared/config/env.ts` y
+`shared/services/api.ts` mantiene el chequeo de infraestructura `GET /api/test`; una API
+exclusiva de una feature debe permanecer dentro de ella.
 
 ## AI Service
 

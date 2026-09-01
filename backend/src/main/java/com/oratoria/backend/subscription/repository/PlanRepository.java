@@ -8,4 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PlanRepository extends JpaRepository<Plan, UUID> {
     Optional<Plan> findByCodeAndActiveTrue(PlanCode code);
+    Optional<Plan> findByCode(PlanCode code);
 }

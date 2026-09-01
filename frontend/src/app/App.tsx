@@ -1,5 +1,11 @@
-import { InfrastructureStatusPage } from '../features/dashboard/pages/InfrastructureStatusPage'
+import { BrowserRouter } from 'react-router-dom'
+import { AppRouter } from './router/AppRouter'
+import { AuthProvider } from '../features/auth/context/AuthContext'
 
 export default function App() {
-  return <InfrastructureStatusPage />
+  return (
+    <BrowserRouter>
+      <AuthProvider><AppRouter /></AuthProvider>
+    </BrowserRouter>
+  )
 }

@@ -2,6 +2,15 @@
 backend/target/
 *.log
 
+# Local environment files
+.env
+.env.*
+!.env.example
+
+backend/.env
+backend/.env.*
+!backend/.env.example
+
 # Node / Vite
 frontend/node_modules/
 frontend/dist/
@@ -14,6 +23,8 @@ ai-service/.venv/
 ai-service/**/__pycache__/
 *.py[cod]
 ai-service/.env
+ai-service/.env.*
+!ai-service/.env.example
 
 # Editors and OS
 .idea/
