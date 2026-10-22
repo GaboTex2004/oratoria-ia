@@ -14,6 +14,7 @@ import com.oratoria.backend.user.dto.UserResponse;
 import com.oratoria.backend.user.entity.UserAccount;
 import com.oratoria.backend.user.entity.UserRole;
 import com.oratoria.backend.user.repository.UserAccountRepository;
+import java.sql.SQLException;
 import java.util.Locale;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,15 +43,19 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request) {
         String email = normalizeEmail(request.email());
         if (users.existsByEmailIgnoreCase(email)) throw new DuplicateEmailException();
+        UserAccount user;
         try {
-            UserAccount user = users.save(new UserAccount(
+            user = users.saveAndFlush(new UserAccount(
                     request.firstName().trim(), request.lastName().trim(), email,
                     passwordEncoder.encode(request.password()), UserRole.USER));
-            Subscription subscription = subscriptions.save(new Subscription(user, plans.freePlan()));
-            return new AuthResponse(jwtService.createToken(user), toResponse(user, subscription));
         } catch (DataIntegrityViolationException exception) {
-            throw new DuplicateEmailException();
+            if (isDuplicateEmailError(exception)) {
+                throw new DuplicateEmailException();
+            }
+            throw exception;
         }
+        Subscription subscription = subscriptions.save(new Subscription(user, plans.freePlan()));
+        return new AuthResponse(jwtService.createToken(user), toResponse(user, subscription));
     }
 
     @Transactional(readOnly = true)
@@ -85,5 +90,21 @@ public class AuthService {
 
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private boolean isDuplicateEmailError(DataIntegrityViolationException exception) {
+        Throwable cause = exception;
+        while (cause != null) {
+            if (cause instanceof SQLException sqlException && "23505".equals(sqlException.getSQLState())) {
+                String msg = sqlException.getMessage();
+                return msg == null || msg.toLowerCase(Locale.ROOT).contains("email");
+            }
+            cause = cause.getCause();
+        }
+        String message = exception.getMostSpecificCause().getMessage();
+        if (message == null) return false;
+        String lower = message.toLowerCase(Locale.ROOT);
+        return lower.contains("email") && (lower.contains("unique") || lower.contains("duplicate")
+                || lower.contains("already exists") || lower.contains("duplicad"));
     }
 }

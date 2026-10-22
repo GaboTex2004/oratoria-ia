@@ -1,5 +1,7 @@
 # Java / Maven
 backend/target/
+backend/data/
+data/
 *.log
 
 # Local environment files

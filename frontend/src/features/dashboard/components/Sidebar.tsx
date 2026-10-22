@@ -16,6 +16,7 @@ interface SidebarProps { open: boolean; onClose: () => void }
 export function Sidebar({ open, onClose }: SidebarProps) {
   const navigate = useNavigate()
   const { user, logout: endSession } = useAuth()
+  const currentPlan = user?.plan ?? subscriptionSummary.plan
   const usage = (subscriptionSummary.sessionsUsed / subscriptionSummary.sessionsLimit) * 100
 
   function logout() {
@@ -38,7 +39,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         {user?.role === 'ADMIN' && <NavLink to="/admin" onClick={onClose} className={({ isActive }) => `sidebar-link ${isActive ? 'is-active' : ''}`}><Icon name="admin_panel_settings" /><span>Administración</span></NavLink>}
         <div className="sidebar__footer">
           <section className="plan-summary">
-            <div><strong><Icon name="auto_awesome" /> Plan {subscriptionSummary.plan}</strong><span>{subscriptionSummary.sessionsUsed}/{subscriptionSummary.sessionsLimit} sesiones</span></div>
+            <div><strong><Icon name="auto_awesome" /> Plan {currentPlan}</strong><span>{subscriptionSummary.sessionsUsed}/{subscriptionSummary.sessionsLimit} sesiones</span></div>
             <div className="progress-track"><span style={{ width: `${usage}%` }} /></div>
             <button type="button">Ver planes</button>
           </section>

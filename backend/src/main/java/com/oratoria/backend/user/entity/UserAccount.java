@@ -23,7 +23,7 @@ public class UserAccount {
     @Column(nullable = false, unique = true, length = 320)
     private String email;
 
-    @Column(name = "display_name", nullable = false, length = 120)
+    @Column(name = "display_name", nullable = false, length = 161)
     private String displayName;
 
     @Column(name = "first_name", nullable = false, length = 80)
