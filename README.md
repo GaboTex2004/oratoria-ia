@@ -6,6 +6,10 @@ entrenamientos y simulaciones, y presentar retroalimentación útil sobre el des
 
 ## Estado del proyecto
 
+La aplicación incluye actualmente prácticas grabadas con transcripción y evaluación,
+dashboard/progreso real y simulaciones conversacionales por voz con IA. La evaluación
+final de una simulación se almacena separada de las métricas de las prácticas.
+
 ### Implementado actualmente
 
 - PostgreSQL 17 ejecutado mediante Docker Compose y persistencia en volumen.
@@ -206,6 +210,18 @@ nunca coloques allí `JWT_SECRET`, `DB_PASSWORD`, `ADMIN_PASSWORD` u otros secre
 | `AI_SERVICE_PORT` | `8000` | Puerto HTTP |
 | `SPRING_API_URL` | `http://localhost:8081/api` | URL futura de Spring |
 | `APP_ENV` | `development` | Entorno y modo debug |
+| `INTERNAL_API_KEY` | valor local de desarrollo | Autentica llamadas Spring -> FastAPI |
+| `GROQ_API_KEY` | vacío | Credencial de Groq para STT y conversación |
+| `GROQ_LLM_MODEL` | `openai/gpt-oss-120b` | Modelo conversacional y evaluador |
+| `SIMULATION_MIN_USER_TURNS` | `2` | Respuestas mínimas para puntuar una simulación |
+| `SIMULATION_LLM_PROVIDER` | `groq` | Proveedor de turnos: `groq` o `gemini` |
+| `SIMULATION_EVALUATION_PROVIDER` | valor de `SIMULATION_LLM_PROVIDER` | Proveedor de evaluación final |
+| `SIMULATION_GROQ_MODEL` | `openai/gpt-oss-120b` | Modelo Groq exclusivo de simulaciones |
+| `SIMULATION_GEMINI_MODEL` | `gemini-3.8-flash` | Modelo Gemini conversacional |
+| `SIMULATION_GEMINI_REPLY_THINKING_LEVEL` | `low` | Razonamiento de baja latencia para turnos |
+| `SIMULATION_GEMINI_FEEDBACK_THINKING_LEVEL` | `medium` | Razonamiento separado para evaluación final |
+| `GEMINI_API_KEY` | vacío | Clave privada usada sólo por FastAPI |
+| `SIMULATION_LLM_TIMEOUT_SECONDS` | `45` | Timeout de generación conversacional |
 
 FastAPI tampoco carga `ai-service/.env` automáticamente; `app/core/config.py` obtiene
 estas variables directamente del entorno del proceso.

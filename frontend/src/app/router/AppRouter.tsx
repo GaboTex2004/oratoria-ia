@@ -9,6 +9,8 @@ import { DashboardPage } from '../../features/dashboard/pages/DashboardPage'
 import { ResultsPage } from '../../features/training/pages/ResultsPage'
 import { SessionsPage } from '../../features/training/pages/SessionsPage'
 import { TrainingPage } from '../../features/training/pages/TrainingPage'
+import { ProgressPage } from '../../features/progress/pages/ProgressPage'
+import { SimulationsPage } from '../../features/simulations/pages/SimulationsPage'
 import { PlaceholderPage } from '../../shared/components/PlaceholderPage'
 
 export function AppRouter() {
@@ -26,8 +28,8 @@ export function AppRouter() {
       <Route path="/training" element={protectedPage(<TrainingPage />)} />
       <Route path="/sessions" element={protectedPage(<SessionsPage />)} />
       <Route path="/results" element={protectedPage(<ResultsPage />)} />
-      <Route path="/progress" element={protectedPage(<PlaceholderPage title="Progreso" />)} />
-      <Route path="/simulations" element={protectedPage(<PlaceholderPage title="Simulaciones" />)} />
+      <Route path="/progress" element={protectedPage(<ProgressPage />)} />
+      <Route path="/simulations" element={protectedPage(<SimulationsPage />)} />
       <Route path="/profile" element={protectedPage(<PlaceholderPage title="Perfil" />)} />
       <Route path="/admin" element={<ProtectedRoute role="ADMIN"><AdminPage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to={startPath} replace />} />

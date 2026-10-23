@@ -24,6 +24,14 @@ import {
   resolveEffectiveDuration,
   transitionAudioPlayer,
 } from '../src/features/training/utils/audioPlayerState.ts'
+import type { ProgressHistoryItem } from '../src/features/progress/types/progress.ts'
+import {
+  buildHistorySeries,
+  compareSessions,
+  formatMetricValue,
+  formatSignedDifference,
+} from '../src/features/progress/utils/progressMetrics.ts'
+import { canFinish, canRespond } from '../src/features/simulations/types/simulation.ts'
 
 test('formatDuration formatea segundos en mm:ss de forma segura', () => {
   assert.equal(formatDuration(0), '00:00')
@@ -202,4 +210,92 @@ test('isSlowProcessing detecta procesamiento lento sin activarse en estados term
   assert.equal(isSlowProcessing('PROCESSING', SLOW_POLL_THRESHOLD + 3), true)
   assert.equal(isSlowProcessing('COMPLETED', SLOW_POLL_THRESHOLD + 5), false)
   assert.equal(isSlowProcessing('FAILED', SLOW_POLL_THRESHOLD + 5), false)
+})
+
+function progressSession(
+  id: string,
+  createdAt: string,
+  values: Partial<ProgressHistoryItem> = {},
+): ProgressHistoryItem {
+  return {
+    sessionId: id,
+    exerciseTitle: `Sesión ${id}`,
+    trainingType: 'PRESENTATION',
+    createdAt,
+    completedAt: createdAt,
+    durationSeconds: 60,
+    sessionStatus: 'COMPLETED',
+    analysisStatus: 'COMPLETED',
+    evaluationStatus: 'COMPLETED',
+    sufficientEvidence: true,
+    overallScore: 70,
+    wordCount: 120,
+    wordsPerMinute: 120,
+    spokenWordsPerMinute: 130,
+    fillerWordsTotal: 4,
+    estimatedPauseCount: 3,
+    spokenTimeRatio: 0.8,
+    criteriaScores: [
+      { code: 'CLARITY', label: 'Claridad', score: 70, level: 'COMPETENTE' },
+      { code: 'COHERENCE', label: 'Coherencia', score: 70, level: 'COMPETENTE' },
+      { code: 'ORGANIZATION', label: 'Organización', score: 70, level: 'COMPETENTE' },
+      { code: 'ARGUMENTATION', label: 'Argumentación', score: 70, level: 'COMPETENTE' },
+    ],
+    ...values,
+  }
+}
+
+test('series de progreso se ordenan cronológicamente y omiten null sin inventar ceros', () => {
+  const history = [
+    progressSession('new', '2026-10-03T10:00:00Z', { overallScore: 82 }),
+    progressSession('missing', '2026-10-02T10:00:00Z', { overallScore: null }),
+    progressSession('old', '2026-10-01T10:00:00Z', { overallScore: 74 }),
+  ]
+  const series = buildHistorySeries(history, (session) => session.overallScore)
+  assert.deepEqual(series.map((point) => [point.sessionId, point.value]), [['old', 74], ['new', 82]])
+})
+
+test('comparador calcula B menos A y respeta la naturaleza de cada métrica', () => {
+  const left = progressSession('a', '2026-10-01T10:00:00Z')
+  const right = progressSession('b', '2026-10-02T10:00:00Z', {
+    overallScore: 80,
+    wordsPerMinute: 145,
+    fillerWordsTotal: 2,
+    criteriaScores: left.criteriaScores.map((criterion) => ({ ...criterion, score: 80 })),
+  })
+  const comparison = compareSessions(left, right)
+  assert.equal(comparison.find((item) => item.key === 'score')?.difference, 10)
+  assert.equal(comparison.find((item) => item.key === 'score')?.trend, 'positive')
+  assert.equal(comparison.find((item) => item.key === 'fillers')?.difference, -2)
+  assert.equal(comparison.find((item) => item.key === 'fillers')?.trend, 'positive')
+  assert.equal(comparison.find((item) => item.key === 'wpm')?.trend, 'neutral')
+})
+
+test('comparador conserva valores ausentes como no comparables', () => {
+  const left = progressSession('a', '2026-10-01T10:00:00Z', { overallScore: null, wordsPerMinute: null })
+  const right = progressSession('b', '2026-10-02T10:00:00Z', { overallScore: 80, wordsPerMinute: 130 })
+  const comparison = compareSessions(left, right)
+  const score = comparison.find((item) => item.key === 'score')
+  assert.equal(score?.left, null)
+  assert.equal(score?.difference, null)
+  assert.equal(score?.trend, 'unavailable')
+  assert.equal(formatSignedDifference(score?.difference ?? null, '/100'), 'No comparable')
+})
+
+test('formateo de comparación distingue porcentajes, unidades y null', () => {
+  assert.equal(formatMetricValue(null, ' PPM'), 'No disponible')
+  assert.equal(formatMetricValue(0.82, ''), '82%')
+  assert.equal(formatMetricValue(140, ' PPM'), '140 PPM')
+  assert.equal(formatSignedDifference(-0.1, ''), '-10 pp')
+  assert.equal(formatSignedDifference(5, '/100'), '+5/100')
+})
+
+test('simulation state guards prevent overlapping turns', () => {
+  assert.equal(canRespond('ACTIVE'), true)
+  assert.equal(canRespond('PROCESSING'), false)
+  assert.equal(canRespond('COMPLETED'), false)
+  assert.equal(canFinish({ status: 'ACTIVE', currentTurn: 1 }), true)
+  assert.equal(canFinish({ status: 'READY_TO_FINISH', currentTurn: 3 }), true)
+  assert.equal(canFinish({ status: 'ACTIVE', currentTurn: 0 }), false)
+  assert.equal(canFinish({ status: 'COMPLETED', currentTurn: 3 }), false)
 })

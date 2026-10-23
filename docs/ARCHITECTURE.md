@@ -108,3 +108,27 @@ el estado del trabajo y resultados relevantes. Actualmente solo existe `/health`
 - Secretos únicamente mediante entorno, nunca en Git.
 - Endpoints bajo `/api`; health checks técnicos separados del dominio.
 - Cambios de esquema futuros mediante migraciones versionadas.
+# Simulaciones conversacionales (Fase 5)
+
+```text
+React MediaRecorder
+  -> POST /api/simulations/{id}/respond (JWT + Idempotency-Key + multipart)
+  -> Spring reserva simulation_turns y libera la transacción
+  -> FastAPI /speech/analyze (Groq STT)
+  -> FastAPI /simulation/reply (Groq chat, JSON validado)
+  -> Spring persiste transcripción + respuesta IA en una transacción breve
+```
+
+`simulation_sessions` y `simulation_turns` son un agregado separado de
+`training_sessions`. Por ello el puntaje conversacional final no participa en el
+dashboard ni en las métricas históricas de las prácticas. Los audios se sirven sólo
+por endpoints autenticados que validan el propietario. Un bloqueo pesimista breve y
+la restricción única `(simulation_id, idempotency_key)` evitan turnos concurrentes o
+duplicados; ninguna transacción permanece abierta mientras se espera a Groq.
+
+La generación conversacional usa `SimulationLLMProvider`. Sus implementaciones
+`GroqSimulationProvider` y `GeminiSimulationProvider` normalizan el resultado antes
+de devolver el contrato histórico a Spring. La selección de turnos y evaluación final
+se configura de manera independiente; Whisper STT y las evaluaciones de Fase 3 no
+cambian. Los turnos no se reintentan automáticamente, mientras que la evaluación
+final admite un único reintento sólo ante errores transitorios.

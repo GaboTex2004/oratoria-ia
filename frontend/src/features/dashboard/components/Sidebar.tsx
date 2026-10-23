@@ -1,8 +1,8 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/context/useAuth'
+import type { SubscriptionProgressSummary } from '../../progress/types/progress'
 import { Brand } from '../../../shared/components/Brand'
 import { Icon } from '../../../shared/components/Icon'
-import { subscriptionSummary } from '../data/dashboardMock'
 
 const navigation = [
   ['/home', 'home', 'Inicio'], ['/training', 'fitness_center', 'Entrenamientos'],
@@ -11,13 +11,21 @@ const navigation = [
   ['/profile', 'person', 'Perfil'],
 ]
 
-interface SidebarProps { open: boolean; onClose: () => void }
+interface SidebarProps {
+  open: boolean
+  onClose: () => void
+  subscription?: SubscriptionProgressSummary
+}
 
-export function Sidebar({ open, onClose }: SidebarProps) {
+export function Sidebar({ open, onClose, subscription }: SidebarProps) {
   const navigate = useNavigate()
   const { user, logout: endSession } = useAuth()
-  const currentPlan = user?.plan ?? subscriptionSummary.plan
-  const usage = (subscriptionSummary.sessionsUsed / subscriptionSummary.sessionsLimit) * 100
+  const currentPlan = subscription?.plan ?? user?.plan ?? 'Sin plan'
+  const sessionsUsed = subscription?.sessionsUsedInPeriod
+  const hasUsage = sessionsUsed != null
+  const usage = hasUsage && subscription?.sessionsLimit
+    ? Math.min(100, (sessionsUsed / subscription.sessionsLimit) * 100)
+    : null
 
   function logout() {
     endSession()
@@ -39,8 +47,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         {user?.role === 'ADMIN' && <NavLink to="/admin" onClick={onClose} className={({ isActive }) => `sidebar-link ${isActive ? 'is-active' : ''}`}><Icon name="admin_panel_settings" /><span>Administración</span></NavLink>}
         <div className="sidebar__footer">
           <section className="plan-summary">
-            <div><strong><Icon name="auto_awesome" /> Plan {currentPlan}</strong><span>{subscriptionSummary.sessionsUsed}/{subscriptionSummary.sessionsLimit} sesiones</span></div>
-            <div className="progress-track"><span style={{ width: `${usage}%` }} /></div>
+            <div><strong><Icon name="auto_awesome" /> Plan {currentPlan}</strong><span>{hasUsage ? `${sessionsUsed}/${subscription?.unlimitedSessions ? '∞' : subscription?.sessionsLimit ?? '—'} sesiones` : 'Consumo no disponible'}</span></div>
+            {usage != null && <div className="progress-track"><span style={{ width: `${usage}%` }} /></div>}
             <button type="button">Ver planes</button>
           </section>
           <button className="sidebar-link sidebar-link--button" type="button"><Icon name="settings" /><span>Configuración</span></button>

@@ -1,6 +1,6 @@
 # OratoriaAI — Estado del proyecto y guía de continuidad
 
-**Fecha:** 21 de octubre de 2026  
+**Fecha:** 22 de octubre de 2026
 **Proyecto:** Ingeniería de Software I — OratoriaAI  
 **Propósito:** documento de traspaso para que otro integrante pueda continuar el desarrollo sin perder el contexto.
 
@@ -10,7 +10,7 @@
 
 OratoriaAI es una plataforma web para practicar discursos y mejorar la comunicación oral. Permite registrar usuarios, seleccionar ejercicios, grabar y escuchar audios, guardar sesiones y analizar el habla mediante servicios de IA. La arquitectura existente se conserva: **React + TypeScript + Vite**, **Spring Boot (Java)**, **PostgreSQL** y **FastAPI (Python)**, con **Groq API** como proveedor de transcripción y evaluación semántica.
 
-**Situación actual:** fases 0, 0.1, 1, 2 y **3 implementadas**. El hotfix de fase 3 corrigió la condición de carrera que dejaba análisis en `PENDING`; Antigravity reportó **26 pruebas backend, 14 de FastAPI y 9 de frontend aprobadas**. Queda aconsejada una comprobación manual de una grabación nueva y su evaluación completa en la laptop antes de integrar a `main`.
+**Situación actual:** fases 0–5 implementadas en el árbol de trabajo. El dashboard y progreso consumen datos persistidos; las simulaciones conversacionales almacenan sesiones, turnos, audios y retroalimentación en un agregado independiente. La suite completa de Spring fue validada contra PostgreSQL local sin invocar Groq desde pruebas.
 
 ## 2. Avance por fases
 
@@ -21,8 +21,8 @@ OratoriaAI es una plataforma web para practicar discursos y mejorar la comunicac
 | 1 — Ejercicios y sesiones | Catálogo, grabadora web, audio privado, historial | Implementada; 15 pruebas backend y 4 frontend aprobadas en el informe; grabación y reproducción probadas manualmente |
 | 2 — Análisis de voz | Groq STT, transcripción, velocidad de habla, muletillas, pausas, resultados | Implementada; se obtuvo una pantalla real de transcripción y métricas en español |
 | 3 — Evaluación del discurso | Rúbricas por ejercicio, IA semántica, recomendaciones y persistencia | **Implementada y hotfix completado**, con regresión automatizada aprobada; prueba manual completa aconsejada |
-| 4 — Progreso y dashboard | Historial analítico, gráficas y métricas reales agregadas | Pendiente |
-| 5 — Simulaciones IA | Entrevistas, debates y conversaciones interactivas | Pendiente |
+| 4 — Progreso y dashboard | Historial analítico, gráficas, comparador y métricas reales agregadas | **Implementada y validada con PostgreSQL** |
+| 5 — Simulaciones IA | Entrevistas, debates y conversaciones interactivas | **Implementada; pendiente prueba manual con credencial Groq real** |
 | 6 — Análisis corporal | Postura, gestos y orientación de cabeza | Pendiente |
 | 7 — Personalización y suscripciones | Aprendizaje adaptativo y límites de planes | Pendiente (existe base de FREE/PREMIUM) |
 | 8 — Calidad y entrega | Pruebas finales, seguridad, despliegue y documentación | Pendiente |
@@ -138,6 +138,83 @@ npm run build
 - No usar `docker compose down -v` salvo que se quiera borrar deliberadamente la base de datos local.
 - Fase 3 y su hotfix se consideran implementados según el informe; antes de fusionar, realizar prueba manual de transcripción + evaluación semántica completa en la laptop.
 
-## 9. Próximo hito
+## 9. Fase 4 — Dashboard y progreso real
 
-**Siguiente fase: Fase 4 — Dashboard y progreso real.** Antes, completar una prueba manual de punta a punta con la versión corregida, guardar evidencia y abrir Pull Request a `main` después de revisión del equipo.
+### Backend y contrato
+
+`GET /api/progress/summary` exige JWT y obtiene el usuario exclusivamente desde el `Principal`. Una consulta consolidada une sesiones, ejercicios, análisis y evaluaciones sin cargar transcripciones, timestamps, audio ni recomendaciones extensas. Devuelve:
+
+- Totales globales, duración acumulada, puntuaciones, WPM y muletillas.
+- Historial cronológico limitado a las 100 sesiones más recientes, indicando si fue truncado.
+- Evolución de `CLARITY`, `COHERENCE`, `ORGANIZATION` y `ARGUMENTATION`.
+- Fortalezas, áreas de mejora y conteos acumulados de muletillas.
+- Plan y límite configurado de sesiones.
+
+Una puntuación sólo participa en estadísticas cuando la sesión y evaluación están `COMPLETED`, existe evidencia suficiente y el score es válido. WPM y muletillas sólo usan análisis `COMPLETED`. Los deltas se calculan como último menos penúltimo y los decimales se redondean a dos posiciones.
+
+El consumo mensual permanece como `sessionsUsedInPeriod: null` y `usageDefinition: "NOT_DEFINED"`: todavía falta acordar si consume cuota la creación o finalización de una sesión, la zona horaria y el tratamiento de fallos. No se añadieron bloqueos de cuota.
+
+### Frontend
+
+- `/home` usa el resumen real, las sesiones recientes y el catálogo persistido de siete tipos; se eliminó el mock de estadísticas.
+- `/progress` incluye resumen, gráficas SVG, habilidades, fortalezas, oportunidades, muletillas frecuentes, historial y comparador entre dos sesiones.
+- Los valores ausentes se muestran como no disponibles, nunca como cero.
+- Hay estados de carga, error, vacío, una sola sesión, procesamiento y fallo.
+- El comparador trata scores/criterios altos y muletillas bajas como favorables; WPM, duración, pausas y ratio hablado se presentan como variaciones neutrales.
+
+### Verificación de Fase 4
+
+```powershell
+# Unitarias backend, sin PostgreSQL
+cd backend
+mvn.cmd -o "-Dmaven.repo.local=C:\Users\GABRIEL\.m2\repository" "-Dtest=ProgressCalculatorTests,ProgressServiceTests" test
+
+# Frontend
+cd frontend
+npm.cmd test
+npm.cmd run lint
+npm.cmd run build
+```
+
+Resultado final del 22/10/2026: **35/35 pruebas backend** contra PostgreSQL local, **19/19 pruebas FastAPI** y **14/14 pruebas frontend**, lint y build aprobados. Ninguna prueba invoca Groq realmente.
+
+### Validación manual recomendada
+
+1. Levantar PostgreSQL, Spring, FastAPI y React con las variables documentadas.
+2. Configurar una `GROQ_API_KEY` válida únicamente en FastAPI.
+3. Completar una simulación de varios turnos desde `/simulations`.
+4. Recargar durante el flujo y confirmar recuperación del historial.
+5. Confirmar que progreso y dashboard no incluyan el puntaje conversacional.
+
+## 10. Fase 5 — simulaciones interactivas con IA
+
+Implementada la cadena React -> Spring Boot -> FastAPI -> Groq para siete escenarios:
+entrevista laboral, debate estructurado, preguntas del público, negociación comercial,
+elevator pitch, defensa de proyecto e improvisación guiada.
+
+- Persistencia independiente en `simulation_sessions` y `simulation_turns`.
+- Respuestas exclusivamente por audio, con archivos privados y acceso por propietario.
+- `Idempotency-Key` obligatorio por turno y estados explícitos de procesamiento/error.
+- Las invocaciones externas se ejecutan fuera de transacciones de base de datos.
+- Contexto limitado, texto no confiable delimitado y respuestas IA en JSON validado.
+- Retroalimentación final separada; no altera progreso ni evaluaciones de prácticas.
+- Menos de dos respuestas produce evidencia insuficiente y ningún puntaje.
+
+Endpoints principales: `GET /api/simulations/scenarios`, `POST /api/simulations`,
+`GET /api/simulations`, `GET /api/simulations/{id}`,
+`POST /api/simulations/{id}/respond`, `POST /api/simulations/{id}/finish` y
+`GET /api/simulations/{id}/feedback`.
+
+### Hotfix multiproveedor Groq/Gemini
+
+El 502 observado en `/api/v1/simulation/reply` no permitía determinar el HTTP original:
+el adaptador anterior convertía todos los errores Groq distintos de 429 en
+`LLM_PROVIDER_HTTP_ERROR` 502 y no registraba estado upstream. El modelo configurado
+`openai/gpt-oss-120b` sigue disponible y soporta salida JSON estructurada. El hotfix
+clasifica autenticación, modelo ausente, cuota, timeout, parámetros, red, 5xx y salida
+inválida, y añade logs seguros correlacionados.
+
+`SIMULATION_LLM_PROVIDER` y `SIMULATION_EVALUATION_PROVIDER` permiten escoger `groq`
+o `gemini` sin cambiar los contratos Spring. Gemini usa `gemini-3.8-flash`, modelo GA
+confirmado en la documentación oficial vigente el 22/10/2026. No se modificaron STT,
+evaluaciones tradicionales ni estadísticas históricas.
