@@ -1,5 +1,11 @@
 # Entrega local OratoriaAI — continuidad Software II
 
+**Actualización comercial posterior:** se implementó la pasarela académica de
+tarjetas ficticias solicitada, sin cargos reales ni integración bancaria. Las
+referencias de este informe a la ausencia de checkout describen la entrega anterior.
+Estado, contratos, V4 y pruebas actuales: [pagos de demostración](saas/MODO_DEMOSTRACION_PAGOS.md)
+y [pruebas de pagos](saas/PRUEBAS_PAGOS.md).
+
 Fecha: 8 de noviembre de 2026. Responsable de rama: IsaiasGutierrezTeran según la
 configuración Git existente. Rama `isaias-gutierrez`, base `2784c2e`; respaldo
 `respaldo/isaias-antes-finalizacion-20261108`. Esta finalización **no se publicó**.

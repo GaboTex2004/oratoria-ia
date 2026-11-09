@@ -1,5 +1,9 @@
 # Contratos HTTP reales
 
+Actualización de suscripciones: GET /plans agrega price, currency e interval sin
+eliminar entitlements. [Contratos completos de checkout, consumo, cancelación y
+simulación administrativa](saas/FLUJO_CHECKOUT.md). No existe pasarela bancaria.
+
 Base pública local: `http://localhost:8081/api`. Salvo registro, login y test, se
 requiere `Authorization: Bearer <JWT>`. El usuario se obtiene del Principal, nunca de
 un userId enviado por el cliente. Las rutas ADMIN exigen rol ADMIN en servidor.

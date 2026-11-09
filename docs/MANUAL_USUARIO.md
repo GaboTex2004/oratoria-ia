@@ -30,7 +30,11 @@ privado `backend/.env`. También se puede registrar una cuenta nueva FREE.
 8. **Informe:** abrir el informe desde resultados y usar Imprimir/Guardar PDF.
    Progreso también dispone de impresión. En el diálogo del navegador elegir PDF.
 9. **Planes:** FREE permite cinco prácticas y una simulación creadas por mes UTC;
-   también cuentan las abandonadas. PREMIUM no aplica esos límites. No hay cobros.
+   también cuentan las abandonadas. PREMIUM no aplica esos límites. El checkout de
+   demostración permite contratarlo con tarjetas ficticias, sin cargos reales.
+   Desde Mi suscripción se consultan comprobantes y se cancela la renovación:
+   el periodo pagado se conserva hasta el vencimiento, sin borrar grabaciones.
+   Un pago pendiente necesita confirmación del administrador de pruebas.
 10. **Privacidad:** borrar los datos de una práctica desde sesiones o los de una
     conversación desde simulaciones. Se eliminan contenido, audio y resultados;
     quedan metadatos mínimos para no reiniciar artificialmente la cuota. El archivo

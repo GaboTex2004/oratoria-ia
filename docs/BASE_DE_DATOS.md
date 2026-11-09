@@ -1,5 +1,10 @@
 # PostgreSQL y conservación de datos
 
+Actualización: V4 incorpora la pasarela académica de pagos, precio de planes,
+estado pendiente y periodos de Subscription, órdenes/transacciones/eventos,
+auditoría, reloj por usuario y reservas de consumo. Se reutiliza PlanEntitlement
+para features/límites. [Modelo, seguridad y operación](saas/MODO_DEMOSTRACION_PAGOS.md).
+
 PostgreSQL 17, esquema `public`. Puerto Compose local 5435, interno 5432, base
 `oratoria_db`, contenedor `oratoria_postgres`; el volumen existente se conserva.
 `oratoria_test` y `oratoria_migration_test` son bases separadas para pruebas, no

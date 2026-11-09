@@ -1,4 +1,4 @@
-﻿# OratoriaAI
+# OratoriaAI
 
 **Plataforma Inteligente para el Entrenamiento y Mejora de la Comunicación Oral.**
 Continuidad de Ingeniería de Software I / II. Rama de trabajo: `isaias-gutierrez`.
@@ -15,6 +15,20 @@ evaluación con rúbrica, simulaciones, improvisación, ejercicios narrativos y
 persuasivos, recomendaciones por resultados, progreso, planes/cuotas,
 administración e informes imprimibles/PDF. La cámara es opcional y requiere una
 acción explícita; solo se conservan sus indicadores.
+
+Incluye además un **checkout académico de tarjetas ficticias**, suscripciones
+mensuales Premium, comprobantes, historial, cancelación y renovaciones simuladas.
+**MODO DEMOSTRACIÓN — No se realizan cargos reales.** No ingresar tarjetas reales.
+Precio predeterminado configurable: Bs 49/mes, obtenido del backend. No existe
+integración bancaria ni pasarela comercial. [Guía de pagos](docs/saas/MODO_DEMOSTRACION_PAGOS.md).
+
+Para probar: registrar una cuenta FREE, abrir `/plans`, seleccionar Premium y una
+tarjeta ficticia. `/subscription` muestra plan, consumo, historial y cancelación.
+ADMIN abre `/admin/payments` para confirmar pendientes y simular el tiempo en dev.
+Se requieren APP_PROFILE=dev y BILLING_DEMO_ENABLED=true en backend/.env, preparados
+por Initialize-Local.ps1. En producción el simulador rechaza operaciones incluso
+si se intenta habilitar el flag. [Contratos](docs/saas/FLUJO_CHECKOUT.md),
+[ciclo mensual](docs/saas/ESTADOS_SUSCRIPCION.md) y [pruebas](docs/saas/PRUEBAS_PAGOS.md).
 
 Las métricas y notas son orientativas. No hay modelo supervisado propio entrenado,
 validación clínica, reconocimiento de identidad ni detección de emociones. La

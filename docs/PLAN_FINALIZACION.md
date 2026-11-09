@@ -29,6 +29,19 @@ y 50 pruebas repetidas satisfactoriamente después del ajuste de formato final.
 
 ## Registro de cambios
 
+### Cambio comercial aprobado: pasarela académica simulada
+
+Solicitud posterior del 2026-11-08: checkout con tres tarjetas ficticias, sin
+proveedor comercial ni cargos reales. Implementado con PaymentProvider local,
+órdenes/transacciones/eventos/auditoría persistidos, periodos mensuales, gracia,
+cancelación, renovación y reloj ADMIN dev/test. V4 aplicada tras respaldo privado.
+Plan, Subscription y PlanEntitlement se reutilizan; no se duplican permisos.
+Ver [documentación de pagos](saas/MODO_DEMOSTRACION_PAGOS.md) y
+[ejecución de pruebas](saas/PRUEBAS_PAGOS.md): 69 Java y 14 frontend aprobadas;
+12 navegador en regresión completa, cuatro de pagos repetidas con backend final
+y PDF real. Sin integración bancaria, sin credenciales financieras y sin push.
+Los límites de validación docente/corporal de la entrega anterior siguen vigentes.
+
 - Auditoría y respaldo local sin alterar historial.
 - Ver informe de pruebas para comandos, resultados y limitaciones actualizados.
 - Correcciones de integración: limpiar clases Java obsoletas; importar fuentes desde
