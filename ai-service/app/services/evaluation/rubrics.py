@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from app.schemas.evaluation import MeasuredIndicatorSchema
 from app.schemas.speech import VerbalCommunicationMetricsSchema
 
-RUBRIC_VERSION = "oratoria-rubric-v1.0"
+RUBRIC_VERSION = "oratoria-rubric-v2.0-local"
 
 
 @dataclass(frozen=True)
@@ -288,7 +288,9 @@ def build_measured_indicators(metrics: VerbalCommunicationMetricsSchema) -> list
     elif wpm <= 160:
         wpm_interp = "Ritmo fluido dentro del rango recomendado para exposición en español (110–160 WPM)."
     else:
-        wpm_interp = "Ritmo acelerado (superior a 160 WPM); puede dificultar la asimilación de ideas complejas."
+        wpm_interp = (
+            "Ritmo acelerado (superior a 160 WPM); puede dificultar la asimilación de ideas complejas."
+        )
 
     filler_rate = (
         round((metrics.fillerWordsTotal / metrics.recordingDurationSeconds) * 60.0, 2)

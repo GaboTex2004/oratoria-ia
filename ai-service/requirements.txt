@@ -1,2 +1,6 @@
-fastapi>=0.116,<1.0
-uvicorn[standard]>=0.35,<1.0
+fastapi==0.162.2
+uvicorn[standard]==0.54.0
+python-dotenv==1.2.4
+faster-whisper==1.2.1
+numpy==2.2.6
+mediapipe==0.10.35

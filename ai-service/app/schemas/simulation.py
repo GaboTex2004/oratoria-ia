@@ -1,9 +1,11 @@
 from typing import Literal
 from pydantic import BaseModel, Field
 
+
 class SimulationHistoryMessageSchema(BaseModel):
     speaker: Literal["USER", "AI"]
     text: str = Field(..., min_length=1, max_length=4000)
+
 
 class SimulationReplyRequestSchema(BaseModel):
     simulationId: str = Field(..., min_length=1)
@@ -19,6 +21,7 @@ class SimulationReplyRequestSchema(BaseModel):
     turnNumber: int = Field(..., ge=1, le=20)
     maxTurns: int = Field(..., ge=1, le=20)
 
+
 class SimulationReplyResponseSchema(BaseModel):
     replyText: str = Field(..., min_length=1, max_length=1500)
     intent: str = Field(..., min_length=1, max_length=100)
@@ -26,6 +29,7 @@ class SimulationReplyResponseSchema(BaseModel):
     focus: str = Field(default="", max_length=300)
     provider: str
     model: str
+
 
 class SimulationFeedbackRequestSchema(BaseModel):
     simulationId: str = Field(..., min_length=1)
@@ -35,6 +39,7 @@ class SimulationFeedbackRequestSchema(BaseModel):
     context: str = Field(..., min_length=1, max_length=1000)
     objective: str = Field(..., min_length=1, max_length=1000)
     history: list[SimulationHistoryMessageSchema] = Field(default_factory=list, max_length=40)
+
 
 class SimulationFeedbackResponseSchema(BaseModel):
     sufficientEvidence: bool

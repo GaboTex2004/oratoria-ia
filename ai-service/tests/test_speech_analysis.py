@@ -1,8 +1,6 @@
-import io
+from tests.multipart_helpers import _build_multipart_body
 import json
 import unittest
-import urllib.error
-from email.message import Message
 from unittest.mock import patch
 
 from app.api.speech import set_speech_analysis_service
@@ -14,18 +12,18 @@ from app.services.speech.metrics import (
     detect_contextual_spanish_fillers,
 )
 from app.services.speech.provider import (
-    GroqSpeechToTextProvider,
     RawSegmentTimestamp,
     RawTranscriptionResult,
     RawWordTimestamp,
     SpeechProviderError,
     SpeechToTextProvider,
-    _build_multipart_body,
 )
 
 
 class FakeSpeechProvider(SpeechToTextProvider):
-    def __init__(self, result: RawTranscriptionResult | None = None, error: SpeechProviderError | None = None) -> None:
+    def __init__(
+        self, result: RawTranscriptionResult | None = None, error: SpeechProviderError | None = None
+    ) -> None:
         self._result = result
         self._error = error
         self.call_count = 0
@@ -111,37 +109,26 @@ class VerbalMetricsUnitTests(unittest.TestCase):
         self.assertIsNone(metrics.estimatedPauseCount)
 
 
-class GroqProviderUnitTests(unittest.TestCase):
-    def test_missing_api_key_raises_non_retryable_error(self) -> None:
-        provider = GroqSpeechToTextProvider(api_key="")
-        with self.assertRaises(SpeechProviderError) as ctx:
-            provider.transcribe(b"WEBM", "test.webm", "audio/webm")
-        self.assertEqual(ctx.exception.code, "GROQ_API_KEY_MISSING")
-        self.assertFalse(ctx.exception.retryable)
+class LocalProviderUnitTests(unittest.TestCase):
+    def test_missing_weights_fails_without_network(self):
+        from app.services.speech.local_provider import LocalWhisperProvider
 
-    def test_groq_provider_maps_401_429_and_timeout_errors(self) -> None:
-        provider = GroqSpeechToTextProvider(api_key="test-key-not-real")
+        with patch("app.services.speech.local_provider.Path.is_file", return_value=False):
+            with self.assertRaises(SpeechProviderError) as raised:
+                LocalWhisperProvider().transcribe(b"WEBM", "test.webm", "audio/webm")
+        self.assertEqual(raised.exception.code, "LOCAL_STT_MODEL_MISSING")
 
-        headers = Message()
-        err_401 = urllib.error.HTTPError("https://api.groq.com", 401, "Unauthorized", headers, io.BytesIO(b"{}"))
-        with patch("urllib.request.urlopen", side_effect=err_401):
-            with self.assertRaises(SpeechProviderError) as ctx401:
+    def test_concurrent_transcription_reports_busy(self):
+        from app.services.speech.local_provider import LocalWhisperProvider
+
+        provider = LocalWhisperProvider()
+        provider._slot.acquire()
+        try:
+            with self.assertRaises(SpeechProviderError) as raised:
                 provider.transcribe(b"WEBM", "test.webm", "audio/webm")
-            self.assertEqual(ctx401.exception.code, "PROVIDER_AUTH_ERROR")
-            self.assertFalse(ctx401.exception.retryable)
-
-        err_429 = urllib.error.HTTPError("https://api.groq.com", 429, "Too Many Requests", headers, io.BytesIO(b"{}"))
-        with patch("urllib.request.urlopen", side_effect=err_429):
-            with self.assertRaises(SpeechProviderError) as ctx429:
-                provider.transcribe(b"WEBM", "test.webm", "audio/webm")
-            self.assertEqual(ctx429.exception.code, "PROVIDER_RATE_LIMIT")
-            self.assertTrue(ctx429.exception.retryable)
-
-        with patch("urllib.request.urlopen", side_effect=TimeoutError("timed out")):
-            with self.assertRaises(SpeechProviderError) as ctx_timeout:
-                provider.transcribe(b"WEBM", "test.webm", "audio/webm")
-            self.assertEqual(ctx_timeout.exception.code, "PROVIDER_TIMEOUT")
-            self.assertTrue(ctx_timeout.exception.retryable)
+            self.assertEqual(raised.exception.status_code, 429)
+        finally:
+            provider._slot.release()
 
 
 class SpeechApiAsgiTests(unittest.IsolatedAsyncioTestCase):
@@ -188,7 +175,11 @@ class SpeechApiAsgiTests(unittest.IsolatedAsyncioTestCase):
             language="es",
             text="Buenas tardes, eh, presentamos nuestra propuesta de oratoria.",
             duration_seconds=12.0,
-            segments=[RawSegmentTimestamp(0, 0.2, 4.8, "Buenas tardes, eh, presentamos nuestra propuesta de oratoria.")],
+            segments=[
+                RawSegmentTimestamp(
+                    0, 0.2, 4.8, "Buenas tardes, eh, presentamos nuestra propuesta de oratoria."
+                )
+            ],
             words=[
                 RawWordTimestamp("Buenas", 0.2, 0.6),
                 RawWordTimestamp("tardes,", 0.6, 1.1),
@@ -206,7 +197,11 @@ class SpeechApiAsgiTests(unittest.IsolatedAsyncioTestCase):
         # 1. Missing internal key -> 401
         status_unauth, body_unauth = await self._post_analyze(
             b"WEBM_DATA",
-            [(b"content-type", b"audio/webm"), (b"x-session-id", b"s-1"), (b"x-audio-duration-seconds", b"12")],
+            [
+                (b"content-type", b"audio/webm"),
+                (b"x-session-id", b"s-1"),
+                (b"x-audio-duration-seconds", b"12"),
+            ],
         )
         self.assertEqual(status_unauth, 401)
         self.assertEqual(body_unauth["code"], "UNAUTHORIZED_INTERNAL_CALL")

@@ -5,11 +5,11 @@ from app.schemas.speech import VerbalCommunicationMetricsSchema
 
 
 class SpeechEvaluationRequestSchema(BaseModel):
-    sessionId: str = Field(..., min_length=1)
-    trainingType: str = Field(..., min_length=1)
-    exerciseTitle: str | None = None
-    exercisePrompt: str | None = None
-    transcriptText: str = Field(default="")
+    sessionId: str = Field(..., min_length=1, max_length=80)
+    trainingType: str = Field(..., min_length=1, max_length=40)
+    exerciseTitle: str | None = Field(default=None, max_length=120)
+    exercisePrompt: str | None = Field(default=None, max_length=1000)
+    transcriptText: str = Field(default="", max_length=30000)
     metrics: VerbalCommunicationMetricsSchema
 
 

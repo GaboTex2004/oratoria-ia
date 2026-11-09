@@ -62,9 +62,7 @@ def _parse_multipart_payload(
             origin="ai-service-validation",
         )
 
-    mime_headers = (
-        f"Content-Type: {content_type_header}\r\nMIME-Version: 1.0\r\n\r\n".encode("utf-8")
-    )
+    mime_headers = f"Content-Type: {content_type_header}\r\nMIME-Version: 1.0\r\n\r\n".encode("utf-8")
     msg = BytesParser(policy=default_email_policy).parsebytes(mime_headers + raw_body)
     if not msg.is_multipart():
         raise SpeechProviderError(
@@ -94,16 +92,8 @@ def _parse_multipart_payload(
         elif isinstance(part_name, str):
             fields[part_name] = payload.decode("utf-8", errors="replace").strip()
 
-    resolved_session_id = (
-        header_session_id
-        or fields.get("session_id")
-        or fields.get("sessionId")
-    )
-    resolved_filename = (
-        header_filename
-        or file_name
-        or fields.get("filename")
-    )
+    resolved_session_id = header_session_id or fields.get("session_id") or fields.get("sessionId")
+    resolved_filename = header_filename or file_name or fields.get("filename")
 
     resolved_duration = header_duration
     if resolved_duration is None:
@@ -144,8 +134,6 @@ async def analyze_speech(
     request_id = (x_request_id or "").strip() or str(uuid.uuid4())
     response.headers["X-Request-Id"] = request_id
 
-    raw_body = await request.body()
-
     if not _verify_internal_key(x_internal_api_key):
         logger.warning(
             "Speech analyze rejected [requestId=%s sessionId=%s status=401 origin=ai-service-auth code=UNAUTHORIZED_INTERNAL_CALL]",
@@ -165,6 +153,20 @@ async def analyze_speech(
         )
 
     try:
+        chunks = []
+        size = 0
+        async for chunk in request.stream():
+            size += len(chunk)
+            if size > settings.max_audio_size_bytes + 65536:
+                raise SpeechProviderError(
+                    "AUDIO_TOO_LARGE",
+                    "El audio supera el límite permitido.",
+                    413,
+                    False,
+                    "ai-service-validation",
+                )
+            chunks.append(chunk)
+        raw_body = b"".join(chunks)
         normalized_ct = (content_type or "").strip().lower()
         if normalized_ct.startswith("multipart/form-data"):
             extracted = _parse_multipart_payload(

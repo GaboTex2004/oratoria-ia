@@ -1,4 +1,5 @@
 import re
+import math
 
 from app.core.config import settings
 from app.schemas.evaluation import (
@@ -11,7 +12,6 @@ from app.schemas.evaluation import (
 from app.services.evaluation.provider import (
     DiscursiveEvaluationProvider,
     EvaluationProviderError,
-    GroqChatEvaluationProvider,
 )
 from app.services.evaluation.rubrics import (
     RUBRIC_VERSION,
@@ -42,12 +42,9 @@ class SpeechEvaluationService:
         min_words: int | None = None,
         min_duration_seconds: float | None = None,
     ) -> None:
-        self._provider = provider or GroqChatEvaluationProvider(
-            api_key=settings.groq_api_key,
-            model=settings.groq_llm_model,
-            api_url=settings.groq_chat_api_url,
-            timeout_seconds=settings.groq_llm_timeout_seconds,
-        )
+        from app.services.evaluation.local_provider import LocalEvaluationProvider
+
+        self._provider = provider or LocalEvaluationProvider()
         self._min_words = min_words if min_words is not None else settings.evaluation_min_words
         self._min_duration_seconds = (
             min_duration_seconds
@@ -71,7 +68,7 @@ class SpeechEvaluationService:
 
         transcript_clean = (req.transcriptText or "").strip()
         actual_words = len(re.findall(r"[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9]+", transcript_clean))
-        effective_word_count = max(req.metrics.wordCount, actual_words)
+        effective_word_count = actual_words
         duration = req.metrics.recordingDurationSeconds
 
         if (
@@ -196,10 +193,20 @@ class SpeechEvaluationService:
         for crit_def in rubric.criteria:
             raw_item = by_code.get(crit_def.code, {})
             raw_score = raw_item.get("score")
-            if isinstance(raw_score, (int, float)):
+            if (
+                isinstance(raw_score, (int, float))
+                and not isinstance(raw_score, bool)
+                and math.isfinite(raw_score)
+            ):
                 clamped_score = round(min(100.0, max(0.0, float(raw_score))), 1)
             else:
-                clamped_score = 70.0
+                raise EvaluationProviderError(
+                    "INVALID_CRITERION_SCORE",
+                    "El modelo omitió una puntuación válida de la rúbrica.",
+                    502,
+                    True,
+                    "evaluation-validator",
+                )
 
             weighted_sum += clamped_score * crit_def.weight
             total_weight += crit_def.weight
@@ -212,7 +219,11 @@ class SpeechEvaluationService:
             quotes: list[str] = []
             if isinstance(raw_quotes, list):
                 for q in raw_quotes[:3]:
-                    if isinstance(q, str) and q.strip():
+                    if (
+                        isinstance(q, str)
+                        and q.strip()
+                        and q.strip().casefold() in transcript_text.casefold()
+                    ):
                         quotes.append(q.strip()[:220])
             if not quotes and default_quote:
                 quotes.append(default_quote)
@@ -237,7 +248,9 @@ class SpeechEvaluationService:
             f"Evaluación discursiva completada bajo la rúbrica de {rubric.title}.",
         )
 
-        strengths = self._extract_string_list(raw_eval.get("strengths"), fallback_item="Intención comunicativa alineada con el tema propuesto.")
+        strengths = self._extract_string_list(
+            raw_eval.get("strengths"), fallback_item="Intención comunicativa alineada con el tema propuesto."
+        )
         improvements = self._extract_string_list(
             raw_eval.get("areasForImprovement"),
             fallback_item="Profundizar en el desarrollo de conectores lógicos y evidencia de respaldo.",
@@ -249,7 +262,9 @@ class SpeechEvaluationService:
             for rec in raw_recs[:5]:
                 if not isinstance(rec, dict):
                     continue
-                title = _sanitize_judgment_text(str(rec.get("title") or ""), "Fortalecer la estructura del discurso")
+                title = _sanitize_judgment_text(
+                    str(rec.get("title") or ""), "Fortalecer la estructura del discurso"
+                )
                 desc = _sanitize_judgment_text(str(rec.get("description") or ""), "")
                 prio_raw = str(rec.get("priority") or "MEDIA").strip().upper()
                 prio = prio_raw if prio_raw in ("ALTA", "MEDIA", "SUGERIDA") else "MEDIA"
@@ -278,8 +293,10 @@ class SpeechEvaluationService:
                     continue
                 orig = str(ex.get("originalFragment") or "").strip()
                 prop = _sanitize_judgment_text(str(ex.get("improvedProposal") or ""), "")
-                rat = _sanitize_judgment_text(str(ex.get("rationale") or ""), "Mejora la precisión y el orden de las ideas.")
-                if orig and prop:
+                rat = _sanitize_judgment_text(
+                    str(ex.get("rationale") or ""), "Mejora la precisión y el orden de las ideas."
+                )
+                if orig and prop and orig.casefold() in transcript_text.casefold():
                     improved_examples.append(
                         ImprovedResponseExampleSchema(
                             originalFragment=orig,

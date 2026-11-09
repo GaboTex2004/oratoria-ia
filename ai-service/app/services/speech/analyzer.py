@@ -1,3 +1,4 @@
+import math
 from app.core.config import settings
 from app.schemas.speech import (
     SpeechAnalysisResponseSchema,
@@ -6,7 +7,6 @@ from app.schemas.speech import (
 )
 from app.services.speech.metrics import calculate_verbal_metrics, normalize_transcript_text
 from app.services.speech.provider import (
-    GroqSpeechToTextProvider,
     SpeechProviderError,
     SpeechToTextProvider,
 )
@@ -40,12 +40,9 @@ class SpeechAnalysisService:
         max_size_bytes: int | None = None,
         max_duration_seconds: int | None = None,
     ) -> None:
-        self._provider = provider or GroqSpeechToTextProvider(
-            api_key=settings.groq_api_key,
-            model=settings.groq_model,
-            api_url=settings.groq_api_url,
-            timeout_seconds=settings.groq_timeout_seconds,
-        )
+        from app.services.speech.local_provider import LocalWhisperProvider
+
+        self._provider = provider or LocalWhisperProvider()
         self._max_size_bytes = max_size_bytes or settings.max_audio_size_bytes
         self._max_duration_seconds = max_duration_seconds or settings.max_audio_duration_seconds
 
@@ -66,7 +63,11 @@ class SpeechAnalysisService:
                 origin="ai-service-validation",
             )
 
-        if duration_seconds <= 0 or duration_seconds > self._max_duration_seconds:
+        if (
+            not math.isfinite(duration_seconds)
+            or duration_seconds <= 0
+            or duration_seconds > self._max_duration_seconds
+        ):
             raise SpeechProviderError(
                 code="INVALID_AUDIO_DURATION",
                 message=f"La duración del audio debe estar entre 1 y {self._max_duration_seconds} segundos.",
@@ -115,9 +116,7 @@ class SpeechAnalysisService:
             language="es",
         )
 
-        effective_duration = float(duration_seconds)
-        if raw.duration_seconds and raw.duration_seconds > effective_duration:
-            effective_duration = min(float(self._max_duration_seconds), float(raw.duration_seconds))
+        effective_duration = float(raw.duration_seconds or duration_seconds)
 
         normalized_transcript = normalize_transcript_text(raw.text)
         metrics = calculate_verbal_metrics(
@@ -127,6 +126,7 @@ class SpeechAnalysisService:
             segments=raw.segments,
         )
 
+        metrics.acousticMetrics = raw.acoustic_metrics
         return SpeechAnalysisResponseSchema(
             schemaVersion="v1",
             sessionId=session_id.strip(),

@@ -20,7 +20,9 @@ from app.services.evaluation.rubrics import (
 
 
 class FakeEvaluationProvider(DiscursiveEvaluationProvider):
-    def __init__(self, response_dict: dict | None = None, error: EvaluationProviderError | None = None) -> None:
+    def __init__(
+        self, response_dict: dict | None = None, error: EvaluationProviderError | None = None
+    ) -> None:
         self._response_dict = response_dict
         self._error = error
         self.call_count = 0
@@ -108,25 +110,33 @@ class SpeechEvaluationUnitTests(unittest.TestCase):
                     "code": "CLARITY",
                     "score": 88,
                     "justification": "Define con precisión el objetivo del sistema.",
-                    "evidenceQuotes": ["desarrollamos una plataforma web universitaria para entrenar oratoria"],
+                    "evidenceQuotes": [
+                        "desarrollamos una plataforma web universitaria para entrenar oratoria"
+                    ],
                 },
                 {
                     "code": "COHERENCE",
                     "score": 80,
                     "justification": "Mantiene relación entre el problema de miedo escénico y la solución propuesta.",
-                    "evidenceQuotes": ["muchos estudiantes enfrentan ansiedad al exponer sus defensas de grado"],
+                    "evidenceQuotes": [
+                        "muchos estudiantes enfrentan ansiedad al exponer sus defensas de grado"
+                    ],
                 },
                 {
                     "code": "ORGANIZATION",
                     "score": 76,
                     "justification": "Inicia con el contexto y desarrolla la arquitectura, aunque falta un cierre más contundente.",
-                    "evidenceQuotes": ["en primer lugar analizamos los requisitos y luego implementamos los módulos"],
+                    "evidenceQuotes": [
+                        "en primer lugar analizamos los requisitos y luego implementamos los módulos"
+                    ],
                 },
                 {
                     "code": "ARGUMENTATION",
                     "score": 84,
                     "justification": "Aporta métricas verificables de latencia y separación de responsabilidades.",
-                    "evidenceQuotes": ["separamos el backend transaccional del microservicio de inteligencia artificial"],
+                    "evidenceQuotes": [
+                        "separamos el backend transaccional del microservicio de inteligencia artificial"
+                    ],
                 },
             ],
             "strengths": [
@@ -251,14 +261,40 @@ class EvaluationApiAsgiTests(unittest.IsolatedAsyncioTestCase):
             response_dict={
                 "executiveSummary": "Buen desempeño en la entrevista.",
                 "criteriaScores": [
-                    {"code": "CLARITY", "score": 80, "justification": "Claro.", "evidenceQuotes": ["lideré el equipo"]},
-                    {"code": "COHERENCE", "score": 82, "justification": "Coherente.", "evidenceQuotes": ["durante el semestre"]},
-                    {"code": "ORGANIZATION", "score": 78, "justification": "Ordenado.", "evidenceQuotes": ["primero planificamos"]},
-                    {"code": "ARGUMENTATION", "score": 84, "justification": "Con resultados.", "evidenceQuotes": ["redujimos errores en 30%"]},
+                    {
+                        "code": "CLARITY",
+                        "score": 80,
+                        "justification": "Claro.",
+                        "evidenceQuotes": ["lideré el equipo"],
+                    },
+                    {
+                        "code": "COHERENCE",
+                        "score": 82,
+                        "justification": "Coherente.",
+                        "evidenceQuotes": ["durante el semestre"],
+                    },
+                    {
+                        "code": "ORGANIZATION",
+                        "score": 78,
+                        "justification": "Ordenado.",
+                        "evidenceQuotes": ["primero planificamos"],
+                    },
+                    {
+                        "code": "ARGUMENTATION",
+                        "score": 84,
+                        "justification": "Con resultados.",
+                        "evidenceQuotes": ["redujimos errores en 30%"],
+                    },
                 ],
                 "strengths": ["Enfoque orientado a resultados."],
                 "areasForImprovement": ["Detallar más el contexto inicial."],
-                "recommendations": [{"title": "Usar método STAR", "description": "Inicia con la situación.", "priority": "ALTA"}],
+                "recommendations": [
+                    {
+                        "title": "Usar método STAR",
+                        "description": "Inicia con la situación.",
+                        "priority": "ALTA",
+                    }
+                ],
                 "improvedExamples": [
                     {
                         "originalFragment": "Hicimos el módulo y salió bien.",
@@ -309,7 +345,7 @@ class EvaluationApiAsgiTests(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(status_200, 200)
         self.assertEqual(body_200["sessionId"], "session-eval-99")
-        self.assertEqual(body_200["rubricVersion"], "oratoria-rubric-v1.0")
+        self.assertEqual(body_200["rubricVersion"], "oratoria-rubric-v2.0-local")
         self.assertTrue(body_200["sufficientEvidence"])
         self.assertEqual(body_200["overallScore"], 81.0)
 

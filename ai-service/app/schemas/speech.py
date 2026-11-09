@@ -15,6 +15,7 @@ class TranscriptSegmentSchema(BaseModel):
 
 
 class VerbalCommunicationMetricsSchema(BaseModel):
+    model_config = {"allow_inf_nan": False}
     wordCount: int = Field(ge=0)
     recordingDurationSeconds: float = Field(ge=0.0)
     estimatedSpokenDurationSeconds: float | None = None
@@ -27,6 +28,7 @@ class VerbalCommunicationMetricsSchema(BaseModel):
     totalPauseDurationSeconds: float | None = None
     longestPauseSeconds: float | None = None
     timestampsAvailable: bool = False
+    acousticMetrics: dict[str, float | None] = Field(default_factory=dict)
 
 
 class SpeechAnalysisResponseSchema(BaseModel):

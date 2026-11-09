@@ -23,13 +23,73 @@ PURE_HESITATION_TOKENS: dict[str, str] = {
 
 # Words where preceding "este" cannot be a grammatical masculine singular demonstrative determiner
 NON_MASCULINE_NOUN_FOLLOWERS: set[str] = {
-    "el", "la", "los", "las", "un", "una", "unos", "unas",
-    "yo", "tu", "tú", "el", "él", "ella", "nosotros", "ustedes", "ellos", "ellas",
-    "mi", "mis", "su", "sus", "nuestro", "nuestra",
-    "de", "en", "con", "por", "para", "sin", "sobre", "hacia", "hasta", "desde",
-    "que", "qué", "como", "cómo", "cuando", "cuándo", "donde", "dónde", "porque", "pero", "sino",
-    "es", "era", "fue", "son", "estoy", "esta", "está", "estamos", "voy", "vamos", "hay", "tiene",
-    "eh", "ehh", "em", "emm", "mmm", "bueno", "pues", "entonces", "digamos", "osea",
+    "el",
+    "la",
+    "los",
+    "las",
+    "un",
+    "una",
+    "unos",
+    "unas",
+    "yo",
+    "tu",
+    "tú",
+    "el",
+    "él",
+    "ella",
+    "nosotros",
+    "ustedes",
+    "ellos",
+    "ellas",
+    "mi",
+    "mis",
+    "su",
+    "sus",
+    "nuestro",
+    "nuestra",
+    "de",
+    "en",
+    "con",
+    "por",
+    "para",
+    "sin",
+    "sobre",
+    "hacia",
+    "hasta",
+    "desde",
+    "que",
+    "qué",
+    "como",
+    "cómo",
+    "cuando",
+    "cuándo",
+    "donde",
+    "dónde",
+    "porque",
+    "pero",
+    "sino",
+    "es",
+    "era",
+    "fue",
+    "son",
+    "estoy",
+    "esta",
+    "está",
+    "estamos",
+    "voy",
+    "vamos",
+    "hay",
+    "tiene",
+    "eh",
+    "ehh",
+    "em",
+    "emm",
+    "mmm",
+    "bueno",
+    "pues",
+    "entonces",
+    "digamos",
+    "osea",
 }
 
 CONTEXTUAL_SINGLE_FILLERS: set[str] = {
@@ -64,7 +124,7 @@ CANONICAL_FILLER_LABELS: dict[str, str] = {
 class _TokenInfo:
     raw: str
     normalized: str
-    stripped_Key: str
+    stripped_key: str
     has_trailing_pause_punct: bool
     has_leading_clause_boundary: bool
     start_seconds: float | None = None
@@ -111,7 +171,7 @@ def _tokenize_with_context(
             _TokenInfo(
                 raw=raw,
                 normalized=normalized,
-                stripped_Key=stripped_key,
+                stripped_key=stripped_key,
                 has_trailing_pause_punct=has_trailing_punct,
                 has_leading_clause_boundary=prev_ended_clause,
                 start_seconds=w_start,
@@ -131,7 +191,7 @@ def _tokenize_with_context(
                 _TokenInfo(
                     raw=item.word,
                     normalized=normalized,
-                    stripped_Key=stripped_key,
+                    stripped_key=stripped_key,
                     has_trailing_pause_punct=has_trailing_punct,
                     has_leading_clause_boundary=(idx == 0),
                     start_seconds=item.start_seconds,
@@ -177,7 +237,7 @@ def detect_contextual_spanish_fillers(
 
     while i < n:
         tok = tokens[i]
-        key = tok.stripped_Key
+        key = tok.stripped_key
 
         # 1. Pure hesitation sounds ("eh", "em", "mmm", "uh", "um")
         if key in PURE_HESITATION_TOKENS:
@@ -186,10 +246,10 @@ def detect_contextual_spanish_fillers(
             continue
 
         # 2. Multi-word phrase "o sea"
-        if key == "o" and (i + 1) < n and tokens[i + 1].stripped_Key == "sea":
+        if key == "o" and (i + 1) < n and tokens[i + 1].stripped_key == "sea":
             second = tokens[i + 1]
-            prev_key = tokens[i - 1].stripped_Key if i > 0 else ""
-            next_key = tokens[i + 2].stripped_Key if (i + 2) < n else ""
+            prev_key = tokens[i - 1].stripped_key if i > 0 else ""
+            next_key = tokens[i + 2].stripped_key if (i + 2) < n else ""
             is_hesitation_context = (
                 tok.has_leading_clause_boundary
                 or second.has_trailing_pause_punct
@@ -207,9 +267,9 @@ def detect_contextual_spanish_fillers(
                 continue
 
         # 3. Multi-word phrase "es decir" (only when isolated by hesitation/pause or repeated)
-        if key == "es" and (i + 1) < n and tokens[i + 1].stripped_Key == "decir":
+        if key == "es" and (i + 1) < n and tokens[i + 1].stripped_key == "decir":
             second = tokens[i + 1]
-            prev_key = tokens[i - 1].stripped_Key if i > 0 else ""
+            prev_key = tokens[i - 1].stripped_key if i > 0 else ""
             if (
                 prev_key in PURE_HESITATION_TOKENS
                 or prev_key in CONTEXTUAL_SINGLE_FILLERS
@@ -221,8 +281,8 @@ def detect_contextual_spanish_fillers(
 
         # 4. Contextual evaluation for "este"
         if key == "este":
-            next_key = tokens[i + 1].stripped_Key if (i + 1) < n else ""
-            prev_key = tokens[i - 1].stripped_Key if i > 0 else ""
+            next_key = tokens[i + 1].stripped_key if (i + 1) < n else ""
+            prev_key = tokens[i - 1].stripped_key if i > 0 else ""
             is_filler_este = (
                 (i + 1 == n)  # trailing "este" at end of speech
                 or tok.has_trailing_pause_punct  # "este," / "este..."
@@ -238,12 +298,9 @@ def detect_contextual_spanish_fillers(
 
         # 5. Contextual evaluation for "pues", "bueno", "entonces", "digamos", "básicamente", "literalmente"
         if key in CONTEXTUAL_SINGLE_FILLERS:
-            next_key = tokens[i + 1].stripped_Key if (i + 1) < n else ""
-            prev_key = tokens[i - 1].stripped_Key if i > 0 else ""
-            repeated_nearby = any(
-                tokens[j].stripped_Key == key
-                for j in range(max(0, i - 5), i)
-            )
+            next_key = tokens[i + 1].stripped_key if (i + 1) < n else ""
+            prev_key = tokens[i - 1].stripped_key if i > 0 else ""
+            repeated_nearby = any(tokens[j].stripped_key == key for j in range(max(0, i - 5), i))
             is_isolated_hesitation = (
                 tok.has_trailing_pause_punct
                 or (tok.has_leading_clause_boundary and _has_timestamp_gap_after(tokens, i))
@@ -271,15 +328,9 @@ def _compute_timing_and_pauses(
 ) -> tuple[bool, float | None, int | None, float | None, float | None]:
     intervals: list[tuple[float, float]] = []
     if len(words) >= 2:
-        intervals = [
-            (max(0.0, w.start_seconds), max(w.start_seconds, w.end_seconds))
-            for w in words
-        ]
+        intervals = [(max(0.0, w.start_seconds), max(w.start_seconds, w.end_seconds)) for w in words]
     elif len(segments) >= 1:
-        intervals = [
-            (max(0.0, s.start_seconds), max(s.start_seconds, s.end_seconds))
-            for s in segments
-        ]
+        intervals = [(max(0.0, s.start_seconds), max(s.start_seconds, s.end_seconds)) for s in segments]
     elif len(words) == 1:
         w = words[0]
         intervals = [(max(0.0, w.start_seconds), max(w.start_seconds, w.end_seconds))]
