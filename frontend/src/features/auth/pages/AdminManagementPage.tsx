@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { WorkspaceLayout } from '../../../shared/components/WorkspaceLayout'
 import { useResource } from '../../../shared/hooks/useResource'
 import { apiRequest } from '../../../shared/services/api'
@@ -47,7 +48,7 @@ export function AdminManagementPage() {
   }
   const loadError = overview.error || users.error || exercises.error
   return <WorkspaceLayout>
-    <header><span className="eyebrow">Administración</span><h1>Gestión de la plataforma</h1><p>Los cambios de planes son administrativos; no se realizan cobros.</p></header>
+    <header><span className="eyebrow">Administración</span><h1>Gestión de la plataforma</h1><p>Los cambios de planes son administrativos; no se realizan cobros.</p><Link to="/admin/payments">Administrar pagos simulados</Link></header>
     {(error || loadError) && <div role="alert" className="workspace-notice">{error || loadError}<button className="button button--ghost" onClick={() => { overview.reload(); users.reload(); exercises.reload() }}>Reintentar carga</button></div>}
     {message && <p role="status" className="workspace-notice">{message}</p>}
     {overview.loading ? <p>Cargando estadísticas…</p> : overview.data && <div className="sessions-kpi-grid">{Object.entries(overview.data).map(([key, value]) => <article className="panel-card" key={key}><h2>{({ users: 'Usuarios', exercises: 'Ejercicios', sessions: 'Sesiones' })[key] || key}</h2><strong>{value}</strong></article>)}</div>}

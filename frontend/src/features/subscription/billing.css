@@ -1,0 +1,18 @@
+.billing-notice { position: sticky; top: 94px; align-self: start; z-index: 29; padding: 18px; border: 1px solid var(--border-color, #dbe5f3); background: #edf4ff; border-radius: 14px; display: grid; gap: 7px; margin-bottom: 24px; line-height: 1.5; }
+.billing-nav { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0; }
+.billing-price { font-size: 2rem; font-weight: 800; margin: 18px 0; }
+.billing-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 14px; border: 0; padding: 0; margin: 20px 0; }
+.billing-card { border: 2px solid #dbe5f3; padding: 18px; border-radius: 14px; display: grid; gap: 14px; cursor: pointer; background: white; }
+.billing-card:has(input:checked) { border-color: #2563eb; background: #f1f6ff; }
+.billing-card:focus-within { outline: 2px solid #1e293b; outline-offset: 3px; }
+.billing-card strong { letter-spacing: .08em; font-size: 1.2rem; }
+.billing-reference { overflow-wrap: anywhere; word-break: break-word; }
+.billing-record { padding: 20px; margin: 14px 0; border: 1px solid #dbe5f3; border-radius: 14px; background: white; }
+.billing-record dl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 12px; }
+.billing-record dd { margin: 0; overflow-wrap: anywhere; }
+.billing-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin: 16px 0; }
+.billing-controls label { display: grid; gap: 8px; max-width: 100%; }
+.billing-controls select, .billing-controls input { max-width: 100%; min-width: 0; padding: 10px; border: 1px solid #dbe5f3; border-radius: 8px; }
+@media (max-width: 780px) { .billing-notice { top: 82px; } }
+@media (max-width: 580px) { .billing-record dl { grid-template-columns: 1fr; gap: 6px; } .billing-record dd { margin-bottom: 10px; } }
+@media print { .billing-nav, .billing-actions, .billing-controls { display: none !important; } .billing-notice { position: static; } .billing-record { break-inside: avoid; } }

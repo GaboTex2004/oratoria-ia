@@ -17,6 +17,9 @@ import { BodyPage } from '../../features/body/BodyPage'
 import { RecommendationsPage } from '../../features/progress/pages/RecommendationsPage'
 import { ReportPage } from '../../features/training/pages/ReportPage'
 import { AccountInformationPage } from '../../features/auth/pages/AccountInformationPage'
+import { CheckoutPage } from '../../features/subscription/CheckoutPage'
+import { SubscriptionPage } from '../../features/subscription/SubscriptionPage'
+import { AdminPaymentsPage } from '../../features/subscription/AdminPaymentsPage'
 
 export function AppRouter() {
   const { user, loading } = useAuth()
@@ -39,6 +42,9 @@ export function AppRouter() {
       <Route path="/simulations" element={protectedPage(<SimulationsPage />)} />
       <Route path="/profile" element={protectedPage(<ProfilePage />)} />
       <Route path="/plans" element={protectedPage(<PlansPage />)} />
+      <Route path="/checkout/:id" element={protectedPage(<CheckoutPage />)} />
+      <Route path="/subscription" element={protectedPage(<SubscriptionPage />)} />
+      <Route path="/admin/payments" element={<ProtectedRoute role="ADMIN"><AdminPaymentsPage /></ProtectedRoute>} />
       <Route path="/body" element={protectedPage(<BodyPage />)} />
       <Route path="/recommendations" element={protectedPage(<RecommendationsPage />)} />
       <Route path="/reports/:id" element={protectedPage(<ReportPage />)} />
