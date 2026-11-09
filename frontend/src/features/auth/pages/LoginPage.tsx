@@ -47,7 +47,7 @@ export function LoginPage() {
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <FormField id="email" label="Correo electrónico" icon="mail" type="email" autoComplete="email" placeholder="tu@email.com" value={form.email} error={errors.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
         <div>
-          <div className="auth-form__label-row"><span>Contraseña</span><button type="button" className="link-button" disabled>¿Olvidaste tu contraseña?</button></div>
+          <div className="auth-form__label-row"><label htmlFor="password">Contraseña</label><Link className="link-button" to="/account-help">¿Olvidaste tu contraseña?</Link></div>
           <PasswordField id="password" label="" autoComplete="current-password" placeholder="••••••••" value={form.password} error={errors.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
         </div>
         {serverError && <span className="form-field__error" role="alert">{serverError}</span>}

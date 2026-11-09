@@ -1,0 +1,32 @@
+.workspace-content { display: grid; gap: 24px; }
+.workspace-content > * { min-width: 0; }
+.workspace-content h1 { font-size: clamp(24px, 4vw, 34px); margin-bottom: 10px; }
+.workspace-form { display: grid; gap: 16px; max-width: 680px; }
+.workspace-form label { display: grid; gap: 8px; font-weight: 600; font-size: 14px; }
+.workspace-form input, .workspace-form select, .workspace-form textarea, .workspace-select {
+  width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--border);
+  border-radius: 9px; background: var(--white); color: var(--text); font: inherit;
+}
+.workspace-form textarea { min-height: 100px; resize: vertical; }
+.workspace-form .terms-field { display: flex; align-items: flex-start; }
+.workspace-form .terms-field input { width: 20px; min-height: 20px; flex-shrink: 0; }
+.workspace-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.workspace-notice { padding: 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-low); line-height: 1.6; }
+.workspace-table-wrap { overflow-x: auto; }
+.workspace-table { width: 100%; border-collapse: collapse; text-align: left; }
+.workspace-table th, .workspace-table td { padding: 12px; border-bottom: 1px solid var(--border); }
+.workspace-table select { min-height: 44px; font: inherit; }
+.camera-preview { width: 100%; max-width: 640px; border-radius: 12px; aspect-ratio: 4 / 3; object-fit: contain; background: var(--primary); }
+.report-content { line-height: 1.7; }
+.report-content blockquote { margin: 16px 0; padding: 16px; background: var(--surface-low); white-space: pre-wrap; }
+@media (max-width: 580px) {
+  .workspace-actions > .button { flex: 1 1 160px; }
+  .workspace-form input, .workspace-form select, .workspace-form textarea { font-size: 16px; }
+}
+@media print {
+  .sidebar, .sidebar-backdrop, .topbar, .no-print { display: none !important; }
+  .dashboard-main { margin: 0 !important; }
+  .dashboard-content { width: 100%; padding: 0; }
+  .panel-card { box-shadow: none; break-inside: avoid; }
+  .report-content { font-size: 11pt; }
+}

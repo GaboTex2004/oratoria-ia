@@ -9,6 +9,8 @@ const navigation = [
   ['/sessions', 'history', 'Mis sesiones'], ['/results', 'analytics', 'Resultados'],
   ['/progress', 'query_stats', 'Progreso'], ['/simulations', 'psychology', 'Simulaciones'],
   ['/profile', 'person', 'Perfil'],
+  ['/body', 'accessibility_new', 'Análisis corporal'],
+  ['/recommendations', 'auto_awesome', 'Mi siguiente práctica'],
 ]
 
 interface SidebarProps {
@@ -49,9 +51,9 @@ export function Sidebar({ open, onClose, subscription }: SidebarProps) {
           <section className="plan-summary">
             <div><strong><Icon name="auto_awesome" /> Plan {currentPlan}</strong><span>{hasUsage ? `${sessionsUsed}/${subscription?.unlimitedSessions ? '∞' : subscription?.sessionsLimit ?? '—'} sesiones` : 'Consumo no disponible'}</span></div>
             {usage != null && <div className="progress-track"><span style={{ width: `${usage}%` }} /></div>}
-            <button type="button">Ver planes</button>
+            <button type="button" onClick={() => { onClose(); navigate('/plans') }}>Ver planes</button>
           </section>
-          <button className="sidebar-link sidebar-link--button" type="button"><Icon name="settings" /><span>Configuración</span></button>
+          <button className="sidebar-link sidebar-link--button" type="button" onClick={() => { onClose(); navigate('/profile') }}><Icon name="settings" /><span>Configuración</span></button>
           <button className="sidebar-link sidebar-link--button sidebar-link--danger" type="button" onClick={logout}><Icon name="logout" /><span>Cerrar sesión</span></button>
         </div>
       </aside>

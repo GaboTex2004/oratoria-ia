@@ -22,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const session = await authService.register(request); setUser(session.user); return session.user
   }
   function logout() { authService.logout(); setUser(null) }
+  async function refresh() { setUser(await authService.me()) }
 
-  return <AuthContext.Provider value={{ user, loading, login, register, logout }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, loading, login, register, logout, refresh }}>{children}</AuthContext.Provider>
 }

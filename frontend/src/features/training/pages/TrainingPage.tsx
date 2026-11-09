@@ -31,6 +31,7 @@ export function TrainingPage() {
   const firstName = useAuth().user?.firstName || ''
 
   const selectedFilter = parseTrainingType(searchParams.get('type'))
+  const [category, setCategory] = useState('ALL')
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -40,6 +41,23 @@ export function TrainingPage() {
     exercise: Exercise
     session: TrainingSession
   } | null>(null)
+
+  const query = (searchParams.get('q') || '').toLocaleLowerCase('es')
+  const targetExercise = searchParams.get('exerciseId')
+  const visibleExercises = exercises.filter(exercise =>
+    (category === 'ALL' || exercise.category === category)
+    && (!targetExercise || exercise.id === targetExercise)
+    && `${exercise.title} ${exercise.description} ${exercise.category}`.toLocaleLowerCase('es').includes(query))
+
+  async function startImprovisation() {
+    setError(''); setCreatingExerciseId('random')
+    try {
+      const pool = await trainingService.listExercises('IMPROVISATION')
+      if (!pool.length) throw new Error('No hay temas de improvisación disponibles.')
+      const selection = crypto.getRandomValues(new Uint32Array(1))[0] % pool.length
+      await handleStartExercise(pool[selection])
+    } catch (reason) { setError(reason instanceof Error ? reason.message : 'No se pudo elegir un tema.'); setCreatingExerciseId(null) }
+  }
 
   useEffect(() => {
     let active = true
@@ -127,6 +145,14 @@ export function TrainingPage() {
                 </div>
               </header>
 
+              <div className="filter-bar">
+                <label>Habilidad <select aria-label="Filtrar por habilidad" value={category} onChange={event => setCategory(event.target.value)}>
+                  <option value="ALL">Todas</option>{[...new Set(exercises.map(exercise => exercise.category))].map(value => <option key={value}>{value}</option>)}
+                </select></label>
+                <button className="button button--ghost" disabled={creatingExerciseId !== null} onClick={startImprovisation}>Sortear tema de improvisación</button>
+                {(query || targetExercise) && <button className="button button--ghost" onClick={() => setSearchParams({})}>Ver catálogo completo</button>}
+              </div>
+
               <div className="filter-bar" role="tablist" aria-label="Filtrar por categoría">
                 <button
                   type="button"
@@ -163,14 +189,14 @@ export function TrainingPage() {
                   <Icon name="sync" />
                   <p>Cargando ejercicios disponibles…</p>
                 </div>
-              ) : exercises.length === 0 ? (
+              ) : visibleExercises.length === 0 ? (
                 <div className="panel-card training-empty">
                   <Icon name="search_off" />
                   <p>No hay ejercicios activos para esta categoría.</p>
                 </div>
               ) : (
                 <div className="exercise-catalog-grid">
-                  {exercises.map((exercise) => {
+                  {visibleExercises.map((exercise) => {
                     const meta = TRAINING_TYPE_META[exercise.trainingType]
                     const isCreating = creatingExerciseId === exercise.id
                     return (
@@ -182,8 +208,10 @@ export function TrainingPage() {
                           <span className={`badge badge--${meta.badgeTone}`}>{meta.label}</span>
                         </div>
                         <h3>{exercise.title}</h3>
+                        <small>{exercise.category} · {exercise.difficulty}</small>
                         <p>{exercise.description}</p>
                         <div className="exercise-card__prompt">
+                          <p><strong>Objetivo:</strong> {exercise.objective}</p>
                           <strong>Consigna:</strong> {exercise.prompt}
                         </div>
                         <div className="exercise-card__footer">

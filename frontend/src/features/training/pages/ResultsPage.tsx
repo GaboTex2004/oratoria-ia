@@ -377,6 +377,7 @@ export function ResultsPage() {
               </p>
             </div>
             <div className="results-header-actions">
+              {selectedSessionId && <Link className="button button--ghost" to={`/reports/${selectedSessionId}`}>Informe / PDF</Link>}
               <Link className="button button--ghost" to="/sessions">
                 <Icon name="history" /> Mis sesiones
               </Link>
@@ -598,6 +599,16 @@ export function ResultsPage() {
                   </div>
 
                   <section className="results-metrics-grid" aria-label="Métricas de comunicación verbal">
+                    <article className="panel-card results-metric-card"><span>Duración media de pausas</span>
+                      <strong>{analysis?.metrics?.estimatedPauseCount && analysis.metrics.totalPauseDurationSeconds != null ? `${(analysis.metrics.totalPauseDurationSeconds / analysis.metrics.estimatedPauseCount).toFixed(2)} s` : '—'}</strong>
+                      <small>Promedio de huecos temporales internos de al menos 0,6 s; sin pausas no se calcula promedio.</small>
+                    </article>
+                    {analysis?.metrics?.acousticMetrics && Object.entries(analysis.metrics.acousticMetrics).filter(([key]) => key !== 'pitchFrames').map(([key, value]) => (
+                      <article className="panel-card results-metric-card" key={key}>
+                        <span>{({ rmsAmplitude: 'Amplitud RMS relativa', relativeLevelDbfs: 'Nivel relativo (dBFS)', clippingRatio: 'Proporción de saturación', pitchMedianHz: 'Frecuencia fundamental mediana (Hz)', pitchStdHz: 'Variación de frecuencia (Hz)' } as Record<string, string>)[key] || key}</span>
+                        <strong>{value == null ? '—' : value.toFixed(2)}</strong><small>Estimación de la grabación; no es volumen SPL ni una medición clínica.</small>
+                      </article>
+                    ))}
                     <article className="panel-card results-metric-card">
                       <div className="results-metric-card__head">
                         <Icon name="speed" />

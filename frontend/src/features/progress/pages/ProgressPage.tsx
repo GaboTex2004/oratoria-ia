@@ -102,6 +102,7 @@ export function ProgressPage() {
           <header className="progress-hero">
             <div><span className="eyebrow">Analítica personal</span><h2>Tu progreso en oratoria</h2><p>Explora tendencias reales de tus prácticas, habilidades y comunicación verbal.</p></div>
             <Link className="button button--primary" to="/training"><Icon name="mic" /> Nueva práctica</Link>
+            <button className="button button--ghost no-print" type="button" onClick={() => window.print()}>Imprimir evolución / PDF</button>
           </header>
 
           {error && <div className="progress-alert" role="alert"><Icon name="cloud_off" /><span>{error}</span><button type="button" onClick={retry}>Reintentar</button></div>}

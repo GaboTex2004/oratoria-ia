@@ -60,7 +60,7 @@ export function RegisterPage() {
           <PasswordField id="registerPassword" label="Contraseña" autoComplete="new-password" placeholder="••••••••" value={form.password} error={errors.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
           <PasswordField id="confirmPassword" label="Confirmar contraseña" autoComplete="new-password" placeholder="••••••••" value={form.confirmPassword} error={errors.confirmPassword} onChange={(event) => setForm({ ...form, confirmPassword: event.target.value })} />
         </div>
-        <label className="terms-field"><input type="checkbox" checked={form.acceptedTerms} onChange={(event) => setForm({ ...form, acceptedTerms: event.target.checked })} /><span>Acepto los <button type="button" className="link-button">términos y condiciones</button>.</span></label>
+        <label className="terms-field"><input type="checkbox" checked={form.acceptedTerms} onChange={(event) => setForm({ ...form, acceptedTerms: event.target.checked })} /><span>Acepto los <Link className="link-button" to="/terms" target="_blank" rel="noreferrer">términos y condiciones</Link>.</span></label>
         {errors.acceptedTerms && <span className="form-field__error" role="alert">{errors.acceptedTerms}</span>}
         {serverError && <span className="form-field__error" role="alert">{serverError}</span>}
         <button className="button button--primary button--full" type="submit" disabled={submitting}>{submitting ? 'Creando cuenta…' : 'Crear mi cuenta'}</button>

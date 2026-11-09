@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Icon } from '../../../shared/components/Icon'
-import { ApiError } from '../../../shared/services/api'
+import { ApiError, apiRequest } from '../../../shared/services/api'
 import { useAuth } from '../../auth/context/useAuth'
 import { Sidebar } from '../../dashboard/components/Sidebar'
 import { Topbar } from '../../dashboard/components/Topbar'
@@ -39,6 +39,17 @@ export function SessionsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [reloadCount, setReloadCount] = useState(0)
+  const [deleting, setDeleting] = useState<string | null>(null)
+
+  async function erase(session: TrainingSession) {
+    if (!window.confirm('¿Eliminar el audio, la transcripción y las evaluaciones de esta práctica? Se conservará solo el registro mínimo de sesión para las cuotas.')) return
+    setDeleting(session.id); setError('')
+    try {
+      await apiRequest(`/sessions/${session.id}/data`, { method: 'DELETE' })
+      setSessions(previous => previous.map(item => item.id === session.id ? { ...item, hasAudio: false, audioSizeBytes: null, analysisStatus: null, evaluationStatus: null, overallScore: null } : item))
+    } catch (reason) { setError(reason instanceof Error ? reason.message : 'No se pudieron eliminar los datos.') }
+    finally { setDeleting(null) }
+  }
 
   useEffect(() => {
     let active = true
@@ -191,6 +202,7 @@ export function SessionsPage() {
                     </div>
 
                     <div className="session-item__actions">
+                      {(session.hasAudio || session.analysisStatus) && <button className="button button--ghost" disabled={deleting !== null} onClick={() => erase(session)}>{deleting === session.id ? 'Eliminando…' : 'Eliminar datos'}</button>}
                       {session.hasAudio ? (
                         <>
                           <AudioPlayer

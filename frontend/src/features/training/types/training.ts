@@ -42,6 +42,10 @@ export interface Exercise {
   prompt: string
   trainingType: TrainingType
   recommendedDurationSeconds: number
+  category: string
+  difficulty: string
+  objective: string
+  evaluationCriteria: string[]
 }
 
 export interface TrainingSession {
@@ -87,6 +91,7 @@ export interface VerbalMetrics {
   totalPauseDurationSeconds: number | null
   longestPauseSeconds: number | null
   timestampsAvailable: boolean
+  acousticMetrics?: Record<string, number | null>
 }
 
 export interface SpeechAnalysis {
