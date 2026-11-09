@@ -40,6 +40,9 @@ if ((Read-EnvValue $backendEnv 'INTERNAL_API_KEY') -ne (Read-EnvValue $aiEnv 'IN
     throw 'Las claves internas existentes no coinciden. Corrigelas antes de iniciar.'
 }
 Ensure-EnvValue $backendEnv 'APP_PROFILE' 'dev'
+Ensure-EnvValue $backendEnv 'BILLING_DEMO_ENABLED' 'true'
+Ensure-EnvValue $backendEnv 'BILLING_PREMIUM_PRICE' '49.00'
+Ensure-EnvValue $backendEnv 'BILLING_GRACE_DAYS' '3'
 # Explicit adoption of the existing Hibernate schema, backed up before first use.
 Ensure-EnvValue $backendEnv 'FLYWAY_BASELINE_ON_MIGRATE' 'true'
 Ensure-EnvValue $backendEnv 'ADMIN_EMAIL' 'admin@oratoria.test'

@@ -40,6 +40,7 @@ class AuthIntegrationTests {
     @Autowired PlanInitializationService plans;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired JwtService jwtService;
+    @Autowired com.oratoria.backend.billing.BillingService billing;
 
     @Test
     void registrationCreatesUserAndExactlyOneFreeSubscription() throws Exception {
@@ -89,7 +90,7 @@ class AuthIntegrationTests {
         when(mockUsers.saveAndFlush(any())).thenThrow(
                 new DataIntegrityViolationException("Simulated non-email constraint failure"));
 
-        AuthService service = new AuthService(mockUsers, subscriptions, plans, passwordEncoder, jwtService);
+        AuthService service = new AuthService(mockUsers, subscriptions, plans, passwordEncoder, jwtService, billing);
         RegisterRequest request = new RegisterRequest("Test", "User", "other@example.test", "Correct123!");
 
         assertThatThrownBy(() -> service.register(request))

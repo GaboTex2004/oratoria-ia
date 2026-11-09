@@ -18,9 +18,12 @@ public class QuotaService {
     private final TrainingSessionRepository sessions;
     private final SimulationSessionRepository simulations;
     private final UserAccountRepository users;
+    private final com.oratoria.backend.billing.BillingStore billingStore;
     public QuotaService(FeatureAccessService access, TrainingSessionRepository sessions,
-            SimulationSessionRepository simulations, UserAccountRepository users) {
+            SimulationSessionRepository simulations, UserAccountRepository users,
+            com.oratoria.backend.billing.BillingStore billingStore) {
         this.access = access; this.sessions = sessions; this.simulations = simulations; this.users = users;
+        this.billingStore = billingStore;
     }
     public static Instant monthStart() {
         return ZonedDateTime.now(ZoneOffset.UTC).withDayOfMonth(1).toLocalDate().atStartOfDay(ZoneOffset.UTC).toInstant();
@@ -35,5 +38,6 @@ public class QuotaService {
         if (!limit.unlimited() && (limit.value() == null || used >= limit.value())) {
             throw new BadRequestException("Alcanzaste el límite mensual de tu plan. Las sesiones creadas consumen cuota hasta el siguiente mes UTC.");
         }
+        billingStore.usage(userId, simulation ? "SIMULATION" : "PRACTICE");
     }
 }

@@ -22,6 +22,8 @@ public class PlanInitializationService implements ApplicationRunner {
 
     private final PlanRepository plans;
     private final PlanEntitlementRepository entitlements;
+    @org.springframework.beans.factory.annotation.Value("${app.billing.premium-price:49.00}")
+    private java.math.BigDecimal premiumPrice;
 
     public PlanInitializationService(PlanRepository plans, PlanEntitlementRepository entitlements) {
         this.plans = plans;
@@ -33,6 +35,9 @@ public class PlanInitializationService implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         Plan free = ensurePlan(PlanCode.FREE, "Free");
         Plan premium = ensurePlan(PlanCode.PREMIUM, "Premium");
+        if (premiumPrice.signum() <= 0) throw new IllegalArgumentException("El precio Premium debe ser positivo.");
+        free.configurePrice(java.math.BigDecimal.ZERO.setScale(2));
+        premium.configurePrice(premiumPrice);
         initializeFreeEntitlements(free);
         initializePremiumEntitlements(premium);
     }

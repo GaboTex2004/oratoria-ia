@@ -28,6 +28,11 @@ public class Plan {
     @Column(nullable = false)
     private boolean active = true;
 
+    @Column(nullable = false, precision = 12, scale = 2)
+    private java.math.BigDecimal price = java.math.BigDecimal.ZERO;
+    @Column(nullable = false, length = 3)
+    private String currency = "BOB";
+
     protected Plan() {
     }
 
@@ -40,4 +45,11 @@ public class Plan {
     public PlanCode getCode() { return code; }
     public String getName() { return name; }
     public boolean isActive() { return active; }
+    public java.math.BigDecimal getPrice() { return price; }
+    public String getCurrency() { return currency; }
+    public void configurePrice(java.math.BigDecimal price) {
+        if (price == null || price.signum() < 0 || price.scale() > 2 || price.precision() > 12)
+            throw new IllegalArgumentException("Precio de plan inválido.");
+        this.price = price;
+    }
 }

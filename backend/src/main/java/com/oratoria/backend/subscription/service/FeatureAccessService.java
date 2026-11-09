@@ -13,16 +13,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 public class FeatureAccessService {
 
     private final SubscriptionRepository subscriptions;
     private final PlanEntitlementRepository entitlements;
+    private final com.oratoria.backend.billing.BillingService billing;
 
     public FeatureAccessService(SubscriptionRepository subscriptions,
-                                PlanEntitlementRepository entitlements) {
+                                PlanEntitlementRepository entitlements, com.oratoria.backend.billing.BillingService billing) {
         this.subscriptions = subscriptions;
         this.entitlements = entitlements;
+        this.billing = billing;
     }
 
     public boolean hasAccess(UUID userId, Feature feature) {
@@ -43,8 +45,7 @@ public class FeatureAccessService {
     }
 
     private Optional<Subscription> activeSubscription(UUID userId) {
-        return subscriptions.findFirstByUserIdAndStatusOrderByStartsAtDesc(
-                userId, SubscriptionStatus.ACTIVE);
+        return Optional.of(billing.effectiveSubscription(userId));
     }
 
     public record EntitlementLimit(boolean unlimited, Integer value) {

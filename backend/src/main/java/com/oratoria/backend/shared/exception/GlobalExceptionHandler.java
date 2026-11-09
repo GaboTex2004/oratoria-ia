@@ -47,6 +47,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             MissingServletRequestPartException.class,
             MissingServletRequestParameterException.class,
+            org.springframework.web.bind.MissingRequestHeaderException.class,
             MethodArgumentTypeMismatchException.class
     })
     ResponseEntity<ApiError> invalidRequestParameters(Exception exception, HttpServletRequest request) {

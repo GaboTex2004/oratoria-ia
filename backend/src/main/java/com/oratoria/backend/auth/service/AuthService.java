@@ -28,15 +28,17 @@ public class AuthService {
     private final PlanInitializationService plans;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final com.oratoria.backend.billing.BillingService billing;
 
     public AuthService(UserAccountRepository users, SubscriptionRepository subscriptions,
                        PlanInitializationService plans, PasswordEncoder passwordEncoder,
-                       JwtService jwtService) {
+                       JwtService jwtService, com.oratoria.backend.billing.BillingService billing) {
         this.users = users;
         this.subscriptions = subscriptions;
         this.plans = plans;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.billing = billing;
     }
 
     @Transactional
@@ -59,7 +61,7 @@ public class AuthService {
         return new AuthResponse(jwtService.createToken(user), toResponse(user, subscription));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         if (!com.oratoria.backend.shared.PasswordPolicy.fitsBcrypt(request.password())) throw new InvalidCredentialsException();
         UserAccount user = users.findByEmailIgnoreCase(normalizeEmail(request.email()))
@@ -71,7 +73,7 @@ public class AuthService {
         return new AuthResponse(jwtService.createToken(user), currentUser(user));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public UserResponse currentUser(String email) {
         UserAccount user = users.findByEmailIgnoreCase(email)
                 .orElseThrow(InvalidCredentialsException::new);
@@ -79,9 +81,7 @@ public class AuthService {
     }
 
     private UserResponse currentUser(UserAccount user) {
-        Subscription subscription = subscriptions.findFirstByUserIdAndStatusOrderByStartsAtDesc(
-                user.getId(), SubscriptionStatus.ACTIVE)
-                .orElseThrow(() -> new IllegalStateException("El usuario no tiene una suscripción activa."));
+        Subscription subscription = billing.effectiveSubscription(user.getId());
         return toResponse(user, subscription);
     }
 

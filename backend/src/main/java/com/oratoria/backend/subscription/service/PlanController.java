@@ -18,10 +18,10 @@ public class PlanController {
     @Transactional(readOnly = true)
     public List<PlanView> list() {
         return plans.findAll().stream().filter(plan -> plan.isActive()).map(plan -> new PlanView(
-                plan.getCode().name(), plan.getName(), entitlements.findByPlanId(plan.getId()).stream()
+                plan.getCode().name(), plan.getName(), plan.getPrice(), plan.getCurrency(), "MONTHLY", entitlements.findByPlanId(plan.getId()).stream()
                 .map(item -> new EntitlementView(item.getFeature() == null ? item.getUsageLimit().name() : item.getFeature().name(),
                         item.isEnabled(), item.getLimitValue(), item.isUnlimited())).toList())).toList();
     }
-    public record PlanView(String code, String name, List<EntitlementView> entitlements) {}
+    public record PlanView(String code, String name, java.math.BigDecimal price, String currency, String interval, List<EntitlementView> entitlements) {}
     public record EntitlementView(String code, boolean enabled, Integer limit, boolean unlimited) {}
 }

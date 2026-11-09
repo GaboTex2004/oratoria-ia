@@ -41,7 +41,7 @@ public class ProgressService {
         this.calculator = calculator;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public ProgressSummaryResponse getSummary(String userEmail) {
         UserAccount user = findEnabledUser(userEmail);
         List<ProgressSessionSnapshot> snapshots = sessions.findProgressRowsByUserId(user.getId())
@@ -59,11 +59,11 @@ public class ProgressService {
     }
 
     private SubscriptionSummary subscriptionSummary(UserAccount user) {
+        Optional<EntitlementLimit> configuredLimit = featureAccess
+                .limitFor(user.getId(), UsageLimit.SESSIONS_PER_MONTH);
         Optional<Subscription> activeSubscription = subscriptions
                 .findFirstByUserIdAndStatusOrderByStartsAtDesc(
                         user.getId(), SubscriptionStatus.ACTIVE);
-        Optional<EntitlementLimit> configuredLimit = featureAccess
-                .limitFor(user.getId(), UsageLimit.SESSIONS_PER_MONTH);
 
         return new SubscriptionSummary(
                 activeSubscription.map(subscription -> subscription.getPlan().getCode().name()).orElse(null),
