@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface TrainingSessionRepository extends JpaRepository<TrainingSession, UUID> {
+    long countByUserIdAndCreatedAtGreaterThanEqual(UUID userId, Instant start);
     List<TrainingSession> findByUserIdOrderByCreatedAtDesc(UUID userId);
 
     /**

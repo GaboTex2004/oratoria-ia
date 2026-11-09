@@ -35,5 +35,10 @@ public class SimulationTurn {
     public void complete(String transcript){text=transcript;status=SimulationTurnStatus.COMPLETED;errorCode=null;errorMessage=null;}
     public void fail(String code,String message){status=SimulationTurnStatus.FAILED;errorCode=code;errorMessage=message;}
     public boolean hasAudio(){return audioStoragePath!=null&&!audioStoragePath.isBlank();}
+    public void clearPrivateData() {
+        text = null; audioStoragePath = null; audioMimeType = null;
+        audioSizeBytes = null; audioOriginalFilename = null;
+        errorCode = null; errorMessage = null;
+    }
     public UUID getId(){return id;} public SimulationSession getSimulation(){return simulation;} public int getSequenceNumber(){return sequenceNumber;} public SimulationSpeaker getSpeaker(){return speaker;} public SimulationTurnStatus getStatus(){return status;} public String getText(){return text;} public String getIdempotencyKey(){return idempotencyKey;} public String getAudioStoragePath(){return audioStoragePath;} public String getAudioMimeType(){return audioMimeType;} public Long getAudioSizeBytes(){return audioSizeBytes;} public String getAudioOriginalFilename(){return audioOriginalFilename;} public Integer getAudioDurationSeconds(){return audioDurationSeconds;} public String getErrorCode(){return errorCode;} public String getErrorMessage(){return errorMessage;} public Instant getCreatedAt(){return createdAt;}
 }

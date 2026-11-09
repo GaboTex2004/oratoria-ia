@@ -56,7 +56,7 @@ public class SpeechEvaluationService {
             "INTERRUPTED_BY_RESTART",
             "INTERRUPTED_PROCESSING",
             "ANALYSIS_DEPENDENCY_FAILED",
-            "EVALUATION_SERVICE_UNAVAILABLE"
+            "EVALUATION_SERVICE_UNAVAILABLE", "LOCAL_MODEL_MISSING", "LOCAL_RUNTIME_UNAVAILABLE", "LOCAL_MODEL_BUSY"
     );
 
     private final SpeechEvaluationRepository evaluations;

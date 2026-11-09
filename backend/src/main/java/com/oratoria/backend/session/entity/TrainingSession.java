@@ -100,6 +100,14 @@ public class TrainingSession {
         return audioStoragePath != null && !audioStoragePath.isBlank();
     }
 
+    public void clearPrivateData() {
+        this.audioStoragePath = null;
+        this.audioMimeType = null;
+        this.audioSizeBytes = null;
+        this.audioOriginalFilename = null;
+        this.overallScore = null;
+    }
+
     public void updateOverallScore(Double overallScore) {
         this.overallScore = overallScore;
     }

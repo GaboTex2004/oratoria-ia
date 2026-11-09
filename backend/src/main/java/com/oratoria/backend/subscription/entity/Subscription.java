@@ -50,6 +50,7 @@ public class Subscription {
     }
 
     public UUID getId() { return id; }
+    public void changePlan(Plan plan) { this.plan = plan; }
     public UserAccount getUser() { return user; }
     public Plan getPlan() { return plan; }
     public SubscriptionStatus getStatus() { return status; }

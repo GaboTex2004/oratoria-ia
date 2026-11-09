@@ -14,5 +14,15 @@ public record VerbalMetricsDto(
         Integer estimatedPauseCount,
         Double totalPauseDurationSeconds,
         Double longestPauseSeconds,
-        boolean timestampsAvailable) {
+        boolean timestampsAvailable,
+        Map<String, Double> acousticMetrics) {
+    public VerbalMetricsDto(int wordCount, double recordingDurationSeconds,
+            Double estimatedSpokenDurationSeconds, Double spokenTimeRatio, double wordsPerMinute,
+            Double spokenWordsPerMinute, int fillerWordsTotal, Map<String, Integer> fillerWordCounts,
+            Integer estimatedPauseCount, Double totalPauseDurationSeconds, Double longestPauseSeconds,
+            boolean timestampsAvailable) {
+        this(wordCount, recordingDurationSeconds, estimatedSpokenDurationSeconds, spokenTimeRatio,
+                wordsPerMinute, spokenWordsPerMinute, fillerWordsTotal, fillerWordCounts,
+                estimatedPauseCount, totalPauseDurationSeconds, longestPauseSeconds, timestampsAvailable, Map.of());
+    }
 }

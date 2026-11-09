@@ -61,8 +61,8 @@ class ProgressIntegrationTests {
                 .andExpect(jsonPath("$.history[0].durationSeconds").value(45))
                 .andExpect(jsonPath("$.subscription.plan").value("FREE"))
                 .andExpect(jsonPath("$.subscription.sessionsLimit").value(5))
-                .andExpect(jsonPath("$.subscription.sessionsUsedInPeriod").isEmpty())
-                .andExpect(jsonPath("$.subscription.usageDefinition").value("NOT_DEFINED"));
+                .andExpect(jsonPath("$.subscription.sessionsUsedInPeriod").value(1))
+                .andExpect(jsonPath("$.subscription.usageDefinition").value("CREATED_SESSIONS_UTC_MONTH"));
     }
 
     private UserAccount createUser(String email) {

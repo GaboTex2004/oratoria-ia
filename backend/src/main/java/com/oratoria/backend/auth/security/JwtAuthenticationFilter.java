@@ -33,7 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
                 String email = jwtService.extractSubject(authorization.substring(7));
-                users.findByEmailIgnoreCase(email).filter(user -> user.isEnabled()).ifPresent(user -> {
+                users.findByEmailIgnoreCase(email).filter(user -> user.isEnabled()
+                        && jwtService.matchesVersion(authorization.substring(7), user)).ifPresent(user -> {
                     var authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
                     var authentication = new UsernamePasswordAuthenticationToken(
                             user.getEmail(), null, List.of(authority));

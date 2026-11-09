@@ -10,5 +10,9 @@ public record ExerciseResponse(
         String description,
         String prompt,
         TrainingType trainingType,
-        int recommendedDurationSeconds) {
+        int recommendedDurationSeconds,
+        String category,
+        String difficulty,
+        String objective,
+        java.util.List<String> evaluationCriteria) {
 }

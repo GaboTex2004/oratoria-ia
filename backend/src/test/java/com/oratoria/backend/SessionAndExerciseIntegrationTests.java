@@ -53,7 +53,7 @@ class SessionAndExerciseIntegrationTests {
         String token = createTestUserAndToken("exercises-user@example.test");
         mvc.perform(get("/api/exercises").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(7))
+                .andExpect(jsonPath("$.length()").value(20))
                 .andExpect(jsonPath("$[0].id").isNotEmpty())
                 .andExpect(jsonPath("$[0].title").isNotEmpty())
                 .andExpect(jsonPath("$[0].prompt").isNotEmpty());

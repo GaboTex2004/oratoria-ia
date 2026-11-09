@@ -116,6 +116,11 @@ public class SpeechAnalysis {
     protected SpeechAnalysis() {
     }
 
+    @Column(name = "acoustic_metrics_json", columnDefinition = "TEXT")
+    private String acousticMetricsJson;
+    public String getAcousticMetricsJson() { return acousticMetricsJson; }
+    public void setAcousticMetricsJson(String json) { this.acousticMetricsJson = json; }
+
     public SpeechAnalysis(TrainingSession session) {
         this.session = session;
         this.status = AnalysisStatus.PENDING;

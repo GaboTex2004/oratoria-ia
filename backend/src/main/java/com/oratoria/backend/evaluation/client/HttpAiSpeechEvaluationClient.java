@@ -31,7 +31,7 @@ public class HttpAiSpeechEvaluationClient implements AiSpeechEvaluationClient {
     public HttpAiSpeechEvaluationClient(
             ObjectMapper objectMapper,
             @Value("${app.ai-service.url:http://localhost:8000}") String baseUrl,
-            @Value("${app.ai-service.internal-api-key:dev-internal-oratoria-key-change-in-prod}") String internalApiKey,
+            @Value("${app.ai-service.internal-api-key:}") String internalApiKey,
             @Value("${app.ai-service.timeout-seconds:65}") long timeoutSeconds) {
         this.objectMapper = objectMapper;
         String cleanBase = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;

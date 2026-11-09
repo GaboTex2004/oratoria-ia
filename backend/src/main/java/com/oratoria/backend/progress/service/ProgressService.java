@@ -69,8 +69,9 @@ public class ProgressService {
                 activeSubscription.map(subscription -> subscription.getPlan().getCode().name()).orElse(null),
                 configuredLimit.filter(limit -> !limit.unlimited()).map(EntitlementLimit::value).orElse(null),
                 configuredLimit.map(EntitlementLimit::unlimited).orElse(false),
-                null,
-                USAGE_DEFINITION_NOT_DEFINED
+                (int) sessions.countByUserIdAndCreatedAtGreaterThanEqual(user.getId(),
+                        com.oratoria.backend.subscription.service.QuotaService.monthStart()),
+                "CREATED_SESSIONS_UTC_MONTH"
         );
     }
 

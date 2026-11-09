@@ -31,4 +31,5 @@ public record SpeechEvaluationResponse(
         Instant startedAt,
         Instant completedAt,
         Instant updatedAt) {
+    @Override public String toString() { return "SpeechEvaluationResponse[sessionId=" + sessionId + ", status=" + status + "]"; }
 }

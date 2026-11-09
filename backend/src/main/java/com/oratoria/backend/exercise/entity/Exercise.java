@@ -42,6 +42,13 @@ public class Exercise {
     @Column(nullable = false)
     private boolean active = true;
 
+    @Column(nullable = false, length = 60)
+    private String category = "ESTRUCTURA";
+    @Column(nullable = false, length = 30)
+    private String difficulty = "BASIC";
+    @Column(nullable = false, length = 400)
+    private String objective = "Desarrollar una intervención oral clara y estructurada.";
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
@@ -59,6 +66,17 @@ public class Exercise {
     }
 
     public UUID getId() { return id; }
+    public String getCategory() { return category; }
+    public String getDifficulty() { return difficulty; }
+    public String getObjective() { return objective; }
+    public void configure(String category, String difficulty, String objective) {
+        this.category = category; this.difficulty = difficulty; this.objective = objective;
+    }
+    public void setActive(boolean active) { this.active = active; }
+    public void edit(String title, String description, String prompt, int duration) {
+        this.title = title; this.description = description; this.prompt = prompt;
+        this.recommendedDurationSeconds = duration;
+    }
     public String getCode() { return code; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }

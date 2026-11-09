@@ -41,6 +41,7 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        com.oratoria.backend.shared.PasswordPolicy.validate(request.password());
         String email = normalizeEmail(request.email());
         if (users.existsByEmailIgnoreCase(email)) throw new DuplicateEmailException();
         UserAccount user;
@@ -60,6 +61,7 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
+        if (!com.oratoria.backend.shared.PasswordPolicy.fitsBcrypt(request.password())) throw new InvalidCredentialsException();
         UserAccount user = users.findByEmailIgnoreCase(normalizeEmail(request.email()))
                 .filter(UserAccount::isEnabled)
                 .orElseThrow(InvalidCredentialsException::new);

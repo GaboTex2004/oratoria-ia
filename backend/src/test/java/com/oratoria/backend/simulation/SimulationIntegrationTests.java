@@ -30,6 +30,15 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 class SimulationIntegrationTests {
+    @Autowired com.oratoria.backend.subscription.repository.SubscriptionRepository subscriptions;
+    @Autowired com.oratoria.backend.subscription.service.PlanInitializationService plans;
+
+    private UserAccount withPlan(UserAccount user) {
+        if (subscriptions.countByUserId(user.getId()) == 0) {
+            subscriptions.save(new com.oratoria.backend.subscription.entity.Subscription(user, plans.freePlan()));
+        }
+        return user;
+    }
     @Autowired SimulationService service;
     @Autowired UserAccountRepository users;
     @Autowired SimulationTurnRepository turns;
@@ -41,7 +50,7 @@ class SimulationIntegrationTests {
     void audioToTranscriptToGeminiReplyIsPersistedOnceForSameIdempotencyKey() {
         UserAccount owner = users.save(new UserAccount(
                 "Sim", "Owner", "sim-owner@example.test", "test-hash", UserRole.USER));
-        var created = service.create(owner.getEmail(),
+        var created = service.create(withPlan(owner).getEmail(),
                 new CreateRequest("job-interview", SimulationDifficulty.BASIC));
 
         when(speechClient.analyzeSpeech(any(), any(byte[].class), anyString(), anyInt(), anyString()))
@@ -70,7 +79,7 @@ class SimulationIntegrationTests {
     void geminiTransientFailurePreservesTranscriptAndIdempotentRetryResumesSameTurn() {
         UserAccount owner = users.save(new UserAccount(
                 "Failed", "Turn", "failed-turn@example.test", "test-hash", UserRole.USER));
-        var created = service.create(owner.getEmail(),
+        var created = service.create(withPlan(owner).getEmail(),
                 new CreateRequest("job-interview", SimulationDifficulty.BASIC));
         String transcript = "La transcripción debe sobrevivir al rechazo de Gemini.";
         when(speechClient.analyzeSpeech(any(), any(byte[].class), anyString(), anyInt(), anyString()))
@@ -108,7 +117,7 @@ class SimulationIntegrationTests {
                 "Sim", "Owner", "private-owner@example.test", "test-hash", UserRole.USER));
         UserAccount stranger = users.save(new UserAccount(
                 "Sim", "Stranger", "private-stranger@example.test", "test-hash", UserRole.USER));
-        var created = service.create(owner.getEmail(),
+        var created = service.create(withPlan(owner).getEmail(),
                 new CreateRequest("structured-debate", SimulationDifficulty.BASIC));
 
         assertThatThrownBy(() -> service.get(stranger.getEmail(), created.id()))

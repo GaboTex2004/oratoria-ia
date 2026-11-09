@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PlanEntitlementRepository extends JpaRepository<PlanEntitlement, UUID> {
+    java.util.List<PlanEntitlement> findByPlanId(UUID planId);
     Optional<PlanEntitlement> findByPlanIdAndFeature(UUID planId, Feature feature);
     Optional<PlanEntitlement> findByPlanIdAndUsageLimit(UUID planId, UsageLimit usageLimit);
 }

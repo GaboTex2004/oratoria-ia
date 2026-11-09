@@ -34,19 +34,22 @@ public class TrainingSessionService {
     private final AudioStorageService audioStorage;
     private final SpeechAnalysisService speechAnalysisService;
     private final SpeechEvaluationService speechEvaluationService;
+    private final com.oratoria.backend.subscription.service.QuotaService quotas;
 
     public TrainingSessionService(TrainingSessionRepository sessions,
                                   UserAccountRepository users,
                                   ExerciseService exercises,
                                   AudioStorageService audioStorage,
                                   SpeechAnalysisService speechAnalysisService,
-                                  SpeechEvaluationService speechEvaluationService) {
+                                  SpeechEvaluationService speechEvaluationService,
+                                  com.oratoria.backend.subscription.service.QuotaService quotas) {
         this.sessions = sessions;
         this.users = users;
         this.exercises = exercises;
         this.audioStorage = audioStorage;
         this.speechAnalysisService = speechAnalysisService;
         this.speechEvaluationService = speechEvaluationService;
+        this.quotas = quotas;
     }
 
     @Transactional
@@ -66,6 +69,7 @@ public class TrainingSessionService {
             trainingType = exercise.getTrainingType();
         }
 
+        quotas.checkCreation(user.getId(), false);
         TrainingSession session = new TrainingSession(user, exercise, trainingType);
         session.markRecording();
         return toResponse(sessions.save(session));

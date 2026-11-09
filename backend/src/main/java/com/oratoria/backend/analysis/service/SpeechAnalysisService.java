@@ -53,7 +53,7 @@ public class SpeechAnalysisService {
             "UNAUTHORIZED_INTERNAL_CALL",
             "INTERRUPTED_BY_RESTART",
             "INTERRUPTED_PROCESSING",
-            "AI_SERVICE_UNAVAILABLE"
+            "AI_SERVICE_UNAVAILABLE", "LOCAL_STT_MODEL_MISSING", "LOCAL_STT_BUSY"
     );
 
     private final SpeechAnalysisRepository analyses;
@@ -279,6 +279,7 @@ public class SpeechAnalysisService {
             txTemplate.executeWithoutResult(status -> {
                 SpeechAnalysis analysis = analyses.findBySessionId(sessionId).orElseThrow();
                 VerbalMetricsDto m = payload.metrics();
+                analysis.setAcousticMetricsJson(writeJsonSafely(payload.metrics().acousticMetrics()));
                 analysis.markCompleted(
                         payload.schemaVersion(),
                         payload.provider(),
@@ -404,7 +405,8 @@ public class SpeechAnalysisService {
                     analysis.getEstimatedPauseCount(),
                     analysis.getTotalPauseDurationSeconds(),
                     analysis.getLongestPauseSeconds(),
-                    Boolean.TRUE.equals(analysis.getTimestampsAvailable())
+                    Boolean.TRUE.equals(analysis.getTimestampsAvailable()),
+                    readAcousticMetrics(analysis.getAcousticMetricsJson())
             );
         }
 
@@ -436,6 +438,16 @@ public class SpeechAnalysisService {
             return objectMapper.writeValueAsString(value);
         } catch (Exception exception) {
             return "[]";
+        }
+    }
+
+    private Map<String, Double> readAcousticMetrics(String json) {
+        if (json == null || json.isBlank()) return Collections.emptyMap();
+        try {
+            Map<String, Double> result = objectMapper.readValue(json, new TypeReference<Map<String, Double>>() {});
+            return result == null ? Collections.emptyMap() : result;
+        } catch (Exception exception) {
+            return Collections.emptyMap();
         }
     }
 

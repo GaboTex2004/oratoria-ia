@@ -31,6 +31,11 @@ public class SimulationSession {
         this.user=user; this.scenarioId=scenarioId; this.trainingType=trainingType; this.difficulty=difficulty; this.maxTurns=maxTurns;
     }
     @PreUpdate void touch(){ updatedAt=Instant.now(); }
+    public void clearPrivateData() {
+        finalFeedbackJson = null; overallScore = null; sufficientEvidence = null;
+        errorCode = null; errorMessage = null; status = SimulationStatus.COMPLETED;
+        if (completedAt == null) completedAt = Instant.now();
+    }
     public void beginProcessing(){ status=SimulationStatus.PROCESSING; errorCode=null; errorMessage=null; }
     public void completeTurn(boolean shouldEnd){ currentTurn++; status=(shouldEnd || currentTurn>=maxTurns)?SimulationStatus.READY_TO_FINISH:SimulationStatus.ACTIVE; }
     public void restoreAfterFailure(String code,String message){ status=currentTurn>=maxTurns?SimulationStatus.READY_TO_FINISH:SimulationStatus.ACTIVE; errorCode=code; errorMessage=message; }

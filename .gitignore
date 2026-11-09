@@ -33,3 +33,12 @@ ai-service/.env.*
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Local inference weights, tools and private evaluation data
+.tools/
+ai-service/models/
+ai-service/datasets/private/
+ai-service/.pytest_cache/
+ai-service/.ruff_cache/
+ai-service/.coverage
+.npm-cache/

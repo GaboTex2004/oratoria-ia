@@ -13,7 +13,7 @@ import tools.jackson.databind.*;
 @Component
 public class HttpAiSimulationClient implements AiSimulationClient {
  private final HttpClient http; private final ObjectMapper mapper; private final String baseUrl; private final String key; private final Duration timeout;
- public HttpAiSimulationClient(ObjectMapper mapper,@Value("${app.ai-service.url:http://localhost:8000}") String url,@Value("${app.ai-service.internal-api-key:dev-internal-oratoria-key-change-in-prod}") String key,@Value("${app.ai-service.timeout-seconds:65}") long seconds){this.mapper=mapper;baseUrl=(url.endsWith("/")?url.substring(0,url.length()-1):url)+"/api/v1/simulation";this.key=key;timeout=Duration.ofSeconds(Math.max(5,seconds));http=HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(10)).build();}
+ public HttpAiSimulationClient(ObjectMapper mapper,@Value("${app.ai-service.url:http://localhost:8000}") String url,@Value("${app.ai-service.internal-api-key:}") String key,@Value("${app.ai-service.timeout-seconds:65}") long seconds){this.mapper=mapper;baseUrl=(url.endsWith("/")?url.substring(0,url.length()-1):url)+"/api/v1/simulation";this.key=key;timeout=Duration.ofSeconds(Math.max(5,seconds));http=HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(10)).build();}
  public AiReplyResponse generateReply(AiReplyRequest request){return post("/reply",request,AiReplyResponse.class);}
  public AiFeedbackResponse generateFeedback(AiFeedbackRequest request){return post("/feedback",request,AiFeedbackResponse.class);}
  private <T>T post(String path,Object payload,Class<T> type){String requestId=UUID.randomUUID().toString();try{

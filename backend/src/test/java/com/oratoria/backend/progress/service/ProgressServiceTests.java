@@ -50,7 +50,7 @@ class ProgressServiceTests {
         when(featureAccess.limitFor(userId, UsageLimit.SESSIONS_PER_MONTH))
                 .thenReturn(Optional.empty());
         when(calculator.calculate(anyList(), eq(new SubscriptionSummary(
-                null, null, false, null, "NOT_DEFINED")))).thenReturn(expected);
+                null, null, false, 0, "CREATED_SESSIONS_UTC_MONTH")))).thenReturn(expected);
 
         ProgressService service = new ProgressService(
                 users, sessions, subscriptions, featureAccess, calculator);
@@ -58,7 +58,7 @@ class ProgressServiceTests {
         assertThat(service.getSummary("student@example.test")).isSameAs(expected);
         verify(sessions, times(1)).findProgressRowsByUserId(userId);
         verify(calculator, times(1)).calculate(anyList(), eq(new SubscriptionSummary(
-                null, null, false, null, "NOT_DEFINED")));
+                null, null, false, 0, "CREATED_SESSIONS_UTC_MONTH")));
     }
 
     private static ProgressSummaryResponse emptyResponse() {
@@ -68,7 +68,7 @@ class ProgressServiceTests {
                 List.of(),
                 List.of(),
                 new Insights(List.of(), List.of(), List.of()),
-                new SubscriptionSummary(null, null, false, null, "NOT_DEFINED"),
+                new SubscriptionSummary(null, null, false, 0, "CREATED_SESSIONS_UTC_MONTH"),
                 100,
                 false);
     }

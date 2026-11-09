@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@org.springframework.context.annotation.Profile("dev")
 @Order(20)
 public class AdminInitializer implements ApplicationRunner {
     private static final Logger log = LoggerFactory.getLogger(AdminInitializer.class);

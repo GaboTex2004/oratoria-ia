@@ -42,6 +42,9 @@ public class UserAccount {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column(name = "token_version", nullable = false)
+    private int tokenVersion;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
@@ -65,6 +68,20 @@ public class UserAccount {
     void updateTimestamp() { this.updatedAt = Instant.now(); }
 
     public UUID getId() { return id; }
+    public int getTokenVersion() { return tokenVersion; }
+    public void updateProfile(String firstName, String lastName) {
+        this.firstName = firstName.trim();
+        this.lastName = lastName.trim();
+        this.displayName = (this.firstName + " " + this.lastName).trim();
+    }
+    public void changePassword(String encodedPassword) {
+        this.passwordHash = encodedPassword;
+        this.tokenVersion++;
+    }
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        this.tokenVersion++;
+    }
     public String getEmail() { return email; }
     public String getDisplayName() { return displayName; }
     public String getFirstName() { return firstName; }

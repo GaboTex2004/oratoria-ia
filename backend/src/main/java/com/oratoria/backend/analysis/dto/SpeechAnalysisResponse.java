@@ -25,4 +25,5 @@ public record SpeechAnalysisResponse(
         Instant startedAt,
         Instant completedAt,
         Instant updatedAt) {
+    @Override public String toString() { return "SpeechAnalysisResponse[sessionId=" + sessionId + ", status=" + status + "]"; }
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 public class SimulationScenarioCatalog {
  private final Map<String,SimulationScenario> scenarios;
  public SimulationScenarioCatalog(){ scenarios=List.of(
+  s("academic-interview","Entrevista académica","Explica tus objetivos y experiencia académica.",TrainingType.INTERVIEW,"profesor/a entrevistador/a","Selección para una beca universitaria.","Justificar objetivos con experiencias verificables.","¿Qué te motiva a postular a esta beca y cómo aplicarías lo aprendido?"),
   s("job-interview","Entrevista laboral","Responde preguntas realistas de selección.",TrainingType.INTERVIEW,"reclutador/a","Entrevista para una posición profesional junior.","Comunicar experiencia y resultados con claridad.","Gracias por venir. Para comenzar, cuéntame brevemente sobre ti y por qué te interesa este puesto."),
   s("structured-debate","Debate estructurado","Defiende una postura ante objeciones.",TrainingType.DEBATE,"oponente académico","Debate universitario con turnos breves.","Sostener una tesis con razones y responder objeciones.","Comencemos: presenta tu postura principal y una razón que la respalde."),
   s("audience-questions","Preguntas del público","Gestiona preguntas después de una exposición.",TrainingType.PRESENTATION,"miembro del público","Ronda de preguntas tras una presentación.","Responder con precisión sin perder el hilo.","Tengo una primera pregunta: ¿cuál es la idea más importante que debería recordar de tu exposición?"),

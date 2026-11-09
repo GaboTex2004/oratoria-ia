@@ -33,6 +33,7 @@ public class JwtService {
         return Jwts.builder()
                 .subject(user.getEmail())
                 .claim("role", user.getRole().name())
+                .claim("version", user.getTokenVersion())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(expirationMs)))
                 .signWith(key)
@@ -41,6 +42,11 @@ public class JwtService {
 
     public String extractSubject(String token) {
         return claims(token).getSubject();
+    }
+
+    public boolean matchesVersion(String token, UserAccount user) {
+        Number version = claims(token).get("version", Number.class);
+        return (version == null ? 0 : version.intValue()) == user.getTokenVersion();
     }
 
     private Claims claims(String token) {

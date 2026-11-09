@@ -97,6 +97,10 @@ public class AudioStorageService {
         return maxDurationSeconds;
     }
 
+    public void delete(String relativeKey) throws IOException {
+        Files.deleteIfExists(resolveSafePath(relativeKey));
+    }
+
     public long getMaxSizeBytes() {
         return maxSizeBytes;
     }

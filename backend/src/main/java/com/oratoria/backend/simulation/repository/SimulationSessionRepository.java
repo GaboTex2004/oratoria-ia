@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import jakarta.persistence.LockModeType;
 import com.oratoria.backend.simulation.entity.SimulationStatus;
 public interface SimulationSessionRepository extends JpaRepository<SimulationSession,UUID>{
+ long countByUserIdAndCreatedAtGreaterThanEqual(UUID userId,java.time.Instant start);
  List<SimulationSession> findByUserIdOrderByCreatedAtDesc(UUID userId);
  List<SimulationSession> findByStatus(SimulationStatus status);
  @Lock(LockModeType.PESSIMISTIC_WRITE) @Query("select s from SimulationSession s where s.id=:id") Optional<SimulationSession> findLockedById(@Param("id") UUID id);
