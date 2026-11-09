@@ -1,0 +1,430 @@
+{
+  "fixtureType": "synthetic-windows-speech-and-blank-image",
+  "checks": {
+    "transcription": {
+      "ok": true,
+      "elapsedSeconds": 2.43,
+      "result": {
+        "schemaVersion": "v1",
+        "sessionId": "synthetic-local",
+        "provider": "faster-whisper",
+        "model": "whisper-base",
+        "language": "es",
+        "transcriptText": "Buenos días. Hoy presentamos una plataforma para mejorar la comunicación oral. Primero organizamos las ideas. Después practicamos con ejemplos. Por ejemplo, una entrevista permite explicar nuestra experiencia. Finalmente revisamos los resultados para aprender y mejorar.",
+        "segments": [
+          {
+            "index": 0,
+            "startSeconds": 0.0,
+            "endSeconds": 5.3,
+            "text": "Buenos días. Hoy presentamos una plataforma para mejorar la comunicación oral."
+          },
+          {
+            "index": 1,
+            "startSeconds": 6.14,
+            "endSeconds": 10.86,
+            "text": "Primero organizamos las ideas. Después practicamos con ejemplos."
+          },
+          {
+            "index": 2,
+            "startSeconds": 11.64,
+            "endSeconds": 15.54,
+            "text": "Por ejemplo, una entrevista permite explicar nuestra experiencia."
+          },
+          {
+            "index": 3,
+            "startSeconds": 16.58,
+            "endSeconds": 19.74,
+            "text": "Finalmente revisamos los resultados para aprender y mejorar."
+          }
+        ],
+        "words": [
+          {
+            "word": "Buenos",
+            "startSeconds": 0.0,
+            "endSeconds": 0.36
+          },
+          {
+            "word": "días.",
+            "startSeconds": 0.36,
+            "endSeconds": 0.74
+          },
+          {
+            "word": "Hoy",
+            "startSeconds": 1.44,
+            "endSeconds": 1.86
+          },
+          {
+            "word": "presentamos",
+            "startSeconds": 1.86,
+            "endSeconds": 2.5
+          },
+          {
+            "word": "una",
+            "startSeconds": 2.5,
+            "endSeconds": 2.78
+          },
+          {
+            "word": "plataforma",
+            "startSeconds": 2.78,
+            "endSeconds": 3.28
+          },
+          {
+            "word": "para",
+            "startSeconds": 3.28,
+            "endSeconds": 3.68
+          },
+          {
+            "word": "mejorar",
+            "startSeconds": 3.68,
+            "endSeconds": 4.04
+          },
+          {
+            "word": "la",
+            "startSeconds": 4.04,
+            "endSeconds": 4.24
+          },
+          {
+            "word": "comunicación",
+            "startSeconds": 4.24,
+            "endSeconds": 4.96
+          },
+          {
+            "word": "oral.",
+            "startSeconds": 4.96,
+            "endSeconds": 5.3
+          },
+          {
+            "word": "Primero",
+            "startSeconds": 6.14,
+            "endSeconds": 6.62
+          },
+          {
+            "word": "organizamos",
+            "startSeconds": 6.62,
+            "endSeconds": 7.26
+          },
+          {
+            "word": "las",
+            "startSeconds": 7.26,
+            "endSeconds": 7.5
+          },
+          {
+            "word": "ideas.",
+            "startSeconds": 7.5,
+            "endSeconds": 7.8
+          },
+          {
+            "word": "Después",
+            "startSeconds": 8.9,
+            "endSeconds": 9.22
+          },
+          {
+            "word": "practicamos",
+            "startSeconds": 9.22,
+            "endSeconds": 9.96
+          },
+          {
+            "word": "con",
+            "startSeconds": 9.96,
+            "endSeconds": 10.2
+          },
+          {
+            "word": "ejemplos.",
+            "startSeconds": 10.2,
+            "endSeconds": 10.86
+          },
+          {
+            "word": "Por",
+            "startSeconds": 11.64,
+            "endSeconds": 11.88
+          },
+          {
+            "word": "ejemplo,",
+            "startSeconds": 11.88,
+            "endSeconds": 12.34
+          },
+          {
+            "word": "una",
+            "startSeconds": 12.7,
+            "endSeconds": 12.92
+          },
+          {
+            "word": "entrevista",
+            "startSeconds": 12.92,
+            "endSeconds": 13.42
+          },
+          {
+            "word": "permite",
+            "startSeconds": 13.42,
+            "endSeconds": 13.76
+          },
+          {
+            "word": "explicar",
+            "startSeconds": 13.76,
+            "endSeconds": 14.4
+          },
+          {
+            "word": "nuestra",
+            "startSeconds": 14.4,
+            "endSeconds": 14.88
+          },
+          {
+            "word": "experiencia.",
+            "startSeconds": 14.88,
+            "endSeconds": 15.54
+          },
+          {
+            "word": "Finalmente",
+            "startSeconds": 16.58,
+            "endSeconds": 17.14
+          },
+          {
+            "word": "revisamos",
+            "startSeconds": 17.14,
+            "endSeconds": 17.72
+          },
+          {
+            "word": "los",
+            "startSeconds": 17.72,
+            "endSeconds": 17.92
+          },
+          {
+            "word": "resultados",
+            "startSeconds": 17.92,
+            "endSeconds": 18.42
+          },
+          {
+            "word": "para",
+            "startSeconds": 18.42,
+            "endSeconds": 18.82
+          },
+          {
+            "word": "aprender",
+            "startSeconds": 18.82,
+            "endSeconds": 19.22
+          },
+          {
+            "word": "y",
+            "startSeconds": 19.22,
+            "endSeconds": 19.38
+          },
+          {
+            "word": "mejorar.",
+            "startSeconds": 19.38,
+            "endSeconds": 19.74
+          }
+        ],
+        "metrics": {
+          "wordCount": 35,
+          "recordingDurationSeconds": 20.66,
+          "estimatedSpokenDurationSeconds": 14.92,
+          "spokenTimeRatio": 0.7222,
+          "wordsPerMinute": 101.65,
+          "spokenWordsPerMinute": 140.75,
+          "fillerWordsTotal": 0,
+          "fillerWordCounts": {},
+          "estimatedPauseCount": 5,
+          "totalPauseDurationSeconds": 4.46,
+          "longestPauseSeconds": 1.1,
+          "timestampsAvailable": true,
+          "acousticMetrics": {
+            "rmsAmplitude": 0.091729,
+            "relativeLevelDbfs": -20.75,
+            "clippingRatio": 0.0,
+            "pitchMedianHz": 205.13,
+            "pitchStdHz": 40.71,
+            "pitchFrames": 525.0
+          }
+        }
+      }
+    },
+    "evaluation": {
+      "ok": true,
+      "elapsedSeconds": 31.43,
+      "result": {
+        "schemaVersion": "v1",
+        "sessionId": "synthetic-local",
+        "trainingType": "PRESENTATION",
+        "rubricVersion": "oratoria-rubric-v1.0",
+        "provider": "oratoria-local-hybrid",
+        "model": "qwen2.5:1.5b",
+        "sufficientEvidence": true,
+        "insufficientEvidenceReason": null,
+        "overallScore": 38.3,
+        "executiveSummary": "La presentación es breve y directa, con una duración de 20.66 segundos. El discurso es apresurado y no se desarrolla de manera ordenada. No se proporciona contexto o explicación didáctica de conceptos clave. La conclusión es una simple síntesis de los puntos presentados, sin evidencia de argumentación o análisis.",
+        "measuredIndicators": [
+          {
+            "code": "WORD_COUNT",
+            "label": "Extensión verbal medida",
+            "value": 35,
+            "unit": "palabras",
+            "interpretation": "Total de palabras reconocidas en 20.7 s de grabación.",
+            "source": "MEASURED"
+          },
+          {
+            "code": "WORDS_PER_MINUTE",
+            "label": "Velocidad de habla (WPM)",
+            "value": 101.7,
+            "unit": "palabras/min",
+            "interpretation": "Ritmo fluido dentro del rango recomendado para exposición en español (110–160 WPM).",
+            "source": "MEASURED"
+          },
+          {
+            "code": "FILLER_WORDS_TOTAL",
+            "label": "Muletillas contabilizadas",
+            "value": 0,
+            "unit": "ocurrencias",
+            "interpretation": "Sin muletillas detectadas en la transcripción.",
+            "source": "MEASURED"
+          },
+          {
+            "code": "ESTIMATED_PAUSE_COUNT",
+            "label": "Pausas prolongadas (≥ 0.6 s)",
+            "value": 5,
+            "unit": "pausas",
+            "interpretation": "Tiempo acumulado en pausas: 4.46 s (máxima: 1.1 s).",
+            "source": "MEASURED"
+          },
+          {
+            "code": "SPOKEN_TIME_RATIO",
+            "label": "Proporción de tiempo hablado activo",
+            "value": 72.2,
+            "unit": "%",
+            "interpretation": "Porcentaje de la grabación con fonación activa frente a silencios.",
+            "source": "MEASURED"
+          }
+        ],
+        "criteriaScores": [
+          {
+            "code": "CLARITY",
+            "label": "Claridad y precisión conceptual",
+            "weight": 0.25,
+            "score": 44.0,
+            "level": "INICIAL",
+            "justification": "La presentación es breve y no se explica el contexto o los conceptos clave. No se proporciona definición de términos clave. Índice orientativo híbrido: 70% semántica (20) + 30% reglas (100). No es una medición clínica.",
+            "evidenceQuotes": [
+              "Buenos días. Hoy presentamos una plataforma para mejorar la comunicación oral."
+            ],
+            "judgmentType": "AI_ESTIMATED"
+          },
+          {
+            "code": "COHERENCE",
+            "label": "Coherencia y conexión temática",
+            "weight": 0.25,
+            "score": 29.6,
+            "level": "INICIAL",
+            "justification": "La presentación no tiene un hilo conductor o un orden de ideas. La información se presenta de manera desordenada y sin conexión. Índice orientativo híbrido: 70% semántica (20) + 30% reglas (52). No es una medición clínica.",
+            "evidenceQuotes": [
+              "Finalmente revisamos los resultados para aprender y mejorar."
+            ],
+            "judgmentType": "AI_ESTIMATED"
+          },
+          {
+            "code": "ORGANIZATION",
+            "label": "Organización (Apertura, Desarrollo y Cierre)",
+            "weight": 0.25,
+            "score": 44.0,
+            "level": "INICIAL",
+            "justification": "La presentación no tiene introducción, desarrollo o conclusión. La información se presenta de manera desordenada y sin conexión. Índice orientativo híbrido: 70% semántica (20) + 30% reglas (100). No es una medición clínica.",
+            "evidenceQuotes": [
+              "Finalmente revisamos los resultados para aprender y mejorar."
+            ],
+            "judgmentType": "AI_ESTIMATED"
+          },
+          {
+            "code": "ARGUMENTATION",
+            "label": "Sustento, ejemplos y valor explicativo",
+            "weight": 0.25,
+            "score": 35.6,
+            "level": "INICIAL",
+            "justification": "No se proporciona evidencia de argumentación o análisis. La información se presenta de manera apresurada y no se explica el contexto o los conceptos clave. Índice orientativo híbrido: 70% semántica (20) + 30% reglas (72). No es una medición clínica.",
+            "evidenceQuotes": [
+              "Finalmente revisamos los resultados para aprender y mejorar."
+            ],
+            "judgmentType": "AI_ESTIMATED"
+          }
+        ],
+        "strengths": [
+          "Intención comunicativa alineada con el tema propuesto."
+        ],
+        "areasForImprovement": [
+          "Profundizar en el desarrollo de conectores lógicos y evidencia de respaldo."
+        ],
+        "recommendations": [
+          {
+            "title": "Explicación didáctica",
+            "description": "La presentación debe tener una introducción, desarrollo ordenado y una conclusión recapitulativa. Además, se debe explicar el contexto y los conceptos clave para que la información sea comprensible.",
+            "priority": "MEDIA"
+          },
+          {
+            "title": "Organización clara",
+            "description": "La presentación debe tener una introducción, desarrollo ordenado y una conclusión recapitulativa. Además, se debe explicar el contexto y los conceptos clave para que la información sea comprensible.",
+            "priority": "MEDIA"
+          }
+        ],
+        "improvedExamples": []
+      }
+    },
+    "simulation_reply": {
+      "ok": true,
+      "elapsedSeconds": 4.54,
+      "result": {
+        "replyText": "¿Cómo te gustaría que te describiera tu experiencia en la organización de tareas y registro de usuarios en tu plataforma universitaria?",
+        "intent": "context",
+        "shouldEnd": false,
+        "focus": "next_turn",
+        "provider": "ollama",
+        "model": "qwen2.5:1.5b"
+      }
+    },
+    "simulation_feedback": {
+      "ok": true,
+      "elapsedSeconds": 9.73,
+      "result": {
+        "sufficientEvidence": true,
+        "insufficientEvidenceReason": null,
+        "overallScore": 0.0,
+        "summary": "0/100: No se proporcionó una explicación detallada del aporte. No se mencionó cómo se implementó la autenticación ni cómo se demostró el recorrido completo.",
+        "strengths": [],
+        "areasForImprovement": [
+          "Clarity",
+          "Relevance",
+          "Adaptation"
+        ],
+        "recommendations": [
+          "Explica cómo se implementó la autenticación y cómo se demostró el recorrido completo.",
+          "Mantenga la relevancia en el contexto de la entrevista laboral universitaria.",
+          "Adapte la respuesta para que sea más clara y relevante."
+        ],
+        "criteriaScores": {
+          "CLARITY": 0.0,
+          "RELEVANCE": 0.0,
+          "THREAD": 0.0,
+          "ADAPTATION": 0.0
+        },
+        "provider": "ollama",
+        "model": "qwen2.5:1.5b"
+      }
+    },
+    "pose_blank_image": {
+      "ok": true,
+      "elapsedSeconds": 6.77,
+      "result": {
+        "schemaVersion": "v1",
+        "provider": "mediapipe-local",
+        "framesAnalyzed": 1,
+        "framesWithPerson": 0,
+        "presenceRatio": 0.0,
+        "shoulderTiltDegrees": null,
+        "headOffsetDegrees": null,
+        "bodyMovementNormalized": null,
+        "wristMovementNormalized": null,
+        "limitations": [
+          "Indicadores 2D orientativos; dependen del encuadre y de la cámara.",
+          "No se mide identidad, emoción ni contacto visual exacto.",
+          "Los fotogramas se procesan en memoria y no se conservan."
+        ]
+      }
+    }
+  }
+}

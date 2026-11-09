@@ -1,423 +1,216 @@
-# Oratoria IA
+﻿# OratoriaAI
 
-Plataforma web de entrenamiento de comunicación y oratoria mediante inteligencia
-artificial. El producto busca analizar voz y expresión corporal, ofrecer
-entrenamientos y simulaciones, y presentar retroalimentación útil sobre el desempeño.
+**Plataforma Inteligente para el Entrenamiento y Mejora de la Comunicación Oral.**
+Continuidad de Ingeniería de Software I / II. Rama de trabajo: `isaias-gutierrez`.
 
-## Estado del proyecto
+React + Spring Boot + PostgreSQL + FastAPI, con reconocimiento de voz, evaluación
+semántica, conversaciones y análisis corporal mediante modelos **locales**. No se
+requieren claves de OpenAI, Groq o Gemini ni se realizan cobros.
 
-La aplicación incluye actualmente prácticas grabadas con transcripción y evaluación,
-dashboard/progreso real y simulaciones conversacionales por voz con IA. La evaluación
-final de una simulación se almacena separada de las métricas de las prácticas.
+## Estado y alcance
 
-### Implementado actualmente
+Incluye registro/login, perfil y contraseña, catálogo por habilidades, grabación y
+reproducción privada, transcripción española, métricas temporales y acústicas,
+evaluación con rúbrica, simulaciones, improvisación, ejercicios narrativos y
+persuasivos, recomendaciones por resultados, progreso, planes/cuotas,
+administración e informes imprimibles/PDF. La cámara es opcional y requiere una
+acción explícita; solo se conservan sus indicadores.
 
-- PostgreSQL 17 ejecutado mediante Docker Compose y persistencia en volumen.
-- API Spring Boot conectada a PostgreSQL.
-- Registro y login de usuarios con contraseñas BCrypt y JWT.
-- Roles `USER` y `ADMIN`, rutas protegidas y administrador inicial configurable.
-- Planes `FREE` y `PREMIUM` modelados; alta automática con plan `FREE`.
-- Frontend React con autenticación, dashboard y rutas protegidas.
-- Servicio base FastAPI con endpoints `/` y `/health`.
+Las métricas y notas son orientativas. No hay modelo supervisado propio entrenado,
+validación clínica, reconocimiento de identidad ni detección de emociones. La
+precisión corporal con personas reales y la validez de las rúbricas necesitan
+validación humana. Ver [la entrega y sus límites](docs/ENTREGA_FINAL_ORATORIAAI.md)
+y [los resultados de pruebas](docs/pruebas/INFORME_DE_PRUEBAS.md).
 
-### Planificado o en desarrollo
-
-- Análisis avanzado de voz, postura, rostro y discurso.
-- Modelos de IA y generación de retroalimentación automática.
-- Entrenamientos, simulaciones y métricas completas de progreso.
-- Integración efectiva entre Spring Boot y los análisis de FastAPI.
-- Funcionalidades comerciales completas del plan `PREMIUM`.
-
-| Componente | Estado actual |
-| --- | --- |
-| PostgreSQL y Docker Compose | Implementado y comprobable localmente |
-| Spring Boot y JPA | Implementado |
-| React y Vite | Implementado |
-| Registro y login `USER` | Implementado |
-| BCrypt y JWT | Implementado |
-| Plan `FREE` | Implementado e inicializado al arrancar |
-| Plan `PREMIUM` | Modelado; prestaciones comerciales pendientes |
-| Administrador inicial | Implementado; requiere variables reales al arrancar |
-| FastAPI base | Implementado, aún sin modelos de IA |
-| Análisis avanzado de IA | En desarrollo |
-
-## Stack tecnológico
-
-- Frontend: React 19, TypeScript 6 y Vite 8.
-- Backend: Spring Boot 4, Java 21 y Maven.
-- Base de datos: PostgreSQL 17 en Docker.
-- Servicio de IA: Python, FastAPI y Uvicorn.
-
-Las librerías y modelos especializados para análisis de voz, postura, rostro y texto
-son trabajo futuro; todavía no existe una canalización funcional de IA.
-
-## Arquitectura
+## Arquitectura y puertos
 
 ```text
-React :5173
-  |
-  | HTTP / REST
-  v
-Spring Boot :8081
-  |
-  +---- PostgreSQL :5434
-  |
-  +---- FastAPI :8000
-           |
-           +---- servicios y modelos de IA futuros
+React       http://localhost:5173
+  -> Spring http://localhost:8081/api
+       -> PostgreSQL 127.0.0.1:5435 / oratoria_db
+       -> FastAPI   http://127.0.0.1:8000
+            -> Whisper base / MediaPipe locales
+            -> Ollama http://127.0.0.1:11434 -> Qwen local
 ```
 
-- React ofrece la interfaz, mantiene la sesión local y consume la API principal.
-- Spring Boot concentra autenticación, usuarios, roles, planes, suscripciones y la
-  futura lógica de sesiones y entrenamiento.
-- PostgreSQL es la fuente de verdad para los datos transaccionales.
-- FastAPI contiene la base del procesamiento relacionado con IA. Todavía no está
-  conectado al backend ni contiene modelos entrenados.
-
-Consulta [la arquitectura](docs/ARCHITECTURE.md) para conocer los módulos del sistema.
+Los pesos, credenciales, grabaciones, cachés y herramientas portátiles están excluidos
+de Git. [Arquitectura y diagramas](docs/ARQUITECTURA_FINAL.md), [API](docs/API.md),
+[base de datos](docs/BASE_DE_DATOS.md), [24 HU Scrum](docs/REQUISITOS_SCRUM.md).
 
 ## Requisitos
 
-- Git.
-- Java 21 (`java -version`).
-- Node.js `20.19+` o `22.12+` y npm, según el requisito de Vite 8
-  (`node --version`, `npm --version`).
-- Docker Desktop con Docker Compose (`docker compose version`).
-- Python 3.10 o posterior recomendado (`python --version`).
-- PowerShell para seguir literalmente los ejemplos de Windows.
+Probado en Windows 11, Java 21.0.1, Python 3.13.7, Node 24.9.0/npm 11.6.0,
+Docker Desktop con Compose 2.39.4 y PostgreSQL 17.6. Maven Wrapper 3.9.16 incluido.
+Usar Python 3.13 de 64 bits para el entorno fijado de bibliotecas locales.
 
-El repositorio incluye `backend/mvnw` y `backend/mvnw.cmd`; no es necesario instalar
-Maven globalmente.
+Guía estimada para otras computadoras: 16 GB RAM y unos 10 GB libres para el perfil
+CPU pequeño; 24 GB RAM y GPU NVIDIA de 6 GB VRAM recomendados para el perfil 4B.
+Las mediciones realizadas en este equipo están en [modelos locales](docs/ia/MODELOS_LOCALES.md).
 
-## Instalación
+Instalar Git, JDK 21, Python, Node y Docker Desktop desde sus sitios oficiales y
+habilitar el motor Linux de Docker. No se instalaron estos productos automáticamente
+en esta tarea: ya estaban disponibles. Configurar JAVA_HOME al JDK si Maven no lo encuentra.
 
 ```powershell
-git clone https://github.com/GaboTex2004/oratoria-ia.git
+git --version
+java -version
+py --version
+node --version
+npm.cmd --version
+docker compose version
+```
+
+## Instalación desde una copia nueva
+
+Los ejemplos PowerShell usan `C:\oratoria-ia-main`, la ruta realmente probada.
+En otra computadora, sustituir esa ruta por la del clon. No clonar sobre una carpeta
+con trabajo existente ni usar git init en un repositorio ya clonado.
+
+```powershell
+git clone --branch isaias-gutierrez https://github.com/GaboTex2004/oratoria-ia.git
 cd oratoria-ia
 ```
 
-Cada componente administra sus dependencias. Los pasos siguientes parten de la raíz.
+**Los cambios de finalización permanecen locales hasta que el responsable autorice
+su publicación.** El clon remoto solo contendrá esta versión después de ese push.
 
-## PostgreSQL con Docker
-
-La configuración real de `docker-compose.yml` es:
-
-- servicio: `postgres`;
-- contenedor: `oratoria_postgres`;
-- imagen: PostgreSQL 17;
-- host: `localhost:5434`;
-- puerto interno: `5432`;
-- base predeterminada: `oratoria_db`;
-- volumen: `oratoria_postgres_data`.
-
-Para desarrollo local puede copiarse la plantilla raíz. Sus valores predeterminados
-`postgres/postgres` son exclusivamente credenciales locales, no de producción.
+Desde la raíz de la copia que contenga estos cambios:
 
 ```powershell
-Copy-Item .env.example .env
-docker compose up -d
-docker compose ps
-```
-
-Docker Compose sí carga automáticamente el `.env` de la raíz. No uses
-`docker compose down -v` como procedimiento habitual: elimina volumen y datos.
-
-## Variables de entorno
-
-### Docker Compose
-
-| Variable | Propósito | Default local |
-| --- | --- | --- |
-| `POSTGRES_DB` | Base inicial | `oratoria_db` |
-| `POSTGRES_USER` | Usuario de PostgreSQL | `postgres` |
-| `POSTGRES_PASSWORD` | Contraseña local | `postgres` |
-| `POSTGRES_PORT` | Puerto publicado | `5434` |
-
-### Backend Spring Boot
-
-| Variable | Propósito | Default |
-| --- | --- | --- |
-| `SERVER_PORT` | Puerto HTTP | `8081` |
-| `DB_URL` | URL JDBC | `jdbc:postgresql://localhost:5434/oratoria_db` |
-| `DB_USERNAME` | Usuario PostgreSQL | `postgres` |
-| `DB_PASSWORD` | Contraseña PostgreSQL | `postgres` |
-| `CORS_ALLOWED_ORIGIN` | Origen de React | `http://localhost:5173` |
-| `AI_SERVICE_URL` | URL base de FastAPI | `http://localhost:8000` |
-| `JWT_SECRET` | Clave de firma JWT | Sin default; obligatoria |
-| `JWT_EXPIRATION_MS` | Duración del JWT | `86400000` |
-| `ADMIN_EMAIL` | Email del administrador inicial | Vacío; opcional |
-| `ADMIN_PASSWORD` | Contraseña inicial | Vacío; opcional |
-| `ADMIN_FIRST_NAME` | Nombre inicial | `Administrador` |
-| `ADMIN_LAST_NAME` | Apellido inicial | `Oratoria IA` |
-
-> **Importante:** Spring Boot no carga `backend/.env` automáticamente.
-> `backend/.env.example` sólo es plantilla/documentación. Crear `backend/.env` no
-> configura Java: no hay dotenv ni `spring.config.import` para ese archivo.
-
-### Configurar el backend en Windows/PowerShell
-
-Usa placeholders y ejecuta Spring desde la misma terminal:
-
-```powershell
-$env:SERVER_PORT="8081"
-$env:DB_URL="jdbc:postgresql://localhost:5434/oratoria_db"
-$env:DB_USERNAME="postgres"
-$env:DB_PASSWORD="postgres"
-$env:CORS_ALLOWED_ORIGIN="http://localhost:5173"
-$env:AI_SERVICE_URL="http://localhost:8000"
-$env:JWT_SECRET="<TU_JWT_SECRET>"
-$env:JWT_EXPIRATION_MS="86400000"
-$env:ADMIN_EMAIL="<TU_EMAIL_ADMIN>"
-$env:ADMIN_PASSWORD="<TU_PASSWORD_ADMIN>"
-$env:ADMIN_FIRST_NAME="<TU_NOMBRE>"
-$env:ADMIN_LAST_NAME="<TU_APELLIDO>"
-```
-
-Estas variables sólo existen en esa sesión de PowerShell. Una terminal distinta no
-las hereda. Nunca escribas credenciales reales dentro de un archivo versionado.
-
-### Generar `JWT_SECRET` en PowerShell
-
-Sin OpenSSL, este ejemplo genera 32 bytes criptográficamente aleatorios:
-
-```powershell
-$bytes = New-Object byte[] 32
-$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-$rng.GetBytes($bytes)
-$rng.Dispose()
-$env:JWT_SECRET = [Convert]::ToBase64String($bytes)
-```
-
-Conserva el secreto de forma segura entre arranques. No lo subas a GitHub ni generes
-uno diferente en cada ejecución: cambiarlo invalida los JWT emitidos anteriormente.
-
-### Frontend
-
-`frontend/.env.example` declara:
-
-```dotenv
-VITE_API_URL=http://localhost:8081/api
-```
-
-Vite sí carga `frontend/.env`. Las variables `VITE_*` quedan visibles en el navegador:
-nunca coloques allí `JWT_SECRET`, `DB_PASSWORD`, `ADMIN_PASSWORD` u otros secretos.
-
-### Servicio FastAPI
-
-| Variable | Default | Propósito |
-| --- | --- | --- |
-| `AI_SERVICE_HOST` | `0.0.0.0` | Interfaz de escucha |
-| `AI_SERVICE_PORT` | `8000` | Puerto HTTP |
-| `SPRING_API_URL` | `http://localhost:8081/api` | URL futura de Spring |
-| `APP_ENV` | `development` | Entorno y modo debug |
-| `INTERNAL_API_KEY` | valor local de desarrollo | Autentica llamadas Spring -> FastAPI |
-| `GROQ_API_KEY` | vacío | Credencial de Groq para STT y conversación |
-| `GROQ_LLM_MODEL` | `openai/gpt-oss-120b` | Modelo conversacional y evaluador |
-| `SIMULATION_MIN_USER_TURNS` | `2` | Respuestas mínimas para puntuar una simulación |
-| `SIMULATION_LLM_PROVIDER` | `groq` | Proveedor de turnos: `groq` o `gemini` |
-| `SIMULATION_EVALUATION_PROVIDER` | valor de `SIMULATION_LLM_PROVIDER` | Proveedor de evaluación final |
-| `SIMULATION_GROQ_MODEL` | `openai/gpt-oss-120b` | Modelo Groq exclusivo de simulaciones |
-| `SIMULATION_GEMINI_MODEL` | `gemini-3.8-flash` | Modelo Gemini conversacional |
-| `SIMULATION_GEMINI_REPLY_THINKING_LEVEL` | `low` | Razonamiento de baja latencia para turnos |
-| `SIMULATION_GEMINI_FEEDBACK_THINKING_LEVEL` | `medium` | Razonamiento separado para evaluación final |
-| `GEMINI_API_KEY` | vacío | Clave privada usada sólo por FastAPI |
-| `SIMULATION_LLM_TIMEOUT_SECONDS` | `45` | Timeout de generación conversacional |
-
-FastAPI tampoco carga `ai-service/.env` automáticamente; `app/core/config.py` obtiene
-estas variables directamente del entorno del proceso.
-
-## Administrador inicial
-
-`AdminInitializer` se ejecuta al arrancar Spring, después de garantizar el plan `FREE`:
-
-1. Lee las cuatro variables `ADMIN_*`.
-2. Si email y contraseña están vacíos, no crea administrador.
-3. Si sólo uno está configurado o la contraseña tiene menos de 8 caracteres, detiene
-   el arranque con un error de configuración.
-4. Normaliza el email con `trim` y minúsculas.
-5. Si el email ya existe, no duplica ni modifica usuario o contraseña.
-6. Si no existe, crea un usuario habilitado, rol `ADMIN`, contraseña BCrypt y una
-   suscripción activa al plan `FREE`.
-
-No existe registro público de administradores. `POST /api/auth/register` siempre crea
-un `USER`. Nunca insertes manualmente un `password_hash` en PostgreSQL.
-
-## Roles y planes
-
-- Rol `USER` o `ADMIN`: controla permisos y rutas.
-- Plan `FREE` o `PREMIUM`: controla prestaciones y límites del SaaS.
-
-Son conceptos independientes. Son posibles `USER + FREE` y `USER + PREMIUM`; un
-usuario `PREMIUM` no se convierte en administrador y `ADMIN` no depende de `PREMIUM`.
-El administrador inicial recibe actualmente el plan `FREE`.
-
-## Ejecutar los componentes
-
-### Backend Spring Boot
-
-Después de definir las variables en esa misma terminal:
-
-```powershell
-cd backend
-.\mvnw.cmd spring-boot:run
-```
-
-- API: <http://localhost:8081>
-- Prueba pública: `GET http://localhost:8081/api/test`
-
-### Frontend React
-
-```powershell
+.\scripts\Initialize-Local.ps1
+# En el equipo NVIDIA probado se uso -UseGpu en la primera inicializacion.
+# El script conserva valores existentes y no cambia contrasenas ya creadas.
+docker compose up -d --wait
 cd frontend
-Copy-Item .env.example .env
-npm install
-npm run dev
+npm.cmd ci
+cd ..\ai-service
+py -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+cd ..
 ```
 
-- Aplicación: <http://localhost:5173>
+`Initialize-Local.ps1` genera secretos aleatorios y credenciales ADMIN/FREE/PREMIUM en
+`backend/.env`, una clave interna compartida en `ai-service/.env` y la URL pública en
+`frontend/.env`. No imprime contraseñas. Abrir esos archivos solo localmente. No
+copiar el secreto interno o JWT_SECRET a variables VITE_*.
 
-### Servicio FastAPI
+Spring carga `.env` como archivo de propiedades (valores sin comillas); Python usa
+python-dotenv. Las variables reales del proceso prevalecen sobre los archivos. Las
+plantillas `.env.example` documentan las opciones y no contienen secretos reales.
+
+## Preparar modelos una vez
 
 ```powershell
+.\scripts\Install-Ollama.ps1
+```
+
+Descarga el runtime portátil oficial de unos 1.6 GB y verifica su SHA256. En una
+terminal dedicada, dejar funcionando:
+
+```powershell
+.\scripts\Start-Ollama.ps1
+```
+
+En otra terminal, desde la raíz:
+
+```powershell
+.\.tools\ollama\ollama.exe pull qwen2.5:1.5b
 cd ai-service
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+.\.venv\Scripts\python.exe scripts/download_models.py --whisper base --pose
+cd ..
 ```
 
-- Servicio: <http://localhost:8000>
-- Estado: `GET http://localhost:8000/health`
-- OpenAPI: <http://localhost:8000/docs>
-
-El servicio actual es un esqueleto; ejecutarlo no habilita análisis de IA.
-
-## Inicio rápido
-
-Abre cuatro terminales en la raíz del repositorio.
-
-### Terminal 1 — PostgreSQL
+Para el perfil GPU probado, elegir en su lugar:
 
 ```powershell
-docker compose up -d
-docker compose ps
+.\.tools\ollama\ollama.exe pull qwen3:4b-instruct-2507-q4_K_M
 ```
 
-### Terminal 2 — Spring Boot
+Y establecer en `ai-service/.env` `OLLAMA_MODEL=qwen3:4b-instruct-2507-q4_K_M` y
+`LLM_NUM_GPU=99`. El perfil CPU usa `qwen2.5:1.5b` y `LLM_NUM_GPU=0`.
+No hay fallback cloud: un modelo ausente genera un error explícito. El manifiesto
+de descarga guarda procedencia y revisión de Whisper/MediaPipe.
+
+## Iniciar la plataforma
+
+PostgreSQL y Ollama deben estar activos. Abrir tres terminales más desde la raíz:
 
 ```powershell
-# Define antes DB_*, JWT_SECRET y, si corresponde, ADMIN_*.
-cd backend
-.\mvnw.cmd spring-boot:run
+# Terminal Spring Boot: compila el JAR e inicia sin logging DEBUG ambiental.
+.\scripts\Start-Backend.ps1
 ```
 
-### Terminal 3 — FastAPI
-
 ```powershell
-cd ai-service
-.\.venv\Scripts\Activate.ps1
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# Terminal FastAPI: solo pesos locales, un worker.
+.\scripts\Start-Ai.ps1
 ```
 
-### Terminal 4 — React
-
 ```powershell
+# Terminal React
 cd frontend
-npm run dev
+npm.cmd run dev -- --host 127.0.0.1 --strictPort
 ```
 
-## Flujo de autenticación
+Abrir **http://localhost:5173**. Las migraciones y semillas se ejecutan al arrancar
+Spring. Las cuentas demo solo se inicializan en perfil `dev`, activado por el
+inicializador local. El registro normal siempre crea USER + FREE.
 
-```text
-Registro:
-React -> POST /api/auth/register -> Spring -> BCrypt -> PostgreSQL
-                                                |
-                                                +-> USER + FREE -> JWT
+Comprobar los procesos HTTP:
 
-Login:
-React -> POST /api/auth/login -> Spring -> PostgreSQL -> BCrypt -> JWT
+```powershell
+Invoke-WebRequest http://localhost:8081/api/test -UseBasicParsing
+Invoke-WebRequest http://127.0.0.1:8000/health -UseBasicParsing
+Invoke-WebRequest http://localhost:5173 -UseBasicParsing
 ```
 
-Después de autenticar:
+Un 200 en health no acredita inferencia. [Verificación real de modelos](docs/pruebas/PLAN_DE_PRUEBAS.md).
 
-- `USER` navega a `/home`.
-- `ADMIN` navega a `/admin`.
-- `GET /api/users/me` reconstruye la sesión.
-- `GET /api/admin/status` comprueba autorización administrativa.
+## Base existente y pruebas aisladas
 
-La API es stateless: el logout del frontend elimina el token local.
+La primera adopción de una base anterior requiere backup y comparación con V1.
+`Initialize-Local.ps1` habilita baseline para esta copia de desarrollo; no usar esa
+opción con un esquema desconocido. En una base vacía Flyway ejecuta V1–V3.
+Nunca usar `docker compose down -v` para actualizar: elimina datos.
+
+Crear la base de pruebas una sola vez, comprobando primero si existe:
+
+```powershell
+docker exec oratoria_postgres psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='oratoria_test'"
+# Si el resultado esta vacio:
+docker exec oratoria_postgres createdb -U postgres oratoria_test
+```
+
+Después:
+
+```powershell
+.\scripts\Test-Local.ps1
+```
+
+La suite usa TEST_DB_URL/TEST_DB_USERNAME/TEST_DB_PASSWORD y por defecto
+`jdbc:postgresql://127.0.0.1:5435/oratoria_test`; nunca hereda DB_URL de desarrollo.
+CI prepara una base efímera, ejecuta Java, Python y build/lint/frontend sin descargar
+pesos de modelos. El workflow está preparado localmente y no se ejecutó en GitHub
+porque no se realizó push.
 
 ## Solución de problemas
 
-### `ERR_CONNECTION_REFUSED` en `localhost:8081`
+- **Puerto 5434 ocupado:** esta copia usa 5435; no se detuvo el PostgreSQL instalado
+  previamente en Windows. Confirmar `.env` raíz y DB_URL en backend/.env.
+- **Docker no conecta:** iniciar Docker Desktop y esperar su motor Linux; luego
+  `docker compose ps` y `docker compose logs postgres`.
+- **Ollama no responde o falta el modelo:** revisar su terminal, modelo exacto y
+  perfil CPU/GPU. La URL de inferencia debe ser HTTP de loopback, sin proxy.
+- **CPU lenta:** usar el modelo 1.5B; el modelo 4B en CPU fue mucho más lento en este
+  equipo. Aumentar timeouts no convierte un equipo insuficiente en una GPU.
+- **401 interno:** las claves INTERNAL_API_KEY de Java y Python deben coincidir.
+- **Esquema incompatible:** no borrar tablas ni editar migraciones aplicadas;
+  revisar el backup, el log Flyway y la versión de la base.
+- **Python Store muestra una advertencia de prefix:** en este equipo el proceso
+  funciona y sus pruebas pasan; los scripts verifican el código de salida nativo y
+  no confunden stderr con un fallo. Para una instalación nueva se recomienda el
+  instalador oficial de Python 3.13 y recrear el entorno virtual si corresponde.
+- **Permiso de cámara/micrófono denegado:** concederlo desde el navegador después
+  de pulsar la acción correspondiente; no se activa hardware al abrir la página.
 
-Spring Boot no está ejecutándose o falló al arrancar. Revisa su terminal y comprueba
-que Tomcat haya iniciado en `8081`.
-
-### Docker o PostgreSQL no conectan
-
-Comprueba Docker Desktop y ejecuta:
-
-```powershell
-docker compose ps
-docker compose logs postgres
-```
-
-El backend local usa `localhost:5434`, no el servicio `postgres`, que sólo es resoluble
-desde contenedores de la misma red.
-
-### El administrador recibe `401 Unauthorized`
-
-Comprueba que `ADMIN_EMAIL` y `ADMIN_PASSWORD` estuvieran en la misma terminal que
-inició Spring. `backend/.env` por sí solo no se carga. Si faltan, el inicializador se
-omite silenciosamente y no crea la cuenta.
-
-Si el email ya estaba registrado como `USER`, el inicializador no lo promueve, no
-cambia su contraseña y tampoco duplica el email.
-
-### Falta `JWT_SECRET`
-
-Es obligatorio y debe tener al menos 32 caracteres. Configúralo antes de iniciar Maven;
-no agregues un valor real a `application.properties`.
-
-### Puerto ocupado
-
-Identifica primero el proceso; no lo cierres automáticamente:
-
-```powershell
-Get-NetTCPConnection -State Listen -LocalPort 8081
-Get-Process -Id <PID>
-```
-
-También puedes cambiar temporalmente `SERVER_PORT`, sincronizando `VITE_API_URL`.
-
-### Hibernate no puede determinar el dialecto
-
-Normalmente significa que no pudo abrir la conexión JDBC, no que debas forzar
-`hibernate.dialect`. Comprueba Docker, `DB_URL`, credenciales, puerto y base.
-
-## Seguridad
-
-- Nunca subas `.env`, contraseñas, hashes completos, JWT ni `JWT_SECRET`.
-- Los `.env.example` con placeholders sí se versionan.
-- Nunca expongas secretos mediante variables `VITE_*`.
-- Las contraseñas se almacenan mediante BCrypt.
-- El registro público nunca permite seleccionar rol ni crear administradores.
-- Sustituye los defaults locales en cualquier entorno no local.
-
-El `.gitignore` excluye `.env`, `.env.*`, `backend/.env`, `frontend/.env` y
-`ai-service/.env`, con excepciones explícitas para los `.env.example`.
-
-## Flujo de trabajo con Git
-
-No desarrolles directamente sobre `main`. Crea una rama pequeña por cambio:
-
-```powershell
-git checkout main
-git pull origin main
-git checkout -b feature/voice-analysis
-```
-
-Ejecuta las comprobaciones del componente, crea commits claros y abre un Pull Request.
-Evita mezclar una funcionalidad con refactors no relacionados. Consulta también
-[el flujo del equipo](docs/TEAM_WORKFLOW.md).
+[Manual de usuario](docs/MANUAL_USUARIO.md) · [Administración](docs/MANUAL_ADMINISTRACION.md)
+· [Datos y consentimiento](docs/ia/DATASET_Y_PROCEDENCIA.md) · [Estándares](docs/ESTANDARES.md)

@@ -1,0 +1,11 @@
+﻿(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 e2e\admin.spec.ts:5:1 › administración real: acceso y creación de ejercicio inactivo (1.4s)
+  ok 2 e2e\local-model-journey.spec.ts:5:1 › registro, grabación sintética, modelos locales, simulación, cámara sintética y PDF @models (1.9m)
+  ok 3 e2e\responsive.spec.ts:18:3 › responsive real APIs 320px (6.7s)
+  ok 4 e2e\responsive.spec.ts:18:3 › responsive real APIs 375px (6.7s)
+  ok 5 e2e\responsive.spec.ts:18:3 › responsive real APIs 580px (6.6s)
+  ok 6 e2e\responsive.spec.ts:18:3 › responsive real APIs 768px (6.7s)
+  ok 7 e2e\responsive.spec.ts:18:3 › responsive real APIs 980px (6.4s)
+  ok 8 e2e\responsive.spec.ts:18:3 › responsive real APIs 1440px (6.4s)
+
+  8 passed (2.6m)

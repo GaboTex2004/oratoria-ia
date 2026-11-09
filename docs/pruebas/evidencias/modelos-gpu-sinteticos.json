@@ -1,0 +1,427 @@
+{
+  "transcription": {
+    "ok": true,
+    "elapsedSeconds": 12.43,
+    "result": {
+      "schemaVersion": "v1",
+      "sessionId": "synthetic-local",
+      "provider": "faster-whisper",
+      "model": "whisper-base",
+      "language": "es",
+      "transcriptText": "Buenos días. Hoy presentamos una plataforma para mejorar la comunicación oral. Primero organizamos las ideas. Después practicamos con ejemplos. Por ejemplo, una entrevista permite explicar nuestra experiencia. Finalmente revisamos los resultados para aprender y mejorar.",
+      "segments": [
+        {
+          "index": 0,
+          "startSeconds": 0.0,
+          "endSeconds": 5.3,
+          "text": "Buenos días. Hoy presentamos una plataforma para mejorar la comunicación oral."
+        },
+        {
+          "index": 1,
+          "startSeconds": 6.14,
+          "endSeconds": 10.86,
+          "text": "Primero organizamos las ideas. Después practicamos con ejemplos."
+        },
+        {
+          "index": 2,
+          "startSeconds": 11.64,
+          "endSeconds": 15.54,
+          "text": "Por ejemplo, una entrevista permite explicar nuestra experiencia."
+        },
+        {
+          "index": 3,
+          "startSeconds": 16.52,
+          "endSeconds": 19.74,
+          "text": "Finalmente revisamos los resultados para aprender y mejorar."
+        }
+      ],
+      "words": [
+        {
+          "word": "Buenos",
+          "startSeconds": 0.0,
+          "endSeconds": 0.36
+        },
+        {
+          "word": "días.",
+          "startSeconds": 0.36,
+          "endSeconds": 0.74
+        },
+        {
+          "word": "Hoy",
+          "startSeconds": 1.44,
+          "endSeconds": 1.86
+        },
+        {
+          "word": "presentamos",
+          "startSeconds": 1.86,
+          "endSeconds": 2.5
+        },
+        {
+          "word": "una",
+          "startSeconds": 2.5,
+          "endSeconds": 2.78
+        },
+        {
+          "word": "plataforma",
+          "startSeconds": 2.78,
+          "endSeconds": 3.28
+        },
+        {
+          "word": "para",
+          "startSeconds": 3.28,
+          "endSeconds": 3.68
+        },
+        {
+          "word": "mejorar",
+          "startSeconds": 3.68,
+          "endSeconds": 4.04
+        },
+        {
+          "word": "la",
+          "startSeconds": 4.04,
+          "endSeconds": 4.24
+        },
+        {
+          "word": "comunicación",
+          "startSeconds": 4.24,
+          "endSeconds": 4.96
+        },
+        {
+          "word": "oral.",
+          "startSeconds": 4.96,
+          "endSeconds": 5.3
+        },
+        {
+          "word": "Primero",
+          "startSeconds": 6.14,
+          "endSeconds": 6.62
+        },
+        {
+          "word": "organizamos",
+          "startSeconds": 6.62,
+          "endSeconds": 7.26
+        },
+        {
+          "word": "las",
+          "startSeconds": 7.26,
+          "endSeconds": 7.5
+        },
+        {
+          "word": "ideas.",
+          "startSeconds": 7.5,
+          "endSeconds": 7.8
+        },
+        {
+          "word": "Después",
+          "startSeconds": 8.9,
+          "endSeconds": 9.22
+        },
+        {
+          "word": "practicamos",
+          "startSeconds": 9.22,
+          "endSeconds": 9.94
+        },
+        {
+          "word": "con",
+          "startSeconds": 9.94,
+          "endSeconds": 10.2
+        },
+        {
+          "word": "ejemplos.",
+          "startSeconds": 10.2,
+          "endSeconds": 10.86
+        },
+        {
+          "word": "Por",
+          "startSeconds": 11.64,
+          "endSeconds": 11.88
+        },
+        {
+          "word": "ejemplo,",
+          "startSeconds": 11.88,
+          "endSeconds": 12.34
+        },
+        {
+          "word": "una",
+          "startSeconds": 12.7,
+          "endSeconds": 12.92
+        },
+        {
+          "word": "entrevista",
+          "startSeconds": 12.92,
+          "endSeconds": 13.42
+        },
+        {
+          "word": "permite",
+          "startSeconds": 13.42,
+          "endSeconds": 13.76
+        },
+        {
+          "word": "explicar",
+          "startSeconds": 13.76,
+          "endSeconds": 14.4
+        },
+        {
+          "word": "nuestra",
+          "startSeconds": 14.4,
+          "endSeconds": 14.88
+        },
+        {
+          "word": "experiencia.",
+          "startSeconds": 14.88,
+          "endSeconds": 15.54
+        },
+        {
+          "word": "Finalmente",
+          "startSeconds": 16.52,
+          "endSeconds": 17.14
+        },
+        {
+          "word": "revisamos",
+          "startSeconds": 17.14,
+          "endSeconds": 17.72
+        },
+        {
+          "word": "los",
+          "startSeconds": 17.72,
+          "endSeconds": 17.92
+        },
+        {
+          "word": "resultados",
+          "startSeconds": 17.92,
+          "endSeconds": 18.42
+        },
+        {
+          "word": "para",
+          "startSeconds": 18.42,
+          "endSeconds": 18.82
+        },
+        {
+          "word": "aprender",
+          "startSeconds": 18.82,
+          "endSeconds": 19.22
+        },
+        {
+          "word": "y",
+          "startSeconds": 19.22,
+          "endSeconds": 19.38
+        },
+        {
+          "word": "mejorar.",
+          "startSeconds": 19.38,
+          "endSeconds": 19.74
+        }
+      ],
+      "metrics": {
+        "wordCount": 35,
+        "recordingDurationSeconds": 20.66,
+        "estimatedSpokenDurationSeconds": 14.98,
+        "spokenTimeRatio": 0.7251,
+        "wordsPerMinute": 101.65,
+        "spokenWordsPerMinute": 140.19,
+        "fillerWordsTotal": 0,
+        "fillerWordCounts": {},
+        "estimatedPauseCount": 5,
+        "totalPauseDurationSeconds": 4.4,
+        "longestPauseSeconds": 1.1,
+        "timestampsAvailable": true,
+        "acousticMetrics": {
+          "rmsAmplitude": 0.091729,
+          "relativeLevelDbfs": -20.75,
+          "clippingRatio": 0.0,
+          "pitchMedianHz": 205.13,
+          "pitchStdHz": 40.71,
+          "pitchFrames": 525.0
+        }
+      }
+    }
+  },
+  "evaluation": {
+    "ok": true,
+    "elapsedSeconds": 117.23,
+    "result": {
+      "schemaVersion": "v1",
+      "sessionId": "synthetic-local",
+      "trainingType": "PRESENTATION",
+      "rubricVersion": "oratoria-rubric-v1.0",
+      "provider": "oratoria-local-hybrid",
+      "model": "qwen3:4b-instruct-2507-q4_K_M",
+      "sufficientEvidence": true,
+      "insufficientEvidenceReason": null,
+      "overallScore": 76.8,
+      "executiveSummary": "El discurso es claro, coherente y bien organizado, con una estructura lógica que cumple con los indicadores de una presentación académica. Sin embargo, carece de respaldo empírico o evidencia concreta para sus afirmaciones.",
+      "measuredIndicators": [
+        {
+          "code": "WORD_COUNT",
+          "label": "Extensión verbal medida",
+          "value": 35,
+          "unit": "palabras",
+          "interpretation": "Total de palabras reconocidas en 20.7 s de grabación.",
+          "source": "MEASURED"
+        },
+        {
+          "code": "WORDS_PER_MINUTE",
+          "label": "Velocidad de habla (WPM)",
+          "value": 101.7,
+          "unit": "palabras/min",
+          "interpretation": "Ritmo fluido dentro del rango recomendado para exposición en español (110–160 WPM).",
+          "source": "MEASURED"
+        },
+        {
+          "code": "FILLER_WORDS_TOTAL",
+          "label": "Muletillas contabilizadas",
+          "value": 0,
+          "unit": "ocurrencias",
+          "interpretation": "Sin muletillas detectadas en la transcripción.",
+          "source": "MEASURED"
+        },
+        {
+          "code": "ESTIMATED_PAUSE_COUNT",
+          "label": "Pausas prolongadas (≥ 0.6 s)",
+          "value": 5,
+          "unit": "pausas",
+          "interpretation": "Tiempo acumulado en pausas: 4.4 s (máxima: 1.1 s).",
+          "source": "MEASURED"
+        },
+        {
+          "code": "SPOKEN_TIME_RATIO",
+          "label": "Proporción de tiempo hablado activo",
+          "value": 72.5,
+          "unit": "%",
+          "interpretation": "Porcentaje de la grabación con fonación activa frente a silencios.",
+          "source": "MEASURED"
+        }
+      ],
+      "criteriaScores": [
+        {
+          "code": "CLARITY",
+          "label": "Claridad y precisión conceptual",
+          "weight": 0.25,
+          "score": 89.5,
+          "level": "SOBRESALIENTE",
+          "justification": "El vocabulario es comprensible y los términos clave como 'comunicación oral' y 'practicar' son bien definidos. No hay ambigüedades en el uso del lenguaje. Índice orientativo híbrido: 70% semántica (85) + 30% reglas (100). No es una medición clínica.",
+          "evidenceQuotes": [
+            "mejorar la comunicación oral"
+          ],
+          "judgmentType": "AI_ESTIMATED"
+        },
+        {
+          "code": "COHERENCE",
+          "label": "Coherencia y conexión temática",
+          "weight": 0.25,
+          "score": 78.6,
+          "level": "COMPETENTE",
+          "justification": "El hilo conductor es claro: organizar ideas, practicar con ejemplos y revisar resultados. Las ideas se conectan lógicamente sin contradicciones ni saltos abruptos. Índice orientativo híbrido: 70% semántica (90) + 30% reglas (52). No es una medición clínica.",
+          "evidenceQuotes": [
+            "Buenos días. Hoy presentamos una plataforma para mejorar la comunicación oral. Primero organizamos las ideas. Después practicamos con ejempl"
+          ],
+          "judgmentType": "AI_ESTIMATED"
+        },
+        {
+          "code": "ORGANIZATION",
+          "label": "Organización (Apertura, Desarrollo y Cierre)",
+          "weight": 0.25,
+          "score": 96.5,
+          "level": "SOBRESALIENTE",
+          "justification": "La presentación incluye una apertura contextualizadora, un desarrollo ordenado de pasos y un cierre con síntesis. La estructura sigue un flujo lógico y esperado en una exposición académica. Índice orientativo híbrido: 70% semántica (95) + 30% reglas (100). No es una medición clínica.",
+          "evidenceQuotes": [
+            "Finalmente revisamos los resultados para aprender y mejorar."
+          ],
+          "judgmentType": "AI_ESTIMATED"
+        },
+        {
+          "code": "ARGUMENTATION",
+          "label": "Sustento, ejemplos y valor explicativo",
+          "weight": 0.25,
+          "score": 42.6,
+          "level": "INICIAL",
+          "justification": "El texto menciona ejemplos concretos como una entrevista, pero no proporciona datos, causas ni consecuencias que respalden las afirmaciones. La conexión entre la plataforma y el ejemplo es vaga. Índice orientativo híbrido: 70% semántica (30) + 30% reglas (72). No es una medición clínica.",
+          "evidenceQuotes": [
+            "Por ejemplo, una entrevista permite explicar nuestra experiencia."
+          ],
+          "judgmentType": "AI_ESTIMATED"
+        }
+      ],
+      "strengths": [
+        "Estructura clara y lógica que sigue una secuencia natural de ideas.",
+        "Uso de ejemplos concretos que ayudan a ilustrar el proceso de mejora."
+      ],
+      "areasForImprovement": [
+        "Profundizar en el desarrollo de conectores lógicos y evidencia de respaldo."
+      ],
+      "recommendations": [
+        {
+          "title": "Aplicar estructura tripartita explícita",
+          "description": "En tus próximas prácticas de Presentación Académica o Profesional, divide tu respuesta en tesis inicial, argumentos con ejemplo y conclusión.",
+          "priority": "ALTA"
+        }
+      ],
+      "improvedExamples": []
+    }
+  },
+  "simulation_reply": {
+    "ok": true,
+    "elapsedSeconds": 1.52,
+    "result": {
+      "replyText": "¿Cómo diseñaste el proceso de registro para asegurar que los estudiantes puedan acceder sin problemas?",
+      "intent": "verificar el funcionamiento del registro de usuarios",
+      "shouldEnd": false,
+      "focus": "registro de usuarios",
+      "provider": "ollama",
+      "model": "qwen3:4b-instruct-2507-q4_K_M"
+    }
+  },
+  "simulation_feedback": {
+    "ok": true,
+    "elapsedSeconds": 21.77,
+    "result": {
+      "sufficientEvidence": true,
+      "insufficientEvidenceReason": null,
+      "overallScore": 80.0,
+      "summary": "El aporte es relevante y bien estructurado en cuanto al hilo de conversación, pero requiere mayor claridad técnica y especificidad para reflejar un nivel profesional adecuado en una entrevista laboral. La adaptación al contexto de una entrevista podría mejorar con un enfoque más técnico y con métricas de impacto.",
+      "strengths": [
+        "El aporte está directamente relacionado con el objetivo de la entrevista (aportes y resultados).",
+        "El hilo de la conversación es claro y coherente: se pregunta por el aporte, y se responde con una acción y su resultado.",
+        "El contenido es relevante para mostrar contribución técnica en un entorno universitario."
+      ],
+      "areasForImprovement": [
+        "El uso de 'escribi' en lugar de 'escribí' y la falta de especificidad técnica (por ejemplo, tipo de pruebas, herramientas) reducen la claridad y el impacto técnico.",
+        "El término 'recorrido completo' es vago; sería más claro especificar si se refiere al flujo de usuario, al proceso de autenticación o al recorrido funcional del sistema.",
+        "Se podría mejorar la adaptación al contexto de una entrevista laboral incluyendo métricas o impacto del aporte (por ejemplo, 'redujo el tiempo de registro en un 30%', 'permitió a 100 usuarios registrarse sin errores')."
+      ],
+      "recommendations": [
+        "Reescribir el aporte con un lenguaje técnico y preciso, usando verbos en pasado y estructuras claras (por ejemplo: 'Implementé el sistema de autenticación con OAuth y escribí pruebas unitarias y de integración').",
+        "Especificar el resultado con métricas o impacto (por ejemplo: 'El registro de usuarios se completó en menos de 2 minutos, con un 99% de éxito en pruebas').",
+        "Asegurarse de que el contenido siga un hilo claro: acción → resultado → impacto, alineado con el objetivo de la entrevista."
+      ],
+      "criteriaScores": {
+        "CLARITY": 65.0,
+        "RELEVANCE": 90.0,
+        "THREAD": 90.0,
+        "ADAPTATION": 75.0
+      },
+      "provider": "ollama",
+      "model": "qwen3:4b-instruct-2507-q4_K_M"
+    }
+  },
+  "pose_blank_image": {
+    "ok": true,
+    "elapsedSeconds": 9.16,
+    "result": {
+      "schemaVersion": "v1",
+      "provider": "mediapipe-local",
+      "framesAnalyzed": 1,
+      "framesWithPerson": 0,
+      "presenceRatio": 0.0,
+      "shoulderTiltDegrees": null,
+      "headOffsetDegrees": null,
+      "bodyMovementNormalized": null,
+      "wristMovementNormalized": null,
+      "limitations": [
+        "Indicadores 2D orientativos; dependen del encuadre y de la cámara.",
+        "No se mide identidad, emoción ni contacto visual exacto.",
+        "Los fotogramas se procesan en memoria y no se conservan."
+      ]
+    }
+  }
+}

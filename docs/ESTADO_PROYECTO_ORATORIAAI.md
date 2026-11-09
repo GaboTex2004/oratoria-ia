@@ -1,5 +1,9 @@
 # OratoriaAI — Estado del proyecto y guía de continuidad
 
+> Documento histórico de traspaso. Se preservan los informes y atribuciones originales.
+> El estado verificado de la rama actual se registra en
+> [ENTREGA_FINAL_ORATORIAAI.md](ENTREGA_FINAL_ORATORIAAI.md).
+
 **Fecha:** 22 de octubre de 2026
 **Proyecto:** Ingeniería de Software I — OratoriaAI  
 **Propósito:** documento de traspaso para que otro integrante pueda continuar el desarrollo sin perder el contexto.

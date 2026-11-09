@@ -1,4 +1,8 @@
-# Arquitectura
+# Arquitectura — referencia histórica de Software I
+
+> Se conserva este documento como referencia anterior a la inferencia local. Sus
+> apartados de estado futuro no describen la implementación actual. Consulta
+> [ARQUITECTURA_FINAL.md](ARQUITECTURA_FINAL.md) para el diseño ejecutable actualizado.
 
 ## Visión general
 
