@@ -60,7 +60,7 @@
 
 .exercise-catalog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 18px;
 }
 
@@ -294,7 +294,7 @@
 
 .sessions-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -725,7 +725,7 @@
 
 .results-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
   gap: 16px;
 }
 
@@ -763,7 +763,7 @@
 
 .results-details-grid {
   display: grid;
-  grid-template-columns: 1.45fr 1fr;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
   gap: 18px;
   align-items: start;
 }
@@ -1042,7 +1042,7 @@
 
 .evaluation-criteria-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
   gap: 16px;
 }
 
@@ -1183,7 +1183,7 @@
 
 .evaluation-recommendations-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: 14px;
 }
 
@@ -1295,4 +1295,24 @@
   .evaluation-summary-card__score-box {
     width: 100%;
   }
+}
+
+.session-item__main, .session-item__info, .results-details-grid > *,
+.evaluation-feedback-columns > *, .evaluation-example-card__comparison > *,
+.evaluation-summary-card__main { min-width: 0; }
+.session-item__actions, .results-selector-bar__audio { max-width: 100%; }
+.audio-player__timeline { min-width: 0; }
+.results-panel-header, .results-status-banner__actions,
+.exercise-card__footer, .results-definition-list > div { flex-wrap: wrap; gap: 12px; }
+.results-segments__item p { min-width: 0; }
+
+@media (max-width: 580px) {
+  .recorder-studio, .recorder-console, .recorder-prompt-box { padding: 18px; }
+  .session-item__main { width: 100%; gap: 10px; }
+  .session-item__actions, .results-selector-bar__audio { width: 100%; justify-content: flex-start; }
+  .recorder-actions, .results-header-actions, .results-status-banner__actions { width: 100%; }
+  .recorder-actions .button, .results-header-actions .button,
+  .results-status-banner__actions .button { flex: 1 1 160px; }
+  .results-segments__item { flex-direction: column; gap: 6px; }
+  .results-transcript-text { padding: 14px; }
 }

@@ -43,3 +43,15 @@
 .auth-showcase__glow--bottom { right: -120px; bottom: -180px; background: #adc6ff; }
 @media (max-width: 980px) { .auth-layout { grid-template-columns: 1fr; } .auth-panel { min-height: 100vh; } .auth-showcase { display: none; } }
 @media (max-width: 560px) { .auth-panel { padding: 30px 20px; align-items: flex-start; } .auth-panel__content { margin-top: 8px; } .auth-header { margin: 28px 0 24px; } .auth-form__two-columns { grid-template-columns: 1fr; } }
+
+.auth-panel, .auth-showcase, .auth-form__two-columns > *, .benefit-card > div { min-width: 0; }
+.auth-form__label-row { flex-wrap: wrap; gap: 8px; }
+.terms-field input { flex-shrink: 0; }
+@media (min-width: 981px) and (max-width: 1200px) {
+  .auth-showcase { padding: 36px 28px; }
+  .benefit-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .form-field input { font-size: 16px; }
+  .auth-panel { min-height: 100svh; padding-bottom: max(30px, env(safe-area-inset-bottom)); }
+}

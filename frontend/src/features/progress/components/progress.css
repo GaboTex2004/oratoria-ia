@@ -55,7 +55,7 @@
 .comparison-selectors label { display: flex; flex-direction: column; gap: 7px; color: var(--muted); font-size: 12px; font-weight: 700; }
 .comparison-selectors select { width: 100%; min-height: 44px; padding: 9px 12px; color: var(--primary); border: 1px solid var(--border); border-radius: 9px; background: #fff; }
 .comparison-selectors > .material-symbols-outlined { margin-bottom: 10px; color: var(--secondary); }
-.comparison-table { overflow: hidden; border: 1px solid var(--border); border-radius: 11px; }
+.comparison-table { overflow-x: auto; border: 1px solid var(--border); border-radius: 11px; }
 .comparison-row { min-width: 620px; display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 12px; padding: 12px 15px; border-bottom: 1px solid var(--border); font-size: 12px; }
 .comparison-row:last-child { border-bottom: 0; }
 .comparison-row--head { color: var(--muted); background: var(--surface-low); font-weight: 700; }
@@ -93,4 +93,13 @@
   .progress-kpis article { min-height: 126px; }
   .metric-chart { min-height: 210px; }
   .metric-chart svg { min-height: 175px; }
+}
+
+.progress-kpis > *, .progress-chart-grid > *, .skills-grid > *,
+.insights-grid > *, .comparison-selectors > *, .progress-history-item > * { min-width: 0; }
+.progress-chart-card > header, .progress-alert, .progress-hero { flex-wrap: wrap; }
+.comparison-selectors { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+.chart-caption { flex-wrap: wrap; }
+@media (max-width: 760px) {
+  .comparison-selectors { grid-template-columns: minmax(0, 1fr); }
 }
