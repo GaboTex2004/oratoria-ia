@@ -1,4 +1,4 @@
-"""Bounded loopback-only JSON transport. No proxy, redirects or cloud fallback."""
+"""Bounded local JSON transport. No proxy, redirects or cloud fallback."""
 
 import ipaddress
 import json
@@ -20,22 +20,27 @@ class LocalModelError(Exception):
 
 
 def local_base_url(raw: str) -> str:
-    """Restrict inference to the same machine, without URL credentials."""
+    """Allow loopback or an explicitly configured internal Docker hostname."""
     parsed = urllib.parse.urlsplit(raw)
+    hostname = (parsed.hostname or "").lower().rstrip(".")
     try:
-        loopback = ipaddress.ip_address(parsed.hostname or "").is_loopback
+        loopback = ipaddress.ip_address(hostname).is_loopback
     except ValueError:
-        loopback = parsed.hostname == "localhost"
+        loopback = hostname == "localhost"
+    allowed_internal = hostname in settings.ollama_allowed_hosts
     if (
         parsed.scheme != "http"
-        or not loopback
+        or not (loopback or allowed_internal)
         or parsed.username
         or parsed.password
         or parsed.query
         or parsed.fragment
         or parsed.path not in ("", "/")
     ):
-        raise LocalModelError("REMOTE_INFERENCE_FORBIDDEN", "Ollama debe usar HTTP en loopback.")
+        raise LocalModelError(
+            "REMOTE_INFERENCE_FORBIDDEN",
+            "Ollama debe usar HTTP en loopback o un hostname interno autorizado.",
+        )
     return raw.rstrip("/")
 
 

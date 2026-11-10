@@ -4,7 +4,8 @@ import { randomUUID } from 'node:crypto'
 
 test('administración real: acceso y creación de ejercicio inactivo', async ({ page }) => {
   test.skip(!process.env.E2E_ADMIN_EMAIL || !process.env.E2E_ADMIN_PASSWORD, 'Provide explicit development administrator credentials through environment variables.')
-  const response = await page.request.post('http://localhost:8081/api/auth/login', { data: {
+  const api = process.env.E2E_API_URL || 'http://localhost:8081/api'
+  const response = await page.request.post(`${api}/auth/login`, { data: {
     email: process.env.E2E_ADMIN_EMAIL, password: process.env.E2E_ADMIN_PASSWORD,
   } })
   expect(response.status()).toBe(200)

@@ -1,5 +1,27 @@
 # OratoriaAI
 
+## Inicio completo con Docker (Windows)
+
+El modo recomendado solo requiere Docker Desktop, Docker Compose y PowerShell. No
+usa el PostgreSQL ni el Ollama instalados en Windows y no publica esos servicios.
+
+```powershell
+.\scripts\Up-Docker.ps1
+```
+
+El primer arranque crea secretos locales sin sobrescribir valores existentes,
+construye las tres aplicaciones y descarga Qwen, Whisper Base y MediaPipe en
+volúmenes persistentes. Después se puede iniciar normalmente con:
+
+```powershell
+docker compose up -d --build
+```
+
+La interfaz queda en **http://127.0.0.1:15173** por defecto. El puerto se cambia con
+`FRONTEND_PORT` en el `.env` ignorado por Git. La guía de operación, pruebas,
+persistencia, GPU, respaldo y recuperación está en
+[Docker para Windows](docs/DOCKER_WINDOWS.md).
+
 **Plataforma Inteligente para el Entrenamiento y Mejora de la Comunicación Oral.**
 Continuidad de Ingeniería de Software I / II. Rama de trabajo: `isaias-gutierrez`.
 
@@ -183,7 +205,7 @@ Un 200 en health no acredita inferencia. [Verificación real de modelos](docs/pr
 
 La primera adopción de una base anterior requiere backup y comparación con V1.
 `Initialize-Local.ps1` habilita baseline para esta copia de desarrollo; no usar esa
-opción con un esquema desconocido. En una base vacía Flyway ejecuta V1–V3.
+opción con un esquema desconocido. En una base vacía Flyway ejecuta V1–V4.
 Nunca usar `docker compose down -v` para actualizar: elimina datos.
 
 Crear la base de pruebas una sola vez, comprobando primero si existe:

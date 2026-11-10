@@ -25,7 +25,7 @@ test('registro, grabación sintética, modelos locales, simulación, cámara sin
   await expect(page).toHaveURL(/home/)
   const token = await page.evaluate(() => localStorage.getItem('oratoria.auth-token'))
   const headers = { Authorization: `Bearer ${token}` }
-  const api = 'http://localhost:8081/api'
+  const api = process.env.E2E_API_URL || 'http://localhost:8081/api'
 
   await page.goto('/training?type=PRESENTATION')
   await page.getByRole('button', { name: /Practicar ahora/ }).first().click()

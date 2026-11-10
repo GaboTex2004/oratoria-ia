@@ -4,6 +4,7 @@ import io
 import json
 import socket
 import urllib.error
+from dataclasses import replace
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -42,6 +43,18 @@ def test_remote_inference_urls_are_rejected(url):
 @pytest.mark.parametrize("url", ["http://127.0.0.1:11434", "http://localhost:11434/", "http://[::1]:11434"])
 def test_loopback_urls_are_allowed(url):
     assert local_base_url(url).startswith("http://")
+
+
+def test_explicit_internal_ollama_hostname_is_allowed(monkeypatch):
+    monkeypatch.setattr("app.infrastructure.ollama.settings", replace(settings, ollama_allowed_hosts=("ollama",)))
+    assert local_base_url("http://ollama:11434") == "http://ollama:11434"
+
+
+@pytest.mark.parametrize("url", ["http://ollama.evil:11434", "https://ollama:11434", "http://user@ollama:11434"])
+def test_internal_allowlist_does_not_weaken_transport_rules(monkeypatch, url):
+    monkeypatch.setattr("app.infrastructure.ollama.settings", replace(settings, ollama_allowed_hosts=("ollama",)))
+    with pytest.raises(LocalModelError):
+        local_base_url(url)
 
 
 @pytest.mark.parametrize(

@@ -21,6 +21,11 @@ class Settings:
     inference_threads: int = int(os.getenv("INFERENCE_THREADS", "4"))
     llm_num_gpu: int = int(os.getenv("LLM_NUM_GPU", "0"))
     ollama_url: str = os.getenv("OLLAMA_URL", "http://127.0.0.1:11434")
+    ollama_allowed_hosts: tuple[str, ...] = tuple(
+        host.strip().lower().rstrip(".")
+        for host in os.getenv("OLLAMA_ALLOWED_HOSTS", "").split(",")
+        if host.strip()
+    )
     ollama_model: str = os.getenv("OLLAMA_MODEL", "qwen2.5:1.5b")
     llm_timeout_seconds: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "240"))
     llm_context_tokens: int = int(os.getenv("LLM_CONTEXT_TOKENS", "4096"))

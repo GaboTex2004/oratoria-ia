@@ -1,11 +1,12 @@
 import { expect, test, request as apiRequest } from '@playwright/test'
 import { randomUUID } from 'node:crypto'
+import process from 'node:process'
 
 let token = ''
 
 test.beforeAll(async () => {
   const api = await apiRequest.newContext()
-  const response = await api.post('http://localhost:8081/api/auth/register', { data: {
+  const response = await api.post(`${process.env.E2E_API_URL || 'http://localhost:8081/api'}/auth/register`, { data: {
     firstName: 'PruebaResponsiveConNombreExtenso', lastName: 'Sintetica',
     email: `browser-${randomUUID()}@example.test`, password: `Test-${randomUUID()}`,
   } })

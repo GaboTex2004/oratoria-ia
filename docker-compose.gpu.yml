@@ -1,0 +1,6 @@
+services:
+  ollama:
+    gpus: all
+  ai-service:
+    environment:
+      LLM_NUM_GPU: ${LLM_NUM_GPU:-99}

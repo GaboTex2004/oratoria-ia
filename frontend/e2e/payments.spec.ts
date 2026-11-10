@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { randomUUID } from 'node:crypto'
 import process from 'node:process'
 
-const api = 'http://localhost:8081/api'
+const api = process.env.E2E_API_URL || 'http://localhost:8081/api'
 async function register(page: Page) {
   const response = await page.request.post(`${api}/auth/register`, { data: {
     firstName: 'PagoSintetico', lastName: 'Prueba', email: `payment-${randomUUID()}@example.test`, password: `Test-${randomUUID()}`,

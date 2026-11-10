@@ -7,7 +7,7 @@ export default defineConfig({
   reporter: [['list']],
   grepInvert: process.env.E2E_MODELS === '1' ? undefined : /@models/,
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: process.env.E2E_BASE_URL || 'http://localhost:5173',
     channel: process.env.PLAYWRIGHT_CHANNEL || 'msedge',
     headless: true,
     screenshot: 'only-on-failure',

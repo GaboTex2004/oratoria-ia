@@ -1,25 +1,285 @@
+name: oratoriaai-local
+
+x-app-environment: &app-environment
+  INTERNAL_API_KEY: ${INTERNAL_API_KEY:?Ejecuta .\scripts\Up-Docker.ps1 para generar INTERNAL_API_KEY}
+
 services:
   postgres:
-    image: postgres:17
-    container_name: oratoria_postgres
-
+    image: postgres:17-bookworm
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-oratoria_db}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-
-    ports:
-      - "127.0.0.1:${POSTGRES_PORT:-5435}:5432"
-
+      POSTGRES_DB: ${ORATORIA_DB_NAME:-oratoriaai_local}
+      POSTGRES_USER: ${ORATORIA_DB_USER:-oratoria}
+      POSTGRES_PASSWORD: ${ORATORIA_DB_PASSWORD:?Ejecuta .\scripts\Up-Docker.ps1 para generar ORATORIA_DB_PASSWORD}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
-      retries: 12
+      retries: 20
       start_period: 10s
-
     volumes:
-      - oratoria_postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 20s
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - internal
+      - downloads
+
+  ollama-model-init:
+    image: ollama/ollama:latest
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        OLLAMA_HOST=http://ollama:11434 ollama show "$${OLLAMA_MODEL}" >/dev/null 2>&1 ||
+        OLLAMA_HOST=http://ollama:11434 ollama pull "$${OLLAMA_MODEL}";
+        OLLAMA_HOST=http://ollama:11434 ollama show "$${OLLAMA_MODEL}" >/dev/null
+    environment:
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:1.5b}
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - internal
+
+  ai-model-init:
+    build:
+      context: ./ai-service
+      target: runtime
+    image: oratoriaai-local-ai-service:local
+    restart: "no"
+    user: "0:0"
+    command: ["python", "scripts/download_models.py", "--whisper", "base", "--pose"]
+    environment:
+      MODEL_ROOT: /models
+    volumes:
+      - ai_models:/models
+    networks:
+      - downloads
+
+  ai-service:
+    build:
+      context: ./ai-service
+      target: runtime
+    image: oratoriaai-local-ai-service:local
+    restart: unless-stopped
+    environment:
+      <<: *app-environment
+      AI_SERVICE_HOST: 0.0.0.0
+      AI_SERVICE_PORT: 8000
+      APP_ENV: docker
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_ALLOWED_HOSTS: ollama
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:1.5b}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-300}
+      LLM_CONTEXT_TOKENS: ${LLM_CONTEXT_TOKENS:-4096}
+      LLM_NUM_GPU: ${LLM_NUM_GPU:-0}
+      INFERENCE_THREADS: ${INFERENCE_THREADS:-4}
+      MODEL_ROOT: /models
+      WHISPER_MODEL_PATH: /models/whisper-base
+      WHISPER_DEVICE: ${WHISPER_DEVICE:-cpu}
+      WHISPER_COMPUTE_TYPE: ${WHISPER_COMPUTE_TYPE:-int8}
+      POSE_MODEL_PATH: /models/pose_landmarker_lite.task
+      AUDIO_MAX_SIZE_BYTES: ${AUDIO_MAX_SIZE_BYTES:-15728640}
+      AUDIO_MAX_DURATION_SECONDS: ${AUDIO_MAX_DURATION_SECONDS:-300}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read()"]
+      interval: 10s
+      timeout: 8s
+      retries: 30
+      start_period: 20s
+    depends_on:
+      ai-model-init:
+        condition: service_completed_successfully
+      ollama-model-init:
+        condition: service_completed_successfully
+    volumes:
+      - ai_models:/models:ro
+    networks:
+      - internal
+
+  media-init:
+    build:
+      context: ./backend
+      target: runtime
+    image: oratoriaai-local-backend:local
+    restart: "no"
+    user: "0:0"
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["mkdir -p /app/data/audio && chown -R 10001:10001 /app/data"]
+    volumes:
+      - private_media:/app/data
+    networks:
+      - internal
+
+  backend:
+    build:
+      context: ./backend
+      target: runtime
+    image: oratoriaai-local-backend:local
+    restart: unless-stopped
+    environment:
+      <<: *app-environment
+      APP_PROFILE: ${APP_PROFILE:-dev}
+      SERVER_PORT: 8081
+      DB_URL: jdbc:postgresql://postgres:5432/${ORATORIA_DB_NAME:-oratoriaai_local}
+      DB_USERNAME: ${ORATORIA_DB_USER:-oratoria}
+      DB_PASSWORD: ${ORATORIA_DB_PASSWORD:?Ejecuta .\scripts\Up-Docker.ps1 para generar ORATORIA_DB_PASSWORD}
+      FLYWAY_BASELINE_ON_MIGRATE: "false"
+      AI_SERVICE_URL: http://ai-service:8000
+      AI_SERVICE_TIMEOUT_SECONDS: ${AI_SERVICE_TIMEOUT_SECONDS:-330}
+      CORS_ALLOWED_ORIGIN: http://127.0.0.1:${FRONTEND_PORT:-15173},http://localhost:${FRONTEND_PORT:-15173}
+      JWT_SECRET: ${JWT_SECRET:?Ejecuta .\scripts\Up-Docker.ps1 para generar JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_FIRST_NAME: ${ADMIN_FIRST_NAME:-Administrador}
+      ADMIN_LAST_NAME: ${ADMIN_LAST_NAME:-Oratoria IA}
+      BILLING_DEMO_ENABLED: ${BILLING_DEMO_ENABLED:-true}
+      BILLING_PREMIUM_PRICE: ${BILLING_PREMIUM_PRICE:-49.00}
+      BILLING_GRACE_DAYS: ${BILLING_GRACE_DAYS:-3}
+      AUDIO_STORAGE_DIR: /app/data/audio
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--show-error", "http://127.0.0.1:8081/api/test"]
+      interval: 10s
+      timeout: 8s
+      retries: 40
+      start_period: 45s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+      media-init:
+        condition: service_completed_successfully
+    volumes:
+      - private_media:/app/data
+    networks:
+      - internal
+
+  frontend:
+    build:
+      context: ./frontend
+      target: runtime
+      args:
+        VITE_API_URL: /api
+    image: oratoriaai-local-frontend:local
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-15173}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - internal
+      - public
+
+  postgres-test:
+    image: postgres:17-bookworm
+    profiles: ["test"]
+    environment:
+      POSTGRES_DB: oratoriaai_test
+      POSTGRES_USER: oratoria_test
+      POSTGRES_PASSWORD: ${ORATORIA_DB_PASSWORD:?Ejecuta .\scripts\Up-Docker.ps1 primero}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    tmpfs:
+      - /var/lib/postgresql/data
+    networks:
+      - internal
+
+  backend-tests:
+    build:
+      context: ./backend
+      target: build
+    profiles: ["test"]
+    command: ["mvn", "-B", "test"]
+    environment:
+      TEST_DB_URL: jdbc:postgresql://postgres-test:5432/oratoriaai_test
+      TEST_DB_USERNAME: oratoria_test
+      TEST_DB_PASSWORD: ${ORATORIA_DB_PASSWORD:?Ejecuta .\scripts\Up-Docker.ps1 primero}
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    networks:
+      - internal
+      - downloads
+
+  ai-tests:
+    build:
+      context: ./ai-service
+      target: test
+    profiles: ["test"]
+    command: ["/bin/sh", "-c", "python -m ruff check app tests scripts && python -m pytest -m 'not models' -q"]
+    environment:
+      INTERNAL_API_KEY: docker-test-internal-key
+    networks:
+      - internal
+
+  frontend-tests:
+    build:
+      context: ./frontend
+      target: build
+      args:
+        VITE_API_URL: /api
+    profiles: ["test"]
+    command: ["/bin/sh", "-c", "npm test && npm run lint && npm run build"]
+    networks:
+      - internal
+
+  playwright-tests:
+    build:
+      context: ./frontend
+      target: e2e
+    profiles: ["test"]
+    environment:
+      E2E_BASE_URL: http://frontend:8080
+      E2E_API_URL: http://frontend:8080/api
+      E2E_ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      E2E_ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      PLAYWRIGHT_CHANNEL: chromium
+      E2E_MODELS: ${E2E_MODELS:-0}
+      E2E_SYNTHETIC_AUDIO: ${E2E_SYNTHETIC_AUDIO:-}
+    depends_on:
+      frontend:
+        condition: service_healthy
+    volumes:
+      - ./.tools:/.tools
+    networks:
+      - internal
 
 volumes:
-  oratoria_postgres_data:
+  postgres_data:
+  ollama_models:
+  ai_models:
+  private_media:
+
+networks:
+  internal:
+    internal: true
+  public:
+  downloads:
