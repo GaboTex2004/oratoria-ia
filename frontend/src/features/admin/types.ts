@@ -6,7 +6,7 @@ export interface ExerciseRow extends ExerciseDraft { id: string }
 export interface CategoryDraft { code: string; name: string; description: string; active: boolean }
 export interface CategoryRow extends CategoryDraft { id: string; exercises: number }
 export interface EntitlementRow { code: string; kind: 'FEATURE' | 'LIMIT'; enabled: boolean; limit: number | null; unlimited: boolean }
-export interface PlanAdminView { code: string; name: string; price: number; currency: string; active: boolean; entitlements: EntitlementRow[] }
+export interface PlanAdminView { code: string; name: string; price: number | string; currency: string; active: boolean; entitlements: EntitlementRow[] }
 export interface ModuleStatus { module: string; status: 'UP' | 'DOWN'; latencyMs: number; detail: string }
 export interface AdminStats {
   users: number; activeUsers: number; premiumUsers: number; practicesThisMonth: number; simulationsThisMonth: number

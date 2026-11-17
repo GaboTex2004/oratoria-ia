@@ -20,6 +20,8 @@ export function AdminCatalogTab() {
   const categoryName = (code: string) => categories.data?.find(category => category.code === code)?.name || code
   const originalCategory = editing ? exercises.data?.find(exercise => exercise.id === editing)?.category : undefined
   const selectableCategories = (categories.data || []).filter(category => category.active || category.code === originalCategory)
+  // The draft keeps its default code even if that category was deactivated; fall back to the first option shown.
+  const categoryValue = selectableCategories.some(category => category.code === draft.category) ? draft.category : selectableCategories[0]?.code ?? ''
 
   async function run(action: () => Promise<unknown>, success: string) {
     setBusy(true); setError(''); setMessage('')
@@ -29,7 +31,7 @@ export function AdminCatalogTab() {
   function saveExercise(event: FormEvent) {
     event.preventDefault()
     return run(async () => {
-      await apiRequest(`/admin/exercises${editing ? `/${editing}` : ''}`, { method: editing ? 'PUT' : 'POST', body: JSON.stringify(draft) })
+      await apiRequest(`/admin/exercises${editing ? `/${editing}` : ''}`, { method: editing ? 'PUT' : 'POST', body: JSON.stringify({ ...draft, category: categoryValue }) })
       exercises.reload(); categories.reload(); setDraft(emptyExercise); setEditing(null)
     }, 'Ejercicio guardado.')
   }
@@ -70,7 +72,7 @@ export function AdminCatalogTab() {
       <label>Descripción<textarea required maxLength={400} value={draft.description} onChange={event => field('description', event.target.value)} /></label>
       <label>Objetivo<textarea required maxLength={400} value={draft.objective} onChange={event => field('objective', event.target.value)} /></label>
       <label>Instrucciones<textarea required maxLength={1000} value={draft.prompt} onChange={event => field('prompt', event.target.value)} /></label>
-      <label>Categoría<select value={draft.category} onChange={event => field('category', event.target.value)}>{selectableCategories.map(category => <option key={category.code} value={category.code}>{category.name}{category.active ? '' : ' (inactiva)'}</option>)}</select></label>
+      <label>Categoría<select required value={categoryValue} onChange={event => field('category', event.target.value)}>{selectableCategories.map(category => <option key={category.code} value={category.code}>{category.name}{category.active ? '' : ' (inactiva)'}</option>)}</select></label>
       <label>Nivel<select value={draft.difficulty} onChange={event => field('difficulty', event.target.value)}>{['BASIC', 'INTERMEDIATE', 'ADVANCED'].map(level => <option key={level}>{level}</option>)}</select></label>
       <label>Modalidad<select disabled={!!editing} value={draft.trainingType} onChange={event => field('trainingType', event.target.value as TrainingType)}>{Object.entries(TRAINING_TYPE_META).map(([code, meta]) => <option key={code} value={code}>{meta.label}</option>)}</select></label>
       <label>Duración sugerida (segundos)<input required type="number" min={15} max={300} value={draft.duration} onChange={event => field('duration', Number(event.target.value))} /></label>

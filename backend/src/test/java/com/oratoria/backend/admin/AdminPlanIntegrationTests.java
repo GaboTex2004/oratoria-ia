@@ -84,6 +84,13 @@ class AdminPlanIntegrationTests extends AdminTestSupport {
         assertThat(planRepository.findByCode(PlanCode.PREMIUM).orElseThrow().isActive()).isTrue();
     }
 
+    @Test void premiumPriceMustBePositive() throws Exception {
+        mvc.perform(put("/api/admin/plans/PREMIUM").header("Authorization", auth(UserRole.ADMIN)).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Premium\",\"price\":0,\"active\":true,\"entitlements\":[]}"))
+                .andExpect(status().isBadRequest());
+        assertThat(planRepository.findByCode(PlanCode.PREMIUM).orElseThrow().getPrice().signum()).isPositive();
+    }
+
     @Test void priceEditSurvivesRestart() throws Exception {
         mvc.perform(put("/api/admin/plans/PREMIUM").header("Authorization", auth(UserRole.ADMIN)).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Premium\",\"price\":79.50,\"active\":true,\"entitlements\":[]}"))

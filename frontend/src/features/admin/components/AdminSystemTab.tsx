@@ -5,13 +5,13 @@ import { MODULE_LABELS, errorText, type ModuleStatus } from '../types'
 
 type Settings = Record<string, string>
 
-function SettingsForm({ initial, onSaved }: { initial: Settings; onSaved: () => void }) {
+function SettingsForm({ initial, onStart, onSaved }: { initial: Settings; onStart: () => void; onSaved: () => void }) {
   const [draft, setDraft] = useState<Settings>(initial)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
   async function save(event: FormEvent) {
-    event.preventDefault(); setBusy(true); setError('')
+    event.preventDefault(); onStart(); setBusy(true); setError('')
     try { await apiRequest('/admin/settings', { method: 'PUT', body: JSON.stringify(draft) }); onSaved() }
     catch (reason) { setError(errorText(reason, 'No se pudieron guardar los parámetros.')) }
     finally { setBusy(false) }
@@ -42,6 +42,6 @@ export function AdminSystemTab() {
     </section>
     {saved && <p role="status" className="workspace-notice">Parámetros guardados.</p>}
     {!settings.data && settings.loading ? <p>Cargando parámetros…</p> : settings.error ? <div role="alert" className="workspace-notice">{settings.error}<button className="button button--ghost" onClick={settings.reload}>Reintentar</button></div>
-      : settings.data && <SettingsForm key={JSON.stringify(settings.data)} initial={settings.data} onSaved={() => { setSaved(true); settings.reload() }} />}
+      : settings.data && <SettingsForm key={JSON.stringify(settings.data)} initial={settings.data} onStart={() => setSaved(false)} onSaved={() => { setSaved(true); settings.reload() }} />}
   </>
 }

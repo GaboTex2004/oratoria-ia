@@ -35,6 +35,8 @@ public class PlanAdminService {
         if (!update.active()) throw new BadRequestException("Los planes FREE y PREMIUM no pueden desactivarse.");
         BigDecimal price = update.price().setScale(2, java.math.RoundingMode.HALF_UP);
         if (planCode == PlanCode.FREE && price.signum() != 0) throw new BadRequestException("El plan gratuito debe tener precio 0.");
+        // The payment simulator rejects non-positive amounts, so a free Premium would break checkout and renewals.
+        if (planCode == PlanCode.PREMIUM && price.signum() <= 0) throw new BadRequestException("El precio del plan Premium debe ser mayor que 0.");
         try {
             plan.configurePrice(price);
         } catch (IllegalArgumentException exception) {
