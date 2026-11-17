@@ -32,7 +32,7 @@ public class AdminManagementController {
     public record ExerciseUpdate(@NotBlank @Pattern(regexp = "[A-Z0-9_]{3,60}") String code,
             @NotBlank @Size(max = 120) String title, @NotBlank @Size(max = 400) String description,
             @NotBlank @Size(max = 1000) String prompt, @NotBlank @Size(max = 400) String objective,
-            @NotBlank @Pattern(regexp = "CLARIDAD|RITMO|ENTONACION|FLUIDEZ|ESTRUCTURA|ARGUMENTACION|IMPROVISACION|NO_VERBAL|ESTILOS") String category,
+            @NotBlank @Pattern(regexp = "[A-Z0-9_]{3,40}") String category,
             @NotBlank @Pattern(regexp = "BASIC|INTERMEDIATE|ADVANCED") String difficulty,
             @Min(15) @Max(300) int duration, @NotNull TrainingType trainingType, boolean active) {}
 }

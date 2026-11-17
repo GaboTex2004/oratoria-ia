@@ -24,12 +24,15 @@ public class AdminManagementService {
     private final PlanInitializationService plans;
     private final TrainingSessionRepository sessions;
     private final org.springframework.security.crypto.password.PasswordEncoder encoder;
+    private final com.oratoria.backend.admin.category.CategoryAdminService categories;
     public AdminManagementService(UserAccountRepository users, ExerciseRepository exercises,
             SubscriptionRepository subscriptions, PlanInitializationService plans, TrainingSessionRepository sessions,
-            org.springframework.security.crypto.password.PasswordEncoder encoder) {
+            org.springframework.security.crypto.password.PasswordEncoder encoder,
+            com.oratoria.backend.admin.category.CategoryAdminService categories) {
         this.users = users; this.exercises = exercises; this.subscriptions = subscriptions;
         this.plans = plans; this.sessions = sessions;
         this.encoder = encoder;
+        this.categories = categories;
     }
 
     @Transactional(readOnly = true)
@@ -80,11 +83,13 @@ public class AdminManagementService {
     public void saveExercise(UUID id, AdminManagementController.ExerciseUpdate update) {
         Exercise exercise;
         if (id == null) {
+            categories.requireActive(update.category());
             if (exercises.findByCode(update.code()).isPresent()) throw new BadRequestException("El código ya existe.");
             exercise = new Exercise(update.code(), update.title(), update.description(), update.prompt(),
                     update.trainingType(), update.duration());
         } else {
             exercise = exercises.findById(id).orElseThrow(() -> new ResourceNotFoundException("Ejercicio no encontrado."));
+            if (!exercise.getCategory().equals(update.category())) categories.requireActive(update.category());
             exercise.edit(update.title(), update.description(), update.prompt(), update.duration());
         }
         exercise.configure(update.category(), update.difficulty(), update.objective());

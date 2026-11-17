@@ -12,4 +12,5 @@ public interface ExerciseRepository extends JpaRepository<Exercise, UUID> {
     List<Exercise> findByTrainingTypeAndActiveTrueOrderByCreatedAtAsc(TrainingType trainingType);
     Optional<Exercise> findByIdAndActiveTrue(UUID id);
     Optional<Exercise> findByCode(String code);
+    long countByCategory(String category);
 }
