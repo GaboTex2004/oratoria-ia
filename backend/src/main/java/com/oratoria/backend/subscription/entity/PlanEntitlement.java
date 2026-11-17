@@ -71,6 +71,16 @@ public class PlanEntitlement {
         return entitlement;
     }
 
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
+
+    public void configureLimit(Integer limitValue, boolean unlimited) {
+        if (!unlimited && (limitValue == null || limitValue < 0)) {
+            throw new IllegalArgumentException("A finite entitlement requires a non-negative limit");
+        }
+        this.limitValue = unlimited ? null : limitValue;
+        this.unlimited = unlimited;
+    }
+
     public UUID getId() { return id; }
     public Plan getPlan() { return plan; }
     public Feature getFeature() { return feature; }

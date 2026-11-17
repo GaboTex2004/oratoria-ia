@@ -33,11 +33,9 @@ public class PlanInitializationService implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        Plan free = ensurePlan(PlanCode.FREE, "Free");
-        Plan premium = ensurePlan(PlanCode.PREMIUM, "Premium");
         if (premiumPrice.signum() <= 0) throw new IllegalArgumentException("El precio Premium debe ser positivo.");
-        free.configurePrice(java.math.BigDecimal.ZERO.setScale(2));
-        premium.configurePrice(premiumPrice);
+        Plan free = ensurePlan(PlanCode.FREE, "Free", java.math.BigDecimal.ZERO.setScale(2));
+        Plan premium = ensurePlan(PlanCode.PREMIUM, "Premium", premiumPrice);
         initializeFreeEntitlements(free);
         initializePremiumEntitlements(premium);
     }
@@ -54,8 +52,13 @@ public class PlanInitializationService implements ApplicationRunner {
                 .orElseThrow(() -> new IllegalStateException("El plan PREMIUM no está disponible."));
     }
 
-    private Plan ensurePlan(PlanCode code, String name) {
-        return plans.findByCode(code).orElseGet(() -> plans.save(new Plan(code, name)));
+    // The configured price applies only when the plan is first created; later changes come from the admin panel.
+    private Plan ensurePlan(PlanCode code, String name, java.math.BigDecimal initialPrice) {
+        return plans.findByCode(code).orElseGet(() -> {
+            Plan plan = new Plan(code, name);
+            plan.configurePrice(initialPrice);
+            return plans.save(plan);
+        });
     }
 
     private void initializeFreeEntitlements(Plan free) {

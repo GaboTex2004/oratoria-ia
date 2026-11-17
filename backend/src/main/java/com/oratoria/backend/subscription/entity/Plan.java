@@ -47,6 +47,8 @@ public class Plan {
     public boolean isActive() { return active; }
     public java.math.BigDecimal getPrice() { return price; }
     public String getCurrency() { return currency; }
+    public void rename(String name) { this.name = name; }
+    public void setActive(boolean active) { this.active = active; }
     public void configurePrice(java.math.BigDecimal price) {
         if (price == null || price.signum() < 0 || price.scale() > 2 || price.precision() > 12)
             throw new IllegalArgumentException("Precio de plan inválido.");
