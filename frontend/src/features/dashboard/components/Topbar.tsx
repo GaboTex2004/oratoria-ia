@@ -1,11 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 import { Icon } from '../../../shared/components/Icon'
+import { SystemAnnouncement } from '../../../shared/components/SystemAnnouncement'
 
 interface TopbarProps { firstName: string; onMenuOpen: () => void }
 
 export function Topbar({ firstName, onMenuOpen }: TopbarProps) {
   const navigate = useNavigate()
   return (
+    <>
     <header className="topbar">
       <button className="topbar__menu" type="button" onClick={onMenuOpen} aria-label="Abrir menú"><Icon name="menu" /></button>
       <div className="topbar__welcome"><h1>Buenos días, {firstName}</h1><p>¿Qué quieres practicar hoy?</p></div>
@@ -19,5 +21,7 @@ export function Topbar({ firstName, onMenuOpen }: TopbarProps) {
         <span className="avatar" aria-label={`Avatar de ${firstName}`}>{firstName.charAt(0).toUpperCase()}</span>
       </div>
     </header>
+    <SystemAnnouncement />
+    </>
   )
 }
