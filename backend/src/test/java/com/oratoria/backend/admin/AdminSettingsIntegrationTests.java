@@ -72,6 +72,13 @@ class AdminSettingsIntegrationTests extends AdminTestSupport {
         assertThat(storage.getMaxDurationSeconds()).isEqualTo(90);
     }
 
+    @Test void recordingLimitIsPublishedToUsers() throws Exception {
+        save(auth(UserRole.ADMIN), "{\"audio.max-duration-seconds\":\"120\"}");
+        mvc.perform(get("/api/system/limits").header("Authorization", auth(UserRole.USER)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.audioMaxDurationSeconds").value(120));
+    }
+
     @Test void nonAdminGets403() throws Exception {
         mvc.perform(get("/api/admin/settings").header("Authorization", auth(UserRole.USER))).andExpect(status().isForbidden());
     }

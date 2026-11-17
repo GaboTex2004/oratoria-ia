@@ -31,7 +31,8 @@ public class PlanAdminService {
     public void update(String code, PlanAdminController.PlanUpdate update) {
         PlanCode planCode = parse(PlanCode.class, code, "Plan inexistente.");
         Plan plan = plans.findByCode(planCode).orElseThrow(() -> new ResourceNotFoundException("Plan no encontrado."));
-        if (planCode == PlanCode.FREE && !update.active()) throw new BadRequestException("El plan gratuito no puede desactivarse.");
+        // FREE and PREMIUM are both required by registration, billing renewals and admin plan changes.
+        if (!update.active()) throw new BadRequestException("Los planes FREE y PREMIUM no pueden desactivarse.");
         BigDecimal price = update.price().setScale(2, java.math.RoundingMode.HALF_UP);
         if (planCode == PlanCode.FREE && price.signum() != 0) throw new BadRequestException("El plan gratuito debe tener precio 0.");
         try {

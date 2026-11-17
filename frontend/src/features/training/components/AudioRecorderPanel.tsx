@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Icon } from '../../../shared/components/Icon'
+import { useRecordingLimit } from '../../../shared/hooks/useRecordingLimit'
 import { ApiError } from '../../../shared/services/api'
 import { trainingService } from '../services/trainingService'
 import {
@@ -12,7 +13,6 @@ import {
 } from '../types/training'
 import { AudioPlayer } from './AudioPlayer'
 
-const MAX_DURATION_SECONDS = 300
 const MAX_SIZE_BYTES = 15 * 1024 * 1024
 
 const CANDIDATE_MIME_TYPES = [
@@ -71,6 +71,7 @@ export function AudioRecorderPanel({
   onSessionCompleted,
   onCancel,
 }: AudioRecorderPanelProps) {
+  const MAX_DURATION_SECONDS = useRecordingLimit()
   const [phase, setPhase] = useState<RecorderPhase>('idle')
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)

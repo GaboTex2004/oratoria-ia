@@ -77,6 +77,13 @@ class AdminPlanIntegrationTests extends AdminTestSupport {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test void premiumPlanCannotBeDeactivated() throws Exception {
+        mvc.perform(put("/api/admin/plans/PREMIUM").header("Authorization", auth(UserRole.ADMIN)).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Premium\",\"price\":49,\"active\":false,\"entitlements\":[]}"))
+                .andExpect(status().isBadRequest());
+        assertThat(planRepository.findByCode(PlanCode.PREMIUM).orElseThrow().isActive()).isTrue();
+    }
+
     @Test void priceEditSurvivesRestart() throws Exception {
         mvc.perform(put("/api/admin/plans/PREMIUM").header("Authorization", auth(UserRole.ADMIN)).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Premium\",\"price\":79.50,\"active\":true,\"entitlements\":[]}"))

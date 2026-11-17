@@ -27,7 +27,6 @@ function PlanEditor({ plan, onSaved }: { plan: PlanAdminView; onSaved: (code: st
     {error && <p role="alert" className="workspace-notice">{error}</p>}
     <label>Nombre visible<input required maxLength={100} value={draft.name} onChange={event => setDraft({ ...draft, name: event.target.value })} /></label>
     <label>Precio mensual ({draft.currency})<input type="number" min={0} step="0.01" disabled={plan.code === 'FREE'} value={draft.price} onChange={event => setDraft({ ...draft, price: Number(event.target.value) })} /></label>
-    {plan.code !== 'FREE' && <label className="terms-field"><input type="checkbox" checked={draft.active} onChange={event => setDraft({ ...draft, active: event.target.checked })} />Plan disponible para contratar</label>}
     <h3>Límites de uso</h3>
     {limits.map(item => <div className="admin-limit" key={item.code}>
       <span>{ENTITLEMENT_LABELS[item.code] || item.code}</span>

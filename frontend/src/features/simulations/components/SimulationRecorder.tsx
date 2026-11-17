@@ -1,9 +1,10 @@
 import { useEffect,useRef,useState } from 'react'
 import { Icon } from '../../../shared/components/Icon'
-const MAX_SECONDS=300
+import { useRecordingLimit } from '../../../shared/hooks/useRecordingLimit'
 const TYPES=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4']
 function supported(){return TYPES.find(t=>MediaRecorder.isTypeSupported?.(t))||''}
 export function SimulationRecorder({disabled,onSend}:{disabled:boolean;onSend:(blob:Blob,duration:number,key:string)=>Promise<void>}){
+ const MAX_SECONDS=useRecordingLimit()
  const [phase,setPhase]=useState<'idle'|'recording'|'ready'|'sending'>('idle');const [seconds,setSeconds]=useState(0);const [blob,setBlob]=useState<Blob|null>(null);const [requestKey,setRequestKey]=useState('');const [error,setError]=useState('');const recorder=useRef<MediaRecorder|null>(null);const stream=useRef<MediaStream|null>(null);const chunks=useRef<BlobPart[]>([]);const timer=useRef<number|null>(null);const started=useRef(0)
  function cleanup(){if(timer.current!==null)window.clearInterval(timer.current);timer.current=null;stream.current?.getTracks().forEach(t=>t.stop());stream.current=null}
  useEffect(()=>cleanup,[])

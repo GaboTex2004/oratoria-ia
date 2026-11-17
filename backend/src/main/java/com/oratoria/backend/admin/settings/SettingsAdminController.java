@@ -14,5 +14,7 @@ public class SettingsAdminController {
     @PutMapping("/api/admin/settings") @ResponseStatus(HttpStatus.NO_CONTENT)
     void update(@RequestBody Map<String, String> changes) { settings.update(changes); }
 
+    @GetMapping("/api/system/limits") Map<String, Integer> limits() { return Map.of("audioMaxDurationSeconds", settings.audioMaxDurationSeconds()); }
+
     @GetMapping("/api/system/announcement") Map<String, String> announcement() { return Map.of("message", settings.announcement()); }
 }
