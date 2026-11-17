@@ -35,21 +35,18 @@ public class AudioStorageService {
 
     private final Path baseDir;
     private final long maxSizeBytes;
-    private final int maxDurationSeconds;
+    private final com.oratoria.backend.admin.settings.SystemSettingsService settings;
 
     public AudioStorageService(
             @Value("${app.audio.storage-dir:./data/audio}") String storageDir,
             @Value("${app.audio.max-size-bytes:15728640}") long maxSizeBytes,
-            @Value("${app.audio.max-duration-seconds:300}") int maxDurationSeconds) {
+            com.oratoria.backend.admin.settings.SystemSettingsService settings) {
         if (maxSizeBytes <= 0) {
             throw new IllegalStateException("AUDIO_MAX_SIZE_BYTES debe ser mayor que cero.");
         }
-        if (maxDurationSeconds <= 0) {
-            throw new IllegalStateException("AUDIO_MAX_DURATION_SECONDS debe ser mayor que cero.");
-        }
         this.baseDir = Paths.get(storageDir).toAbsolutePath().normalize();
         this.maxSizeBytes = maxSizeBytes;
-        this.maxDurationSeconds = maxDurationSeconds;
+        this.settings = settings;
     }
 
     public StoredAudio store(UUID userId, UUID sessionId, MultipartFile file, Integer durationSeconds) {
@@ -94,7 +91,7 @@ public class AudioStorageService {
     }
 
     public int getMaxDurationSeconds() {
-        return maxDurationSeconds;
+        return settings.audioMaxDurationSeconds();
     }
 
     public void delete(String relativeKey) throws IOException {
@@ -109,6 +106,7 @@ public class AudioStorageService {
         if (durationSeconds == null || durationSeconds < 1) {
             throw new BadRequestException("La duración de la grabación debe ser de al menos 1 segundo.");
         }
+        int maxDurationSeconds = getMaxDurationSeconds();
         if (durationSeconds > maxDurationSeconds) {
             throw new BadRequestException(
                     "La duración de la grabación supera el límite máximo de " + maxDurationSeconds + " segundos.");

@@ -30,19 +30,26 @@ public class AuthService {
     private final JwtService jwtService;
     private final com.oratoria.backend.billing.BillingService billing;
 
+    private final com.oratoria.backend.admin.settings.SystemSettingsService settings;
+
     public AuthService(UserAccountRepository users, SubscriptionRepository subscriptions,
                        PlanInitializationService plans, PasswordEncoder passwordEncoder,
-                       JwtService jwtService, com.oratoria.backend.billing.BillingService billing) {
+                       JwtService jwtService, com.oratoria.backend.billing.BillingService billing,
+                       com.oratoria.backend.admin.settings.SystemSettingsService settings) {
         this.users = users;
         this.subscriptions = subscriptions;
         this.plans = plans;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.billing = billing;
+        this.settings = settings;
     }
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        if (!settings.registrationEnabled()) {
+            throw new org.springframework.security.access.AccessDeniedException("El registro de nuevas cuentas está cerrado temporalmente.");
+        }
         com.oratoria.backend.shared.PasswordPolicy.validate(request.password());
         String email = normalizeEmail(request.email());
         if (users.existsByEmailIgnoreCase(email)) throw new DuplicateEmailException();
