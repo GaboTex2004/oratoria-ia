@@ -34,5 +34,6 @@ public class AdminManagementController {
             @NotBlank @Size(max = 1000) String prompt, @NotBlank @Size(max = 400) String objective,
             @NotBlank @Pattern(regexp = "[A-Z0-9_]{3,40}") String category,
             @NotBlank @Pattern(regexp = "BASIC|INTERMEDIATE|ADVANCED") String difficulty,
-            @Min(15) @Max(300) int duration, @NotNull TrainingType trainingType, boolean active) {}
+            @Min(15) @Max(300) int duration, @NotNull TrainingType trainingType, boolean active,
+            @Size(max = 40) String communicationStyle) {}
 }

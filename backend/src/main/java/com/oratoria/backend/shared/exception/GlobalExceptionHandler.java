@@ -57,7 +57,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     ResponseEntity<ApiError> maxUploadSize(MaxUploadSizeExceededException exception,
                                            HttpServletRequest request) {
-        return response(HttpStatus.BAD_REQUEST, "El archivo de audio supera el tamaño máximo permitido.", request);
+        String message = request.getRequestURI().startsWith("/api/admin/backups")
+                ? "El archivo de respaldo supera el tamaño máximo de subida configurado (AUDIO_MAX_FILE_SIZE)."
+                : "El archivo de audio supera el tamaño máximo permitido.";
+        return response(HttpStatus.BAD_REQUEST, message, request);
     }
 
     @ExceptionHandler(BadRequestException.class)

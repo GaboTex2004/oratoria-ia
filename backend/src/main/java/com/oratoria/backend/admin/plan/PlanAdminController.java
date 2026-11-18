@@ -18,6 +18,6 @@ public class PlanAdminController {
     void update(@PathVariable String code, @Valid @RequestBody PlanUpdate update) { service.update(code, update); }
 
     public record PlanUpdate(@NotBlank @Size(max = 100) String name, @NotNull @DecimalMin("0") BigDecimal price,
-            boolean active, @NotNull List<@Valid EntitlementUpdate> entitlements) {}
+            boolean active, @NotNull List<@NotNull @Valid EntitlementUpdate> entitlements) {}
     public record EntitlementUpdate(@NotBlank String code, boolean enabled, Integer limit, boolean unlimited) {}
 }

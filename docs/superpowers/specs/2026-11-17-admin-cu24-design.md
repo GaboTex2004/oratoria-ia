@@ -28,8 +28,11 @@ ejercicios. Falta todo lo demás que lista el documento.
 
 - No se tocan los flujos de usuarios/ejercicios/pagos simulados que ya funcionan, salvo que la
   categoría pase de lista fija a tabla.
-- No hay roles nuevos (solo `ADMIN`), ni auditoría, ni exportación a PDF desde el admin
-  (el reporte PDF es CU-23).
+- No hay roles nuevos (solo `ADMIN`).
+- Actualización (17-nov, a pedido del equipo): se agregaron después las pestañas **Reportes** (ejercicios
+  completados y dificultades frecuentes, con PDF), **Bitácora** (acciones de autenticación y administrativas) y
+  **Respaldos** (generar, descargar, eliminar y restaurar la base; la restauración cierra todas las sesiones y
+  no incluye los audios).
 - No se crean planes nuevos: solo se editan FREE y PREMIUM (`PlanCode` sigue siendo enum).
 
 ## Restricciones

@@ -1,4 +1,6 @@
 import { useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../auth/context/useAuth'
 import { useResource } from '../../../shared/hooks/useResource'
 import { apiRequest } from '../../../shared/services/api'
 import { errorText } from '../types'
@@ -21,10 +23,13 @@ export function AdminBackupsTab() {
   const [restoring, setRestoring] = useState<Backup | 'file' | null>(null)
   const [confirm, setConfirm] = useState('')
   const [file, setFile] = useState<File | null>(null)
+  const [restored, setRestored] = useState(false)
+  const { logout } = useAuth()
+  const navigate = useNavigate()
 
   async function run(action: () => Promise<string>) {
     setBusy(true); setError(''); setMessage('')
-    try { setMessage(await action()); backups.reload() }
+    try { const text = await action(); setMessage(text); if (!text.startsWith('Restauración')) backups.reload() }
     catch (reason) { setError(errorText(reason, 'No se pudo completar la operación.')) }
     finally { setBusy(false) }
   }
@@ -47,7 +52,7 @@ export function AdminBackupsTab() {
 
   function restore(event: FormEvent) {
     event.preventDefault()
-    if (!restoring) return
+    if (!restoring || restored) return
     return run(async () => {
       let result: RestoreResult
       if (restoring === 'file') {
@@ -58,14 +63,15 @@ export function AdminBackupsTab() {
         result = await apiRequest<RestoreResult>(`/admin/backups/${restoring.id}/restore`, { method: 'POST', body: JSON.stringify({ confirm }) })
       }
       setRestoring(null)
-      return `Restauración completa: ${result.rows} filas en ${result.tables} tablas. Antes se guardó un respaldo automático del estado anterior. Si tu sesión deja de funcionar, vuelve a iniciar sesión.`
+      setRestored(true)
+      return `Restauración completa: ${result.rows} filas en ${result.tables} tablas. Antes se guardó un respaldo automático del estado anterior. Por seguridad se cerraron todas las sesiones, incluida la tuya.`
     })
   }
 
   return <>
     <section className="panel-card">
       <h2>Respaldos de la base de datos</h2>
-      <p className="admin-muted">Un respaldo guarda usuarios, suscripciones, ejercicios, sesiones, evaluaciones y configuración. Las grabaciones de audio se guardan aparte, en el almacenamiento de archivos, y no se incluyen.</p>
+      <p className="admin-muted">Un respaldo guarda usuarios, suscripciones, ejercicios, sesiones, evaluaciones y configuración. Las grabaciones de audio se guardan aparte, en el almacenamiento de archivos, y no se incluyen: al restaurar, los audios de prácticas posteriores al respaldo quedan en el servidor sin su sesión.</p>
       <form className="workspace-form" onSubmit={create}>
         <label>Nota (opcional)<input maxLength={200} value={note} onChange={event => setNote(event.target.value)} placeholder="Ej.: antes de la presentación" /></label>
         <div className="workspace-actions">
@@ -75,7 +81,8 @@ export function AdminBackupsTab() {
       </form>
     </section>
     {error && <p role="alert" className="workspace-notice">{error}</p>}
-    {message && <p role="status" className="workspace-notice">{message}</p>}
+    {message && <div role="status" className="workspace-notice">{message}
+      {restored && <div className="workspace-actions"><button className="button button--primary" onClick={() => { logout(); navigate('/login') }}>Iniciar sesión de nuevo</button></div>}</div>}
 
     {restoring && <form className="panel-card admin-danger workspace-form" onSubmit={restore}>
       <h2>Restaurar {restoring === 'file' ? 'desde un archivo' : `el respaldo del ${dateTime(restoring.createdAt)}`}</h2>

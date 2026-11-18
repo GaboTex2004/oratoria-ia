@@ -1,7 +1,7 @@
 import type { TrainingType } from '../training/types/training'
 
 export interface UserRow { id: string; name: string; email: string; role: string; enabled: boolean; plan: string }
-export interface ExerciseDraft { code: string; title: string; description: string; prompt: string; objective: string; category: string; difficulty: string; duration: number; trainingType: TrainingType; active: boolean }
+export interface ExerciseDraft { code: string; title: string; description: string; prompt: string; objective: string; category: string; difficulty: string; duration: number; trainingType: TrainingType; active: boolean; communicationStyle: string | null }
 export interface ExerciseRow extends ExerciseDraft { id: string }
 export interface CategoryDraft { code: string; name: string; description: string; active: boolean }
 export interface CategoryRow extends CategoryDraft { id: string; exercises: number }

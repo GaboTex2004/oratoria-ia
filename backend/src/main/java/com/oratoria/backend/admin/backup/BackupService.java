@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -156,20 +157,35 @@ public class BackupService {
         }
         if (data.get("plans").isEmpty()) throw new BadRequestException("El respaldo no contiene planes de suscripción.");
 
-        create(actor, "Automático antes de restaurar");
         entityManager.flush();
-        jdbc.execute("TRUNCATE " + String.join(", ", tables.stream().map(BackupService::quote).toList()));
-        long rows = 0;
-        for (String table : tables) {
-            JsonNode tableRows = data.get(table);
-            if (tableRows == null || tableRows.isEmpty()) continue;
-            List<Object[]> batch = new ArrayList<>();
-            for (JsonNode row : tableRows) batch.add(new Object[]{row.toString()});
-            jdbc.batchUpdate("INSERT INTO " + quote(table) + " SELECT * FROM json_populate_record(NULL::" + quote(table) + ", ?::json)", batch);
-            rows += batch.size();
+        // Everything from the safety backup on runs inside a savepoint: if any row fails, the database returns to
+        // exactly where it was and the safety backup file is removed too, so a failed restore leaves no trace.
+        jdbc.execute("SAVEPOINT oratoria_restore");
+        BackupView safety = null;
+        try {
+            safety = create(actor, "Automático antes de restaurar");
+            jdbc.execute("TRUNCATE " + String.join(", ", tables.stream().map(BackupService::quote).toList()));
+            long rows = 0;
+            for (String table : tables) {
+                JsonNode tableRows = data.get(table);
+                if (tableRows.isEmpty()) continue;
+                List<Object[]> batch = new ArrayList<>();
+                for (JsonNode row : tableRows) batch.add(new Object[]{row.toString()});
+                jdbc.batchUpdate("INSERT INTO " + quote(table) + " SELECT * FROM json_populate_record(NULL::" + quote(table) + ", ?::json)", batch);
+                rows += batch.size();
+            }
+            // Passwords and revocations come back from the backup, so every session issued before the restore is closed.
+            jdbc.update("UPDATE app_users SET token_version = token_version + 1");
+            jdbc.execute("RELEASE SAVEPOINT oratoria_restore");
+            entityManager.clear();
+            return new RestoreResult(tables.size(), rows);
+        } catch (DataAccessException exception) {
+            jdbc.execute("ROLLBACK TO SAVEPOINT oratoria_restore");
+            entityManager.clear();
+            if (safety != null) deleteQuietly(safety.fileName());
+            throw new BadRequestException("No se pudo restaurar el respaldo: sus datos no son consistentes ("
+                    + rootMessage(exception) + "). No se modificó nada.");
         }
-        entityManager.clear();
-        return new RestoreResult(tables.size(), rows);
     }
 
     /** Restorable tables, parents before children, so foreign keys hold while rows are inserted. */
@@ -226,6 +242,17 @@ public class BackupService {
         Path path = directory.resolve(name).normalize();
         if (!path.startsWith(directory)) throw new BadRequestException("Nombre de archivo inválido.");
         return path;
+    }
+
+    private void deleteQuietly(String fileName) {
+        try { Files.deleteIfExists(file(fileName)); } catch (IOException ignored) { /* best effort: the row is already gone */ }
+    }
+
+    private static String rootMessage(Throwable error) {
+        Throwable root = error;
+        while (root.getCause() != null) root = root.getCause();
+        String message = root.getMessage() == null ? root.getClass().getSimpleName() : root.getMessage().split("\n")[0];
+        return message.length() > 200 ? message.substring(0, 200) : message;
     }
 
     private static void requireConfirmation(String confirmation) {

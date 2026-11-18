@@ -6,6 +6,7 @@ public enum AuditAction {
     REGISTER("Registro de cuenta"),
     PASSWORD_CHANGED("Cambio de contraseña"),
     USER_UPDATED("Usuario actualizado"),
+    USER_PASSWORD_RESET("Contraseña restablecida por un administrador"),
     EXERCISE_CREATED("Ejercicio creado"),
     EXERCISE_UPDATED("Ejercicio actualizado"),
     CATEGORY_CREATED("Categoría creada"),

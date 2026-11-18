@@ -10,6 +10,25 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 class AdminCategoryIntegrationTests extends AdminTestSupport {
+    static String styledExercise(String code, String style) {
+        return "{\"code\":\"" + code + "\",\"title\":\"Mi estilo\",\"description\":\"d\",\"prompt\":\"p\",\"objective\":\"o\","
+                + "\"category\":\"ESTILOS\",\"difficulty\":\"BASIC\",\"duration\":60,\"trainingType\":\"PRESENTATION\",\"active\":true,"
+                + "\"communicationStyle\":" + style + "}";
+    }
+
+    @org.junit.jupiter.api.Test void adminCanAssignACommunicationStyleToAnExercise() throws Exception {
+        String admin = auth(com.oratoria.backend.user.entity.UserRole.ADMIN);
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/admin/exercises").header("Authorization", admin)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON).content(styledExercise("ESTILO_PROPIO_TEST", "\"NARRATIVO\"")))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isCreated());
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/admin/exercises").header("Authorization", admin))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[?(@.code=='ESTILO_PROPIO_TEST')].communicationStyle",
+                        org.hamcrest.Matchers.contains("NARRATIVO")));
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/admin/exercises").header("Authorization", admin)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON).content(styledExercise("ESTILO_MALO_TEST", "\"NO_EXISTE\"")))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isBadRequest());
+    }
+
 
     String category(String code, boolean active) {
         return "{\"code\":\"" + code + "\",\"name\":\"Nombre " + code + "\",\"description\":\"Desc\",\"active\":" + active + "}";

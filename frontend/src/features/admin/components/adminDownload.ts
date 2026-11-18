@@ -8,7 +8,8 @@ export async function downloadFile(path: string, fileName: string) {
   link.href = url
   link.download = fileName
   link.click()
-  URL.revokeObjectURL(url)
+  // Some browsers start the download asynchronously; revoking right away can cancel it.
+  setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }
 
 export function formatBytes(bytes: number) {

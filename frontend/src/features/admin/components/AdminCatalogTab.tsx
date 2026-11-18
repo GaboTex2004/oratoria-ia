@@ -2,9 +2,10 @@ import { useState, type FormEvent } from 'react'
 import { useResource } from '../../../shared/hooks/useResource'
 import { apiRequest } from '../../../shared/services/api'
 import { TRAINING_TYPE_META, type TrainingType } from '../../training/types/training'
+import { STYLE_NAMES } from '../../../shared/labels'
 import { errorText, type CategoryDraft, type CategoryRow, type ExerciseDraft, type ExerciseRow } from '../types'
 
-const emptyExercise: ExerciseDraft = { code: '', title: '', description: '', prompt: '', objective: '', category: 'ESTRUCTURA', difficulty: 'BASIC', duration: 60, trainingType: 'PRESENTATION', active: true }
+const emptyExercise: ExerciseDraft = { code: '', title: '', description: '', prompt: '', objective: '', category: 'ESTRUCTURA', difficulty: 'BASIC', duration: 60, trainingType: 'PRESENTATION', active: true, communicationStyle: null }
 const emptyCategory: CategoryDraft = { code: '', name: '', description: '', active: true }
 
 export function AdminCatalogTab() {
@@ -62,7 +63,7 @@ export function AdminCatalogTab() {
     </form>
     <section className="panel-card"><h2>Ejercicios</h2>{exercises.loading && <p>Cargando ejercicios…</p>}
       <div className="workspace-table-wrap"><table className="workspace-table"><thead><tr><th>Ejercicio</th><th>Categoría / nivel</th><th>Estado</th><th>Acción</th></tr></thead><tbody>{exercises.data?.map(exercise => <tr key={exercise.id}>
-        <td>{exercise.title}</td><td>{categoryName(exercise.category)} / {exercise.difficulty}</td><td>{exercise.active ? 'Activo' : 'Inactivo'}</td>
+        <td>{exercise.title}</td><td>{categoryName(exercise.category)} / {exercise.difficulty}{exercise.communicationStyle ? ` · Estilo ${STYLE_NAMES[exercise.communicationStyle] ?? exercise.communicationStyle}` : ''}</td><td>{exercise.active ? 'Activo' : 'Inactivo'}</td>
         <td><button className="button button--ghost" disabled={busy} onClick={() => { setEditing(exercise.id); setDraft(exercise) }}>Editar</button></td>
       </tr>)}</tbody></table></div>
     </section>
@@ -75,6 +76,9 @@ export function AdminCatalogTab() {
       <label>Categoría<select required value={categoryValue} onChange={event => field('category', event.target.value)}>{selectableCategories.map(category => <option key={category.code} value={category.code}>{category.name}{category.active ? '' : ' (inactiva)'}</option>)}</select></label>
       <label>Nivel<select value={draft.difficulty} onChange={event => field('difficulty', event.target.value)}>{['BASIC', 'INTERMEDIATE', 'ADVANCED'].map(level => <option key={level}>{level}</option>)}</select></label>
       <label>Modalidad<select disabled={!!editing} value={draft.trainingType} onChange={event => field('trainingType', event.target.value as TrainingType)}>{Object.entries(TRAINING_TYPE_META).map(([code, meta]) => <option key={code} value={code}>{meta.label}</option>)}</select></label>
+      <label>Estilo de comunicación (opcional)<select value={draft.communicationStyle ?? ''} onChange={event => field('communicationStyle', event.target.value || null)}>
+        <option value="">Ninguno</option>{Object.entries(STYLE_NAMES).map(([code, name]) => <option key={code} value={code}>{name}</option>)}
+      </select><small className="admin-muted">Los ejercicios con estilo aparecen en «Estilos de comunicación» y requieren Premium.</small></label>
       <label>Duración sugerida (segundos)<input required type="number" min={15} max={300} value={draft.duration} onChange={event => field('duration', Number(event.target.value))} /></label>
       <label className="terms-field"><input type="checkbox" checked={draft.active} onChange={event => field('active', event.target.checked)} />Disponible para practicar</label>
       <div className="workspace-actions"><button className="button button--primary" disabled={busy}>Guardar</button>{editing && <button className="button button--ghost" type="button" onClick={() => { setEditing(null); setDraft(emptyExercise) }}>Cancelar edición</button>}</div>

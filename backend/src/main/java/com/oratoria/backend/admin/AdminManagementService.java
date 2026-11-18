@@ -25,10 +25,13 @@ public class AdminManagementService {
     private final TrainingSessionRepository sessions;
     private final org.springframework.security.crypto.password.PasswordEncoder encoder;
     private final com.oratoria.backend.admin.category.CategoryAdminService categories;
+    private final com.oratoria.backend.style.CommunicationStyleCatalog styles;
     public AdminManagementService(UserAccountRepository users, ExerciseRepository exercises,
             SubscriptionRepository subscriptions, PlanInitializationService plans, TrainingSessionRepository sessions,
             org.springframework.security.crypto.password.PasswordEncoder encoder,
-            com.oratoria.backend.admin.category.CategoryAdminService categories) {
+            com.oratoria.backend.admin.category.CategoryAdminService categories,
+            com.oratoria.backend.style.CommunicationStyleCatalog styles) {
+        this.styles = styles;
         this.users = users; this.exercises = exercises; this.subscriptions = subscriptions;
         this.plans = plans; this.sessions = sessions;
         this.encoder = encoder;
@@ -76,7 +79,7 @@ public class AdminManagementService {
         return exercises.findAll().stream().map(exercise -> new ExerciseRow(exercise.getId(), exercise.getCode(),
                 exercise.getTitle(), exercise.getDescription(), exercise.getPrompt(), exercise.getCategory(),
                 exercise.getDifficulty(), exercise.getObjective(), exercise.getRecommendedDurationSeconds(),
-                exercise.getTrainingType().name(), exercise.isActive())).toList();
+                exercise.getTrainingType().name(), exercise.isActive(), exercise.getCommunicationStyle())).toList();
     }
 
     @Transactional
@@ -93,11 +96,14 @@ public class AdminManagementService {
             exercise.edit(update.title(), update.description(), update.prompt(), update.duration());
         }
         exercise.configure(update.category(), update.difficulty(), update.objective());
+        exercise.assignStyle(update.communicationStyle() == null || update.communicationStyle().isBlank()
+                ? null : styles.require(update.communicationStyle()).code());
         exercise.setActive(update.active());
         exercises.save(exercise);
     }
 
     public record UserRow(UUID id, String name, String email, UserRole role, boolean enabled, PlanCode plan) {}
     public record ExerciseRow(UUID id, String code, String title, String description, String prompt,
-            String category, String difficulty, String objective, int duration, String trainingType, boolean active) {}
+            String category, String difficulty, String objective, int duration, String trainingType, boolean active,
+            String communicationStyle) {}
 }

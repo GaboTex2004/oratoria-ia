@@ -26,8 +26,11 @@ public class BackupController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    BackupService.BackupView create(Principal principal, @jakarta.validation.Valid @RequestBody(required = false) CreateRequest request) {
-        return backups.create(principal.getName(), request == null ? null : request.note());
+    BackupService.BackupView create(Principal principal, @jakarta.validation.Valid @RequestBody(required = false) CreateRequest request,
+                                    jakarta.servlet.http.HttpServletRequest http) {
+        BackupService.BackupView backup = backups.create(principal.getName(), request == null ? null : request.note());
+        http.setAttribute(com.oratoria.backend.admin.audit.AdminAuditInterceptor.ENTITY_ID, backup.id());
+        return backup;
     }
 
     @GetMapping("/{id}/download")

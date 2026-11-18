@@ -12,11 +12,15 @@ import org.springframework.web.servlet.HandlerInterceptor;
 /** Records every successful state-changing request under /api/admin, so new admin endpoints are audited by default. */
 @Component
 public class AdminAuditInterceptor implements HandlerInterceptor {
+    /** Request attribute a controller can set when the affected id is only known after the action (e.g. a new backup). */
+    public static final String ENTITY_ID = AdminAuditInterceptor.class.getName() + ".entityId";
+
     private record Rule(String method, Pattern path, AuditAction action, String entityType) {}
 
     private static final String ID = "([^/]+)";
     private static final List<Rule> RULES = List.of(
             new Rule("PUT", Pattern.compile("/api/admin/users/" + ID), AuditAction.USER_UPDATED, "user"),
+            new Rule("POST", Pattern.compile("/api/admin/users/" + ID + "/password"), AuditAction.USER_PASSWORD_RESET, "user"),
             new Rule("POST", Pattern.compile("/api/admin/exercises"), AuditAction.EXERCISE_CREATED, "exercise"),
             new Rule("PUT", Pattern.compile("/api/admin/exercises/" + ID), AuditAction.EXERCISE_UPDATED, "exercise"),
             new Rule("POST", Pattern.compile("/api/admin/categories"), AuditAction.CATEGORY_CREATED, "category"),
@@ -53,6 +57,8 @@ public class AdminAuditInterceptor implements HandlerInterceptor {
                 break;
             }
         }
+        Object explicitId = request.getAttribute(ENTITY_ID);
+        if (explicitId != null) entityId = explicitId.toString();
         audit.record(principal == null ? null : principal.getName(), action, entityType, entityId,
                 method + " " + path, request.getRemoteAddr());
     }

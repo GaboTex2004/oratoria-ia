@@ -55,6 +55,12 @@ class AdminPlanIntegrationTests extends AdminTestSupport {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test void nullEntitlementIsAValidationError() throws Exception {
+        mvc.perform(put("/api/admin/plans/FREE").header("Authorization", auth(UserRole.ADMIN)).contentType(MediaType.APPLICATION_JSON)
+                .content(freeUpdate("null")))
+                .andExpect(status().isBadRequest());
+    }
+
     @Test void unknownEntitlementRejected() throws Exception {
         mvc.perform(put("/api/admin/plans/FREE").header("Authorization", auth(UserRole.ADMIN)).contentType(MediaType.APPLICATION_JSON)
                 .content(freeUpdate("{\"code\":\"NO_EXISTE\",\"enabled\":true,\"limit\":1,\"unlimited\":false}")))

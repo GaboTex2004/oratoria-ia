@@ -61,8 +61,11 @@ class BackupIntegrationTests extends AdminTestSupport {
                 .andExpect(jsonPath("$.rows", greaterThan(0)));
         assertThat(usersWithEmail(later.getEmail())).isZero();
         assertThat(jdbc.queryForObject("SELECT first_name FROM app_users WHERE id = ?", String.class, admin.getId())).isEqualTo("Admin");
-        mvc.perform(get("/api/admin/backups").header("Authorization", token)).andExpect(jsonPath("$[*].id", hasItem(id)));
-        mvc.perform(get("/api/admin/audit").param("actor", admin.getEmail()).param("action", "BACKUP_RESTORED").header("Authorization", token))
+        // Sessions issued before the restore are revoked, so revoked tokens from the backup's era cannot come back.
+        mvc.perform(get("/api/admin/backups").header("Authorization", token)).andExpect(status().isUnauthorized());
+        String fresh = "Bearer " + jwt.createToken(users.findById(admin.getId()).orElseThrow());
+        mvc.perform(get("/api/admin/backups").header("Authorization", fresh)).andExpect(jsonPath("$[*].id", hasItem(id)));
+        mvc.perform(get("/api/admin/audit").param("actor", admin.getEmail()).param("action", "BACKUP_RESTORED").header("Authorization", fresh))
                 .andExpect(jsonPath("$.total").value(1));
     }
 
@@ -84,6 +87,28 @@ class BackupIntegrationTests extends AdminTestSupport {
                         .param("confirm", "RESTAURAR").header("Authorization", token))
                 .andExpect(status().isOk());
         assertThat(usersWithEmail(later.getEmail())).isZero();
+        assertThat(usersWithEmail(admin.getEmail())).isOne();
+    }
+
+    @Test void aRestoreThatFailsMidwayReportsItAndLeavesNoTrace() throws Exception {
+        UserAccount admin = user(UserRole.ADMIN);
+        String token = "Bearer " + jwt.createToken(admin);
+        String id = createBackup(token);
+        String file = mvc.perform(get("/api/admin/backups/" + id + "/download").header("Authorization", token))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        // Duplicating the first plan row makes the insert fail after every table was already emptied.
+        java.util.regex.Matcher plan = java.util.regex.Pattern.compile("\"plans\":\\[(\\{[^}]*\\})").matcher(file);
+        assertThat(plan.find()).isTrue();
+        String broken = file.replace("\"plans\":[" + plan.group(1), "\"plans\":[" + plan.group(1) + "," + plan.group(1));
+        long files;
+        try (var listing = java.nio.file.Files.list(java.nio.file.Path.of("target/test-backups"))) { files = listing.count(); }
+        long backups = count("system_backups");
+        mvc.perform(multipart("/api/admin/backups/restore").file(new MockMultipartFile("file", "x.json", "application/json", broken.getBytes(StandardCharsets.UTF_8)))
+                        .param("confirm", "RESTAURAR").header("Authorization", token))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString("No se pudo restaurar")));
+        try (var listing = java.nio.file.Files.list(java.nio.file.Path.of("target/test-backups"))) { assertThat(listing.count()).isEqualTo(files); }
+        assertThat(count("system_backups")).isEqualTo(backups);
         assertThat(usersWithEmail(admin.getEmail())).isOne();
     }
 

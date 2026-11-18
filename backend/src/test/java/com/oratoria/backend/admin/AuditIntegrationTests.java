@@ -53,6 +53,28 @@ class AuditIntegrationTests extends AdminTestSupport {
                 .andExpect(jsonPath("$.items[0].action").value("REGISTER"));
     }
 
+    @Test void adminPasswordResetIsRecordedWithTheAffectedUser() throws Exception {
+        var admin = user(UserRole.ADMIN);
+        var student = user(UserRole.USER);
+        String token = "Bearer " + jwt.createToken(admin);
+        mvc.perform(post("/api/admin/users/" + student.getId() + "/password").header("Authorization", token).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"newPassword\":\"NuevaClaveSegura123!\"}")).andExpect(status().isNoContent());
+        mvc.perform(get("/api/admin/audit").param("actor", admin.getEmail()).header("Authorization", token))
+                .andExpect(jsonPath("$.items[0].action").value("USER_PASSWORD_RESET"))
+                .andExpect(jsonPath("$.items[0].entityId").value(student.getId().toString()))
+                .andExpect(jsonPath("$.items[0].detail", not(containsString("NuevaClave"))));
+    }
+
+    @Test void backupCreationRecordsTheBackupId() throws Exception {
+        var admin = user(UserRole.ADMIN);
+        String token = "Bearer " + jwt.createToken(admin);
+        String body = mvc.perform(post("/api/admin/backups").header("Authorization", token).contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andReturn().getResponse().getContentAsString();
+        String id = body.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+        mvc.perform(get("/api/admin/audit").param("actor", admin.getEmail()).param("action", "BACKUP_CREATED").header("Authorization", token))
+                .andExpect(jsonPath("$.items[0].entityId").value(id));
+    }
+
     @Test void actionCatalogIsAvailableForFilters() throws Exception {
         mvc.perform(get("/api/admin/audit/actions").header("Authorization", auth(UserRole.ADMIN)))
                 .andExpect(status().isOk())

@@ -34,7 +34,7 @@ export function PerformanceReportPage() {
       link.href = url
       link.download = `reporte-oratoria-${new Date().toISOString().slice(0, 10)}.pdf`
       link.click()
-      URL.revokeObjectURL(url)
+      setTimeout(() => URL.revokeObjectURL(url), 60_000)
     } catch (reason) { setDownloadError(reason instanceof Error ? reason.message : 'No se pudo generar el PDF.') }
     finally { setDownloading(false) }
   }

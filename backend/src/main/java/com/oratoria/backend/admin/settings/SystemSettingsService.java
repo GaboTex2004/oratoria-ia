@@ -21,6 +21,10 @@ public class SystemSettingsService {
 
     public SystemSettingsService(SystemSettingRepository settings,
             @Value("${app.audio.max-duration-seconds:300}") int defaultAudioMaxDuration) {
+        // A wrong environment value must stop the start-up instead of silently publishing an unusable limit.
+        if (defaultAudioMaxDuration < MIN_DURATION || defaultAudioMaxDuration > MAX_DURATION) {
+            throw new IllegalArgumentException("AUDIO_MAX_DURATION_SECONDS debe estar entre 15 y 600 segundos.");
+        }
         this.settings = settings;
         this.defaultAudioMaxDuration = defaultAudioMaxDuration;
     }
