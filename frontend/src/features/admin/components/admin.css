@@ -48,3 +48,15 @@
   .admin-limit .terms-field { grid-column: 1 / -1; }
   .admin-chart { gap: 6px; height: 180px; }
 }
+
+.admin-report-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+.admin-report-head h2 { margin: 0; }
+.admin-filters { display: grid; gap: 14px; }
+.admin-filters__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+.admin-filters__grid label { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
+.admin-filters__grid input, .admin-filters__grid select { min-height: 44px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--white); font: inherit; }
+.admin-badge { display: inline-block; padding: 3px 9px; border-radius: 999px; background: var(--surface-high); color: var(--secondary); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.admin-badge--warn { background: #ffdad6; color: #93000a; }
+.admin-danger { border: 2px solid var(--error); }
+.admin-row-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.admin-row-actions .button { min-height: 36px; padding: 6px 12px; }
