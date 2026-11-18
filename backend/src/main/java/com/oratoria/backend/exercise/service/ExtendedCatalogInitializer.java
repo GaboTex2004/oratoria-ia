@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @Order(16)
 public class ExtendedCatalogInitializer implements ApplicationRunner {
+    private static final java.util.Map<String, String> STYLE_LABELS = java.util.Map.of(
+            "PERSUASIVO", "persuasivo", "NARRATIVO", "narrativo", "DINAMICO", "dinámico", "ACADEMICO", "académico");
     private final ExerciseRepository exercises;
     public ExtendedCatalogInitializer(ExerciseRepository exercises) { this.exercises = exercises; }
 
@@ -57,9 +59,14 @@ public class ExtendedCatalogInitializer implements ApplicationRunner {
 
     private void style(String code, String style, String title, String level, int duration, String prompt) {
         seed(code, title, "ESTILOS", level, duration, prompt);
-        // Databases seeded before styles existed get the style assigned on the next start.
-        exercises.findByCode(code).filter(exercise -> exercise.getCommunicationStyle() == null)
-                .ifPresent(exercise -> exercise.assignStyle(style));
+        // Databases seeded before styles existed get the style and its description on the next start.
+        exercises.findByCode(code).ifPresent(exercise -> {
+            if (exercise.getCommunicationStyle() == null) exercise.assignStyle(style);
+            if (exercise.getDescription().startsWith("Práctica enfocada en")) {
+                exercise.edit(exercise.getTitle(), "Práctica del estilo " + STYLE_LABELS.get(style) + ".",
+                        exercise.getPrompt(), exercise.getRecommendedDurationSeconds());
+            }
+        });
     }
 
     private void seed(String code, String title, String category, String level, int duration, String prompt) {

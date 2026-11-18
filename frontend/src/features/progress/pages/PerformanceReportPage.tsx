@@ -43,7 +43,7 @@ export function PerformanceReportPage() {
   return <WorkspaceLayout>
     <header><span className="eyebrow">Reporte de desempeño</span><h1>Tu progreso en un documento</h1>
       <p>Consolida tus prácticas, métricas y evaluaciones del periodo elegido. Descárgalo en PDF para compartirlo.</p></header>
-    <section className="panel-card workspace-actions">
+    <section className="panel-card workspace-actions report-period">
       <label className="workspace-form">Periodo<select className="workspace-select" value={days} onChange={event => setDays(Number(event.target.value))}>
         {REPORT_PERIODS.map(period => <option key={period} value={period}>{periodLabel(period)}</option>)}
       </select></label>

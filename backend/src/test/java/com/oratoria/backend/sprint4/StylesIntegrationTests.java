@@ -24,7 +24,8 @@ class StylesIntegrationTests extends Sprint4TestSupport {
                 .andExpect(jsonPath("$.styles[*].code", contains("PERSUASIVO", "NARRATIVO", "DINAMICO", "ACADEMICO")))
                 .andExpect(jsonPath("$.styles[0].traits", hasSize(greaterThanOrEqualTo(3))))
                 .andExpect(jsonPath("$.styles[?(@.code=='DINAMICO')].exercises[*].communicationStyle", everyItem(is("DINAMICO"))))
-                .andExpect(jsonPath("$.styles[?(@.code=='ACADEMICO')].exercises.length()", contains(2)));
+                .andExpect(jsonPath("$.styles[?(@.code=='ACADEMICO')].exercises.length()", contains(2)))
+                .andExpect(jsonPath("$.styles[?(@.code=='DINAMICO')].exercises[0].description", contains("Práctica del estilo dinámico.")));
         mvc.perform(get("/api/styles").header("Authorization", auth(premium()))).andExpect(jsonPath("$.locked").value(false));
     }
 
