@@ -1,42 +1,46 @@
 package com.oratoria.backend.progress.service;
 
-import com.oratoria.backend.exercise.dto.ExerciseResponse;
+import com.oratoria.backend.admin.category.ExerciseCategory;
+import com.oratoria.backend.admin.category.ExerciseCategoryRepository;
+import com.oratoria.backend.auth.exception.InvalidCredentialsException;
 import com.oratoria.backend.exercise.service.ExerciseService;
-import com.oratoria.backend.progress.dto.ProgressSummaryResponse;
-import java.util.*;
+import com.oratoria.backend.progress.service.AdaptiveRecommendationEngine.Access;
+import com.oratoria.backend.progress.service.AdaptiveRecommendationEngine.Recommendation;
+import com.oratoria.backend.subscription.entity.Feature;
+import com.oratoria.backend.subscription.service.FeatureAccessService;
+import com.oratoria.backend.user.entity.UserAccount;
+import com.oratoria.backend.user.preferences.PreferencesService;
+import com.oratoria.backend.user.repository.UserAccountRepository;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class RecommendationService {
     private final ProgressService progress;
     private final ExerciseService exercises;
-    public RecommendationService(ProgressService progress, ExerciseService exercises) { this.progress = progress; this.exercises = exercises; }
+    private final PreferencesService preferences;
+    private final FeatureAccessService features;
+    private final ExerciseCategoryRepository categories;
+    private final UserAccountRepository users;
 
-    public Recommendation recommend(String email) {
-        ProgressSummaryResponse summary = progress.getSummary(email);
-        var weak = summary.criteriaEvolution().stream().filter(item -> item.latestValue() != null)
-                .min(Comparator.comparingDouble(item -> item.latestValue()));
-        String category = weak.map(item -> switch (item.code()) {
-            case "CLARITY" -> "CLARIDAD";
-            case "ARGUMENTATION" -> "ARGUMENTACION";
-            case "ORGANIZATION" -> "ESTRUCTURA";
-            default -> "FLUIDEZ";
-        }).orElse("ESTRUCTURA");
-        List<Double> recent = summary.history().stream()
-                .filter(item -> Boolean.TRUE.equals(item.sufficientEvidence()) && item.overallScore() != null)
-                .sorted(Comparator.comparing(ProgressSummaryResponse.HistoryItem::createdAt).reversed())
-                .limit(3).map(ProgressSummaryResponse.HistoryItem::overallScore).toList();
-        String level = recent.isEmpty() || recent.getFirst() < 55 ? "BASIC"
-                : recent.size() == 3 && recent.stream().allMatch(score -> score >= 80) ? "ADVANCED" : "INTERMEDIATE";
-        List<ExerciseResponse> catalog = exercises.listExercises(null);
-        List<ExerciseResponse> selected = catalog.stream().filter(item -> item.category().equals(category))
-                .sorted(Comparator.comparing(item -> !item.difficulty().equals(level))).limit(3).toList();
-        String reason = weak.map(item -> "El criterio con menor puntuación reciente es " + item.code()
-                + " (" + item.latestValue() + ").").orElse("Todavía no hay evaluaciones suficientes; comienza con una práctica de estructura.");
-        return new Recommendation("adaptive-rules-v1", category, level, reason,
-                "BASIC sin historial o último score <55; ADVANCED tras tres scores >=80; INTERMEDIATE en otro caso. Se prioriza el nivel recomendado si el catálogo dispone de él.", selected);
+    public RecommendationService(ProgressService progress, ExerciseService exercises, PreferencesService preferences,
+                                 FeatureAccessService features, ExerciseCategoryRepository categories, UserAccountRepository users) {
+        this.progress = progress; this.exercises = exercises; this.preferences = preferences;
+        this.features = features; this.categories = categories; this.users = users;
     }
 
-    public record Recommendation(String ruleVersion, String category, String suggestedDifficulty,
-            String reason, String ruleDescription, List<ExerciseResponse> exercises) {}
+    @Transactional
+    public Recommendation recommend(String email) {
+        UUID userId = users.findByEmailIgnoreCase(email).filter(UserAccount::isEnabled)
+                .orElseThrow(InvalidCredentialsException::new).getId();
+        Map<String, String> names = categories.findAll().stream()
+                .collect(Collectors.toMap(ExerciseCategory::getCode, ExerciseCategory::getName));
+        Access access = new Access(features.hasAccess(userId, Feature.ADAPTIVE_TRAINING),
+                features.hasAccess(userId, Feature.IMPROVISATION), features.hasAccess(userId, Feature.COMMUNICATION_STYLES));
+        return AdaptiveRecommendationEngine.recommend(progress.getSummary(email).history(), preferences.forUser(userId),
+                exercises.listExercises(null), names, access);
+    }
 }
