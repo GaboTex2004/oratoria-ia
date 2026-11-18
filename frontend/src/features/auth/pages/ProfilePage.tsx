@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useAuth } from '../context/useAuth'
 import { apiRequest } from '../../../shared/services/api'
 import { WorkspaceLayout } from '../../../shared/components/WorkspaceLayout'
+import { PreferencesSection } from '../../profile/PreferencesForm'
 
 export function ProfilePage() {
   const { user, refresh, logout } = useAuth()
@@ -27,7 +28,7 @@ export function ProfilePage() {
     finally { setBusy(false) }
   }
   return <WorkspaceLayout>
-    <header><span className="eyebrow">Tu cuenta</span><h1>Perfil y seguridad</h1><p>{user?.email} · {user?.role} · Plan {user?.plan}</p></header>
+    <header><span className="eyebrow">Tu cuenta</span><h1>Perfil, objetivos y seguridad</h1><p>{user?.email} · {user?.role} · Plan {user?.plan}</p></header>
     {error && <p className="training-alert training-alert--error" role="alert">{error}</p>}
     {message && <p className="workspace-notice" role="status">{message}</p>}
     <form className="panel-card workspace-form" onSubmit={save}>
@@ -36,6 +37,7 @@ export function ProfilePage() {
       <label>Apellido<input autoComplete="family-name" required maxLength={80} value={lastName} onChange={e => setLastName(e.target.value)} /></label>
       <button className="button button--primary" disabled={busy}>Guardar perfil</button>
     </form>
+    <PreferencesSection />
     <form className="panel-card workspace-form" onSubmit={e => save(e, true)}>
       <h2>Cambiar contraseña</h2><p>Al cambiarla se cerrarán tus sesiones. Inicia sesión con la nueva contraseña.</p>
       <label>Contraseña actual<input type="password" autoComplete="current-password" required value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} /></label>

@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { WorkspaceLayout } from '../../../shared/components/WorkspaceLayout'
 import { useResource } from '../../../shared/hooks/useResource'
 import type { SpeechAnalysis, SpeechEvaluation, TrainingSession } from '../types/training'
+import { StyleFeedbackCard } from '../../styles/StyleFeedbackCard'
 
 export function ReportPage() {
   const { id } = useParams()
@@ -30,6 +31,7 @@ export function ReportPage() {
       {evaluation.data.criteriaScores.map(criterion => <section key={criterion.code}><h3>{criterion.label}: {criterion.score ?? '—'}</h3><p>{criterion.justification}</p></section>)}
       <h3>Recomendaciones</h3><ul>{evaluation.data.recommendations.map(item => <li key={item.title}><strong>{item.title}.</strong> {item.description}</li>)}</ul>
     </> : <p>La evaluación no está completada.</p>}
+    {session.data?.communicationStyle && <StyleFeedbackCard sessionId={session.data.id} />}
     <p>Indicadores educativos orientativos. La transcripción y la evaluación automática pueden contener errores; revisa la evidencia antes de interpretar las puntuaciones.</p>
   </article></WorkspaceLayout>
 }

@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Icon } from '../../../shared/components/Icon'
+import { PremiumBadge } from '../../../shared/components/PremiumLock'
+import { usePlanFeatures } from '../../../shared/hooks/usePlanFeatures'
+import { LEVEL_LABELS, STYLE_NAMES } from '../../../shared/labels'
+import { lockedFeatureFor } from '../../../shared/personalization'
 import { ApiError } from '../../../shared/services/api'
 import { useAuth } from '../../auth/context/useAuth'
 import { Sidebar } from '../../dashboard/components/Sidebar'
@@ -29,6 +33,7 @@ export function TrainingPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const firstName = useAuth().user?.firstName || ''
+  const { has } = usePlanFeatures()
 
   const selectedFilter = parseTrainingType(searchParams.get('type'))
   const [category, setCategory] = useState('ALL')
@@ -149,7 +154,9 @@ export function TrainingPage() {
                 <label>Habilidad <select aria-label="Filtrar por habilidad" value={category} onChange={event => setCategory(event.target.value)}>
                   <option value="ALL">Todas</option>{[...new Set(exercises.map(exercise => exercise.category))].map(value => <option key={value}>{value}</option>)}
                 </select></label>
-                <button className="button button--ghost" disabled={creatingExerciseId !== null} onClick={startImprovisation}>Sortear tema de improvisación</button>
+                {has('IMPROVISATION')
+                  ? <button className="button button--ghost" disabled={creatingExerciseId !== null} onClick={startImprovisation}>Sortear tema de improvisación</button>
+                  : <Link className="button button--ghost" to="/plans">Sortear tema de improvisación <PremiumBadge /></Link>}
                 {(query || targetExercise) && <button className="button button--ghost" onClick={() => setSearchParams({})}>Ver catálogo completo</button>}
               </div>
 
@@ -199,6 +206,7 @@ export function TrainingPage() {
                   {visibleExercises.map((exercise) => {
                     const meta = TRAINING_TYPE_META[exercise.trainingType]
                     const isCreating = creatingExerciseId === exercise.id
+                    const locked = lockedFeatureFor(exercise, has)
                     return (
                       <article key={exercise.id} className="training-card exercise-card">
                         <div className="training-card__head">
@@ -206,9 +214,11 @@ export function TrainingPage() {
                             <Icon name={meta.icon} />
                           </span>
                           <span className={`badge badge--${meta.badgeTone}`}>{meta.label}</span>
+                          {exercise.communicationStyle && <span className="badge badge--blue">Estilo {STYLE_NAMES[exercise.communicationStyle] ?? exercise.communicationStyle}</span>}
+                          {locked && <PremiumBadge />}
                         </div>
                         <h3>{exercise.title}</h3>
-                        <small>{exercise.category} · {exercise.difficulty}</small>
+                        <small>{exercise.category} · {LEVEL_LABELS[exercise.difficulty] ?? exercise.difficulty}</small>
                         <p>{exercise.description}</p>
                         <div className="exercise-card__prompt">
                           <p><strong>Objetivo:</strong> {exercise.objective}</p>
@@ -218,14 +228,18 @@ export function TrainingPage() {
                           <span className="exercise-card__duration">
                             <Icon name="schedule" /> {formatDuration(exercise.recommendedDurationSeconds)}
                           </span>
-                          <button
-                            type="button"
-                            disabled={creatingExerciseId !== null}
-                            onClick={() => handleStartExercise(exercise)}
-                          >
-                            {isCreating ? 'Creando sesión…' : 'Practicar ahora'}
-                            <Icon name="mic" />
-                          </button>
+                          {locked ? (
+                            <Link to="/plans">Disponible en Premium <Icon name="workspace_premium" /></Link>
+                          ) : (
+                            <button
+                              type="button"
+                              disabled={creatingExerciseId !== null}
+                              onClick={() => handleStartExercise(exercise)}
+                            >
+                              {isCreating ? 'Creando sesión…' : 'Practicar ahora'}
+                              <Icon name="mic" />
+                            </button>
+                          )}
                         </div>
                       </article>
                     )

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { WorkspaceLayout } from '../../shared/components/WorkspaceLayout'
 import { useResource } from '../../shared/hooks/useResource'
+import { usePlanFeatures } from '../../shared/hooks/usePlanFeatures'
+import { PremiumLock } from '../../shared/components/PremiumLock'
 import { apiRequest } from '../../shared/services/api'
 import type { TrainingSession } from '../training/types/training'
 
@@ -12,6 +14,7 @@ interface BodyResult {
 
 export function BodyPage() {
   const sessions = useResource<TrainingSession[]>('/sessions')
+  const locked = !usePlanFeatures().has('CAMERA_ANALYSIS')
   const [sessionId, setSessionId] = useState('')
   const [consent, setConsent] = useState(false)
   const [cameraOn, setCameraOn] = useState(false)
@@ -61,6 +64,7 @@ export function BodyPage() {
   }
   return <WorkspaceLayout>
     <header><span className="eyebrow">Práctica frente a cámara</span><h1>Comunicación no verbal</h1><p>Asocia ocho fotogramas a una práctica. Solo se conservan los indicadores resultantes.</p></header>
+    {locked && <PremiumLock feature="El análisis con cámara">Puedes consultar análisis anteriores, pero para capturar uno nuevo necesitas Premium.</PremiumLock>}
     {(error || sessions.error) && <p role="alert" className="training-alert training-alert--error">{error || sessions.error}</p>}
     {sessions.loading ? <p>Cargando sesiones…</p> : !sessions.data?.length ? <p>Primero inicia una práctica en Entrenamientos.</p> : <section className="panel-card workspace-form">
       <label>Práctica<select aria-label="Práctica" disabled={busy || cameraOn} value={sessionId} onChange={event => { setSessionId(event.target.value); setResult(null) }}>
@@ -69,7 +73,7 @@ export function BodyPage() {
       <label className="terms-field"><input type="checkbox" checked={consent} disabled={busy || cameraOn} onChange={event => setConsent(event.target.checked)} />Autorizo la captura y el procesamiento local de estos fotogramas. Puedo apagar la cámara antes de enviarlos.</label>
       <video className="camera-preview" ref={video} muted playsInline aria-label="Vista previa de cámara" />
       <div className="workspace-actions">
-        {!cameraOn ? <button className="button button--primary" disabled={!consent || !sessionId || busy} onClick={start}>Activar cámara</button> : <><button className="button button--primary" disabled={busy} onClick={capture}>Capturar y analizar</button><button className="button button--ghost" onClick={stop}>Apagar cámara</button></>}
+        {!cameraOn ? <button className="button button--primary" disabled={locked || !consent || !sessionId || busy} onClick={start}>Activar cámara</button> : <><button className="button button--primary" disabled={busy} onClick={capture}>Capturar y analizar</button><button className="button button--ghost" onClick={stop}>Apagar cámara</button></>}
         <button className="button button--ghost" disabled={!sessionId || busy || cameraOn} onClick={load}>Ver último análisis</button>
       </div>{busy && <p role="status">Procesando localmente…</p>}
     </section>}

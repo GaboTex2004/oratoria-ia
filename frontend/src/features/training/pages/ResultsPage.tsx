@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { StyleFeedbackCard } from '../../styles/StyleFeedbackCard'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Icon } from '../../../shared/components/Icon'
 import { ApiError } from '../../../shared/services/api'
@@ -883,6 +884,7 @@ export function ResultsPage() {
                     </div>
                   ) : (
                     <div className="evaluation-workspace">
+                      {selectedSession?.communicationStyle && <StyleFeedbackCard key={selectedSession.id} sessionId={selectedSession.id} />}
                       {/* Resumen ejecutivo y puntuación global */}
                       <section className="panel-card evaluation-summary-card" aria-label="Resumen de evaluación">
                         <div className="evaluation-summary-card__main">

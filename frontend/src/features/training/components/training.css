@@ -1316,3 +1316,20 @@
   .results-segments__item { flex-direction: column; gap: 6px; }
   .results-transcript-text { padding: 14px; }
 }
+
+.exercise-card__footer a {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  border: 1px solid #f1d18a;
+  border-radius: 9px;
+  background: #fff8e6;
+  color: #7a5200;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.training-card__head { flex-wrap: wrap; }

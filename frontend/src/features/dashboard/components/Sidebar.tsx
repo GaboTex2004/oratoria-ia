@@ -11,6 +11,8 @@ const navigation = [
   ['/profile', 'person', 'Perfil'],
   ['/body', 'accessibility_new', 'Análisis corporal'],
   ['/recommendations', 'auto_awesome', 'Mi siguiente práctica'],
+  ['/styles', 'record_voice_over', 'Estilos de comunicación'],
+  ['/reports', 'description', 'Reporte de desempeño'],
 ]
 
 interface SidebarProps {

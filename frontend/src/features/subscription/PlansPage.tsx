@@ -5,6 +5,8 @@ import { useState } from 'react'
 import { apiRequest } from '../../shared/services/api'
 import { useAuth } from '../auth/context/useAuth'
 import { BillingNotice } from './BillingNotice'
+import { ENTITLEMENT_LABELS } from '../admin/types'
+import '../../shared/components/personalization.css'
 import { money, type Plan, type Receipt, type Subscription } from './billing'
 
 const labels: Record<string, string> = { SESSIONS_PER_MONTH: 'Prácticas por mes', SIMULATIONS_PER_MONTH: 'Simulaciones por mes', HISTORY_DAYS: 'Días de historial configurados' }
@@ -36,6 +38,11 @@ export function PlansPage() {
     <div className="training-grid">{data?.map(plan => <article className="panel-card" key={plan.code}>
       <h2>{plan.name}</h2><p className="billing-price">{money(plan.price, plan.currency)}{plan.code === 'PREMIUM' ? ' / mes' : ''}</p><ul>{plan.entitlements.filter(item => item.code in labels && item.code !== 'HISTORY_DAYS').map(item =>
         <li key={item.code}>{labels[item.code]}: {item.unlimited ? 'Sin límite' : item.limit ?? 'No disponible'}</li>)}</ul>
+      <ul className="feature-list">{plan.entitlements.filter(item => !(item.code in labels) && item.code !== 'UNLIMITED_SIMULATIONS').map(item =>
+        <li key={item.code} className={item.enabled ? 'feature-list__on' : 'feature-list__off'}>
+          <span className="material-symbols-outlined" aria-hidden="true">{item.enabled ? 'check_circle' : 'remove'}</span>
+          {ENTITLEMENT_LABELS[item.code] ?? item.code}<span className="visually-hidden">{item.enabled ? ' (incluida)' : ' (no incluida)'}</span>
+        </li>)}</ul>
       {plan.code === 'PREMIUM' && <button className="button button--primary" disabled={busy || !current.data?.simulatorEnabled || current.data?.plan === 'PREMIUM' || !!current.data?.pendingStatus} onClick={() => void checkout()}>{busy ? 'Creando orden…' : current.data?.plan === 'PREMIUM' ? 'Tu plan actual' : 'Seleccionar Premium'}</button>}
     </article>)}</div>
     {!current.loading && !current.data?.simulatorEnabled && <p>El checkout simulado está deshabilitado en este entorno.</p>}

@@ -14,6 +14,8 @@ import { SimulationsPage } from '../../features/simulations/pages/SimulationsPag
 import { ProfilePage } from '../../features/auth/pages/ProfilePage'
 import { PlansPage } from '../../features/subscription/PlansPage'
 import { BodyPage } from '../../features/body/BodyPage'
+import { StylesPage } from '../../features/styles/StylesPage'
+import { PerformanceReportPage } from '../../features/progress/pages/PerformanceReportPage'
 import { RecommendationsPage } from '../../features/progress/pages/RecommendationsPage'
 import { ReportPage } from '../../features/training/pages/ReportPage'
 import { AccountInformationPage } from '../../features/auth/pages/AccountInformationPage'
@@ -47,6 +49,8 @@ export function AppRouter() {
       <Route path="/admin/payments" element={<ProtectedRoute role="ADMIN"><AdminPaymentsPage /></ProtectedRoute>} />
       <Route path="/body" element={protectedPage(<BodyPage />)} />
       <Route path="/recommendations" element={protectedPage(<RecommendationsPage />)} />
+      <Route path="/styles" element={protectedPage(<StylesPage />)} />
+      <Route path="/reports" element={protectedPage(<PerformanceReportPage />)} />
       <Route path="/reports/:id" element={protectedPage(<ReportPage />)} />
       <Route path="/admin" element={<ProtectedRoute role="ADMIN"><AdminPage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to={startPath} replace />} />

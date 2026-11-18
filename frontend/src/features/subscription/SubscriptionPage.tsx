@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { WorkspaceLayout } from '../../shared/components/WorkspaceLayout'
 import { useResource } from '../../shared/hooks/useResource'
+import { usePlanFeatures } from '../../shared/hooks/usePlanFeatures'
+import '../../shared/components/personalization.css'
 import { apiRequest } from '../../shared/services/api'
 import { useAuth } from '../auth/context/useAuth'
 import { BillingNotice } from './BillingNotice'
@@ -12,10 +14,11 @@ export function SubscriptionPage() {
   const [page, setPage] = useState(0)
   const history = useResource<Receipt[]>(`/payments/history?page=${page}`)
   const usage = useResource<Usage>('/subscriptions/current/usage')
+  const features = usePlanFeatures()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const { refresh } = useAuth()
-  function reload() { subscription.reload(); history.reload(); usage.reload(); void refresh() }
+  function reload() { subscription.reload(); history.reload(); usage.reload(); features.reload(); void refresh() }
   async function cancel() {
     setBusy(true); setError('')
     try { await apiRequest('/subscriptions/current/cancel-renewal', { method: 'POST' }); reload() }
@@ -40,6 +43,15 @@ export function SubscriptionPage() {
     </section>}
     <section className="billing-record"><h2>Consumo mensual</h2><p>Sesiones creadas en el mes UTC; el reloj de prueba de facturación no reinicia el consumo.</p>
       {usage.data && <ul><li>Prácticas: {usage.data.practices.used} / {usage.data.practices.unlimited ? 'Sin límite' : usage.data.practices.limit}</li><li>Simulaciones: {usage.data.simulations.used} / {usage.data.simulations.unlimited ? 'Sin límite' : usage.data.simulations.limit}</li></ul>}
+    </section>
+    <section className="billing-record"><h2>Funciones de tu plan</h2>
+      {features.loading && <p role="status">Consultando funciones…</p>}
+      {features.error && <p role="alert">{features.error}</p>}
+      <ul className="feature-list">{features.features.map(feature => <li key={feature.code} className={feature.enabled ? 'feature-list__on' : 'feature-list__off'}>
+        <span className="material-symbols-outlined" aria-hidden="true">{feature.enabled ? 'check_circle' : 'lock'}</span>
+        {feature.label}<span className="visually-hidden">{feature.enabled ? ' (incluida)' : ' (no incluida)'}</span>
+      </li>)}</ul>
+      {features.features.some(feature => !feature.enabled) && <p><Link to="/plans">Compara los planes</Link> para desbloquear las funciones restantes.</p>}
     </section>
     <section><h2>Historial de pagos de demostración</h2>{history.loading && <p>Cargando historial…</p>}
       {history.data?.length === 0 && <p>Aún no tienes operaciones.</p>}

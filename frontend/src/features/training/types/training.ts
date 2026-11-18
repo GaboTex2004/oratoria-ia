@@ -46,6 +46,7 @@ export interface Exercise {
   difficulty: string
   objective: string
   evaluationCriteria: string[]
+  communicationStyle: string | null
 }
 
 export interface TrainingSession {
@@ -63,6 +64,7 @@ export interface TrainingSession {
   hasAudio: boolean
   audioMimeType: string | null
   audioSizeBytes: number | null
+  communicationStyle?: string | null
 }
 
 export interface TranscriptSegment {
@@ -179,6 +181,7 @@ export interface SpeechEvaluation {
 export interface CreateSessionPayload {
   exerciseId?: string
   trainingType?: TrainingType
+  communicationStyle?: string
 }
 
 export const TRAINING_TYPE_META: Record<TrainingType, { label: string; icon: string; badgeTone: 'blue' | 'coral' }> = {
