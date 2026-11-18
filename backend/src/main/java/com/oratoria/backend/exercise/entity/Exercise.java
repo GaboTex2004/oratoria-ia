@@ -49,6 +49,9 @@ public class Exercise {
     @Column(nullable = false, length = 400)
     private String objective = "Desarrollar una intervención oral clara y estructurada.";
 
+    @Column(name = "communication_style", length = 40)
+    private String communicationStyle;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
@@ -72,6 +75,8 @@ public class Exercise {
     public void configure(String category, String difficulty, String objective) {
         this.category = category; this.difficulty = difficulty; this.objective = objective;
     }
+    public String getCommunicationStyle() { return communicationStyle; }
+    public void assignStyle(String communicationStyle) { this.communicationStyle = communicationStyle; }
     public void setActive(boolean active) { this.active = active; }
     public void edit(String title, String description, String prompt, int duration) {
         this.title = title; this.description = description; this.prompt = prompt;

@@ -41,6 +41,9 @@ public class TrainingSession {
     @Column(nullable = false, length = 30)
     private SessionStatus status = SessionStatus.CREATED;
 
+    @Column(name = "communication_style", length = 40)
+    private String communicationStyle;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
@@ -114,6 +117,8 @@ public class TrainingSession {
 
     public UUID getId() { return id; }
     public UserAccount getUser() { return user; }
+    public String getCommunicationStyle() { return communicationStyle; }
+    public void assignStyle(String communicationStyle) { this.communicationStyle = communicationStyle; }
     public Exercise getExercise() { return exercise; }
     public TrainingType getTrainingType() { return trainingType; }
     public SessionStatus getStatus() { return status; }

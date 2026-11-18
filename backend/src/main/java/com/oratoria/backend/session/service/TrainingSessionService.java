@@ -7,6 +7,7 @@ import com.oratoria.backend.evaluation.entity.EvaluationStatus;
 import com.oratoria.backend.evaluation.service.SpeechEvaluationService;
 import com.oratoria.backend.exercise.entity.Exercise;
 import com.oratoria.backend.exercise.service.ExerciseService;
+import com.oratoria.backend.style.CommunicationStyleCatalog;
 import com.oratoria.backend.subscription.entity.Feature;
 import com.oratoria.backend.subscription.service.FeatureAccessService;
 import com.oratoria.backend.session.dto.CreateSessionRequest;
@@ -38,6 +39,7 @@ public class TrainingSessionService {
     private final SpeechEvaluationService speechEvaluationService;
     private final com.oratoria.backend.subscription.service.QuotaService quotas;
     private final FeatureAccessService features;
+    private final CommunicationStyleCatalog styles;
 
     public TrainingSessionService(TrainingSessionRepository sessions,
                                   UserAccountRepository users,
@@ -46,8 +48,10 @@ public class TrainingSessionService {
                                   SpeechAnalysisService speechAnalysisService,
                                   SpeechEvaluationService speechEvaluationService,
                                   com.oratoria.backend.subscription.service.QuotaService quotas,
-                                  FeatureAccessService features) {
+                                  FeatureAccessService features,
+                                  CommunicationStyleCatalog styles) {
         this.features = features;
+        this.styles = styles;
         this.sessions = sessions;
         this.users = users;
         this.exercises = exercises;
@@ -75,9 +79,19 @@ public class TrainingSessionService {
         }
 
         // Plan features are checked before the quota so a locked attempt does not consume it.
+        String style = exercise != null ? exercise.getCommunicationStyle() : null;
+        if (request.communicationStyle() != null) {
+            String requested = styles.require(request.communicationStyle()).code();
+            if (style != null && !style.equals(requested)) {
+                throw new BadRequestException("El ejercicio pertenece a otro estilo de comunicación.");
+            }
+            style = requested;
+        }
         if (trainingType == TrainingType.IMPROVISATION) features.require(user.getId(), Feature.IMPROVISATION);
+        if (style != null) features.require(user.getId(), Feature.COMMUNICATION_STYLES);
         quotas.checkCreation(user.getId(), false);
         TrainingSession session = new TrainingSession(user, exercise, trainingType);
+        session.assignStyle(style);
         session.markRecording();
         return toResponse(sessions.save(session));
     }
@@ -172,7 +186,8 @@ public class TrainingSessionService {
                 session.getOverallScore(),
                 session.hasAudio(),
                 session.getAudioMimeType(),
-                session.getAudioSizeBytes()
+                session.getAudioSizeBytes(),
+                session.getCommunicationStyle()
         );
     }
 

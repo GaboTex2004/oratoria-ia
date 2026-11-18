@@ -45,7 +45,8 @@ public class ExerciseService {
                 exercise.getTrainingType(),
                 exercise.getRecommendedDurationSeconds(),
                 exercise.getCategory(), exercise.getDifficulty(), exercise.getObjective(),
-                java.util.List.of("CLARITY", "COHERENCE", "ORGANIZATION", "ARGUMENTATION")
+                java.util.List.of("CLARITY", "COHERENCE", "ORGANIZATION", "ARGUMENTATION"),
+                exercise.getCommunicationStyle()
         );
     }
 }

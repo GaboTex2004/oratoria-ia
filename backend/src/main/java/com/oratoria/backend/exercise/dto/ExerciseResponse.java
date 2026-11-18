@@ -14,5 +14,6 @@ public record ExerciseResponse(
         String category,
         String difficulty,
         String objective,
-        java.util.List<String> evaluationCriteria) {
+        java.util.List<String> evaluationCriteria,
+        String communicationStyle) {
 }

@@ -21,5 +21,6 @@ public record SessionResponse(
         Double overallScore,
         boolean hasAudio,
         String audioMimeType,
-        Long audioSizeBytes) {
+        Long audioSizeBytes,
+        String communicationStyle) {
 }

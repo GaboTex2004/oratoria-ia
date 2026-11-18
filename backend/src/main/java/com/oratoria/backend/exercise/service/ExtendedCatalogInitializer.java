@@ -37,10 +37,29 @@ public class ExtendedCatalogInitializer implements ApplicationRunner {
             seed("IMPROVISACION_" + (i + 1), "Tema inesperado: " + topics[i], "IMPROVISACION", "INTERMEDIATE", 60,
                     "Habla de «" + topics[i] + "» durante un minuto. Presenta una idea, un ejemplo y una conclusión.");
         }
-        seed("ESTILO_NARRATIVO", "Una historia que enseña", "ESTILOS", "INTERMEDIATE", 90,
+        style("ESTILO_NARRATIVO", "NARRATIVO", "Una historia que enseña", "INTERMEDIATE", 90,
                 "Cuenta una experiencia con contexto, conflicto y aprendizaje. Conecta el final con una enseñanza para la audiencia.");
-        seed("ESTILO_PERSUASIVO", "Una propuesta convincente", "ESTILOS", "ADVANCED", 90,
+        style("ESTILO_NARRATIVO_2", "NARRATIVO", "El día que todo cambió", "BASIC", 60,
+                "Narra en un minuto un momento que cambió tu forma de pensar. Describe el lugar, la decisión y lo que aprendiste.");
+        style("ESTILO_PERSUASIVO", "PERSUASIVO", "Una propuesta convincente", "ADVANCED", 90,
                 "Convence a tu audiencia de apoyar una iniciativa universitaria. Explica el problema, la evidencia y una acción concreta.");
+        style("ESTILO_PERSUASIVO_2", "PERSUASIVO", "Defiende un hábito", "INTERMEDIATE", 60,
+                "Convence a un compañero de adoptar un hábito de estudio. Da dos razones con evidencia, responde una objeción y pide que lo pruebe una semana.");
+        style("ESTILO_DINAMICO_1", "DINAMICO", "Presentación relámpago", "BASIC", 60,
+                "Presenta tu carrera en un minuto con frases cortas. Incluye una pregunta a la audiencia y tres ideas marcadas con pausas.");
+        style("ESTILO_DINAMICO_2", "DINAMICO", "Motiva al equipo", "INTERMEDIATE", 90,
+                "Motiva a tu equipo antes de una entrega difícil. Alterna energía y calma, usa frases breves y termina con una consigna.");
+        style("ESTILO_ACADEMICO_1", "ACADEMICO", "Explica un concepto de tu carrera", "INTERMEDIATE", 90,
+                "Define un concepto central de tu carrera, anuncia los tres puntos que tratarás, desarróllalos con un fundamento y cierra con una síntesis.");
+        style("ESTILO_ACADEMICO_2", "ACADEMICO", "Resumen de una investigación", "ADVANCED", 120,
+                "Resume una investigación o artículo: pregunta, método, resultado principal y una limitación. Distingue datos de opiniones.");
+    }
+
+    private void style(String code, String style, String title, String level, int duration, String prompt) {
+        seed(code, title, "ESTILOS", level, duration, prompt);
+        // Databases seeded before styles existed get the style assigned on the next start.
+        exercises.findByCode(code).filter(exercise -> exercise.getCommunicationStyle() == null)
+                .ifPresent(exercise -> exercise.assignStyle(style));
     }
 
     private void seed(String code, String title, String category, String level, int duration, String prompt) {
