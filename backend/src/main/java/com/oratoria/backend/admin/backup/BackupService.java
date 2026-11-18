@@ -143,6 +143,18 @@ public class BackupService {
             if (!tables.contains(name)) throw new BadRequestException("El respaldo contiene una tabla desconocida: " + name);
             if (!data.get(name).isArray()) throw new BadRequestException("El respaldo tiene un formato inválido en la tabla " + name);
         }
+        // Every table is emptied on restore, so a truncated or hand-edited file must not get that far.
+        for (String table : tables) {
+            if (!data.has(table)) throw new BadRequestException("El respaldo está incompleto: falta la tabla " + table + ".");
+        }
+        boolean hasActiveAdmin = false;
+        for (JsonNode user : data.get("app_users")) {
+            if ("ADMIN".equals(user.path("role").asString("")) && user.path("enabled").asBoolean(false)) hasActiveAdmin = true;
+        }
+        if (!hasActiveAdmin) {
+            throw new BadRequestException("El respaldo no tiene ningún administrador activo; restaurarlo dejaría la plataforma sin acceso.");
+        }
+        if (data.get("plans").isEmpty()) throw new BadRequestException("El respaldo no contiene planes de suscripción.");
 
         create(actor, "Automático antes de restaurar");
         entityManager.flush();

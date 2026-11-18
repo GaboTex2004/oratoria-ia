@@ -100,6 +100,35 @@ class BackupIntegrationTests extends AdminTestSupport {
         assertThat(usersWithEmail(admin.getEmail())).isOne();
     }
 
+    long count(String table) { return jdbc.queryForObject("SELECT count(*) FROM " + table, Long.class); }
+
+    void expectRejectedUpload(String token, String content, String message) throws Exception {
+        mvc.perform(multipart("/api/admin/backups/restore").file(new MockMultipartFile("file", "x.json", "application/json", content.getBytes()))
+                        .param("confirm", "RESTAURAR").header("Authorization", token))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString(message)));
+    }
+
+    @Test void incompleteFilesCannotWipeTheDatabase() throws Exception {
+        UserAccount admin = user(UserRole.ADMIN);
+        String token = "Bearer " + jwt.createToken(admin);
+        long users = count("app_users"), plans = count("plans");
+        expectRejectedUpload(token, "{\"format\":\"oratoria-backup\",\"formatVersion\":1,\"schemaVersion\":\"7\",\"tables\":{}}", "falta la tabla");
+        assertThat(count("app_users")).isEqualTo(users);
+        assertThat(count("plans")).isEqualTo(plans);
+    }
+
+    @Test void backupsWithoutAnActiveAdminOrPlansAreRejected() throws Exception {
+        UserAccount admin = user(UserRole.ADMIN);
+        String token = "Bearer " + jwt.createToken(admin);
+        String id = createBackup(token);
+        String file = mvc.perform(get("/api/admin/backups/" + id + "/download").header("Authorization", token))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        expectRejectedUpload(token, file.replace("\"role\":\"ADMIN\"", "\"role\":\"USER\""), "administrador activo");
+        expectRejectedUpload(token, file.replaceAll("\"plans\":\\[[^\\]]*\\]", "\"plans\":[]"), "planes");
+        assertThat(usersWithEmail(admin.getEmail())).isOne();
+    }
+
     @Test void deletedBackupDisappears() throws Exception {
         String token = auth(UserRole.ADMIN);
         String id = createBackup(token);
