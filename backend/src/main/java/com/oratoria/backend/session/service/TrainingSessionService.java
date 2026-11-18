@@ -7,6 +7,8 @@ import com.oratoria.backend.evaluation.entity.EvaluationStatus;
 import com.oratoria.backend.evaluation.service.SpeechEvaluationService;
 import com.oratoria.backend.exercise.entity.Exercise;
 import com.oratoria.backend.exercise.service.ExerciseService;
+import com.oratoria.backend.subscription.entity.Feature;
+import com.oratoria.backend.subscription.service.FeatureAccessService;
 import com.oratoria.backend.session.dto.CreateSessionRequest;
 import com.oratoria.backend.session.dto.SessionResponse;
 import com.oratoria.backend.session.entity.SessionStatus;
@@ -35,6 +37,7 @@ public class TrainingSessionService {
     private final SpeechAnalysisService speechAnalysisService;
     private final SpeechEvaluationService speechEvaluationService;
     private final com.oratoria.backend.subscription.service.QuotaService quotas;
+    private final FeatureAccessService features;
 
     public TrainingSessionService(TrainingSessionRepository sessions,
                                   UserAccountRepository users,
@@ -42,7 +45,9 @@ public class TrainingSessionService {
                                   AudioStorageService audioStorage,
                                   SpeechAnalysisService speechAnalysisService,
                                   SpeechEvaluationService speechEvaluationService,
-                                  com.oratoria.backend.subscription.service.QuotaService quotas) {
+                                  com.oratoria.backend.subscription.service.QuotaService quotas,
+                                  FeatureAccessService features) {
+        this.features = features;
         this.sessions = sessions;
         this.users = users;
         this.exercises = exercises;
@@ -69,6 +74,8 @@ public class TrainingSessionService {
             trainingType = exercise.getTrainingType();
         }
 
+        // Plan features are checked before the quota so a locked attempt does not consume it.
+        if (trainingType == TrainingType.IMPROVISATION) features.require(user.getId(), Feature.IMPROVISATION);
         quotas.checkCreation(user.getId(), false);
         TrainingSession session = new TrainingSession(user, exercise, trainingType);
         session.markRecording();

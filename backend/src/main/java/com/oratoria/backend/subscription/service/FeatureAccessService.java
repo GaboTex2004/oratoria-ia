@@ -44,8 +44,28 @@ public class FeatureAccessService {
                         entitlement.isUnlimited(), entitlement.getLimitValue()));
     }
 
+    public void require(UUID userId, Feature feature) {
+        if (!hasAccess(userId, feature)) throw new FeatureLockedException(feature);
+    }
+
+    public FeatureSummary summary(UUID userId) {
+        Subscription subscription = billing.effectiveSubscription(userId);
+        java.util.List<FeatureState> features = java.util.Arrays.stream(Feature.values())
+                .map(feature -> new FeatureState(feature.name(), feature.label(), entitlements
+                        .findByPlanIdAndFeature(subscription.getPlan().getId(), feature)
+                        .map(PlanEntitlement::isEnabled).orElse(false)))
+                .toList();
+        return new FeatureSummary(subscription.getPlan().getCode().name(), features);
+    }
+
     private Optional<Subscription> activeSubscription(UUID userId) {
         return Optional.of(billing.effectiveSubscription(userId));
+    }
+
+    public record FeatureSummary(String plan, java.util.List<FeatureState> features) {
+    }
+
+    public record FeatureState(String code, String label, boolean enabled) {
     }
 
     public record EntitlementLimit(boolean unlimited, Integer value) {

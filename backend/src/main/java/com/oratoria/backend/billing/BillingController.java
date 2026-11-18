@@ -30,6 +30,8 @@ public class BillingController {
     public record AdvanceRequest(@Min(1) @Max(400) int days,@NotNull Scenario renewalScenario) {}
     @GetMapping("/subscriptions/current")
     public BillingService.SubscriptionView current(Principal actor) { return billing.current(user(actor)); }
+    @GetMapping("/subscriptions/current/features")
+    public FeatureAccessService.FeatureSummary features(Principal actor) { return access.summary(user(actor)); }
     @PostMapping("/payments/orders")
     public BillingService.Receipt checkout(Principal actor,@RequestHeader("Idempotency-Key") String key) { return billing.checkout(user(actor),key); }
     @GetMapping("/payments/orders/{id}")

@@ -4,6 +4,8 @@ import com.oratoria.backend.session.repository.TrainingSessionRepository;
 import com.oratoria.backend.session.service.TrainingSessionService;
 import com.oratoria.backend.shared.exception.BadRequestException;
 import com.oratoria.backend.shared.exception.ResourceNotFoundException;
+import com.oratoria.backend.subscription.entity.Feature;
+import com.oratoria.backend.subscription.service.FeatureAccessService;
 import java.net.URI;
 import java.net.http.*;
 import java.time.Duration;
@@ -19,16 +21,17 @@ public class BodyAnalysisService {
     private final TrainingSessionRepository sessionRepository;
     private final BodyAnalysisRepository results;
     private final ObjectMapper mapper;
+    private final FeatureAccessService features;
     private final String url;
     private final String key;
     private final HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1)
             .connectTimeout(Duration.ofSeconds(5)).build();
 
     public BodyAnalysisService(TrainingSessionService sessions, TrainingSessionRepository sessionRepository,
-            BodyAnalysisRepository results, ObjectMapper mapper,
+            BodyAnalysisRepository results, ObjectMapper mapper, FeatureAccessService features,
             @Value("${app.ai-service.url}") String url, @Value("${app.ai-service.internal-api-key}") String key) {
         this.sessions = sessions; this.sessionRepository = sessionRepository; this.results = results;
-        this.mapper = mapper; this.url = url; this.key = key;
+        this.mapper = mapper; this.url = url; this.key = key; this.features = features;
     }
 
     public JsonNode get(String email, UUID id) {
@@ -39,6 +42,7 @@ public class BodyAnalysisService {
 
     public JsonNode analyze(String email, UUID id, BodyController.BodyRequest payload) {
         sessions.getUserSession(email, id);
+        features.require(sessionRepository.getReferenceById(id).getUser().getId(), Feature.CAMERA_ANALYSIS);
         try {
             HttpRequest request = HttpRequest.newBuilder(URI.create(url + "/api/v1/pose/analyze"))
                     .timeout(Duration.ofSeconds(90)).header("X-Internal-Api-Key", key)
