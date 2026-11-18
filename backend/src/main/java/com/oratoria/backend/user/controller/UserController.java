@@ -19,7 +19,9 @@ import com.oratoria.backend.user.service.ProfileService;
 public class UserController {
     private final AuthService authService;
     private final ProfileService profiles;
-    public UserController(AuthService authService, ProfileService profiles) {
+    private final com.oratoria.backend.admin.audit.AuditService audit;
+    public UserController(AuthService authService, ProfileService profiles, com.oratoria.backend.admin.audit.AuditService audit) {
+        this.audit = audit;
         this.authService = authService;
         this.profiles = profiles;
     }
@@ -34,7 +36,9 @@ public class UserController {
 
     @PostMapping("/me/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    void password(Principal principal, @Valid @RequestBody ProfileService.PasswordUpdate request) {
+    void password(Principal principal, @Valid @RequestBody ProfileService.PasswordUpdate request,
+                  jakarta.servlet.http.HttpServletRequest http) {
         profiles.changePassword(principal.getName(), request);
+        audit.record(principal.getName(), com.oratoria.backend.admin.audit.AuditAction.PASSWORD_CHANGED, "user", null, null, http.getRemoteAddr());
     }
 }
