@@ -1,5 +1,8 @@
 # OratoriaAI
 
+Para el despliegue académico con HTTPS en Ubuntu, consulta
+[Despliegue y actualizaciones en Ubuntu](docs/DESPLIEGUE_UBUNTU.md).
+
 ## Inicio completo con Docker (Windows)
 
 El modo recomendado solo requiere Docker Desktop, Docker Compose y PowerShell. No

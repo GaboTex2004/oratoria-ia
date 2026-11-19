@@ -1,0 +1,35 @@
+limit_req_zone $binary_remote_addr zone=oratoria_login:10m rate=10r/m;
+
+server {
+    listen 80;
+    server_name __DOMAIN__;
+    server_tokens off;
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name __DOMAIN__;
+    server_tokens off;
+    ssl_certificate /etc/letsencrypt/live/__DOMAIN__/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/__DOMAIN__/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+    client_max_body_size 16m;
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options SAMEORIGIN always;
+    add_header Referrer-Policy strict-origin-when-cross-origin always;
+    add_header Permissions-Policy "camera=(self), microphone=(self)" always;
+
+    location ~ ^/api/auth/(login|register)$ {
+        limit_req zone=oratoria_login burst=5 nodelay;
+        limit_req_status 429;
+        include /etc/nginx/snippets/oratoria-proxy.conf;
+    }
+
+    location / {
+        include /etc/nginx/snippets/oratoria-proxy.conf;
+    }
+}
