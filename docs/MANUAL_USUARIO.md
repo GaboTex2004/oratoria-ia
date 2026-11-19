@@ -1,5 +1,30 @@
 # Manual de usuario
 
+## Ajusta tu voz y entonación
+
+En Entrenamientos, abrir «Ajusta tu voz y entonación». Autorizar el micrófono,
+grabar el discurso inicial y detenerlo para transcribirlo con Whisper local.
+La envolvente de intensidad y la curva tonal se estiman en el navegador; no
+son mediciones calibradas ni permiten diagnosticar emociones. Las muletillas
+se detectan en la transcripción, no en la forma de la onda.
+
+Elegir «Ajustar y practicar otra vez». Seleccionar un ritmo o una duración:
+el objetivo puede ser menor o mayor que el discurso original. La referencia de
+escucha ajusta la velocidad conservando el tono si el navegador lo soporta;
+no sintetiza énfasis ni una voz nueva. El objetivo respeta el límite de grabación
+y velocidades entre 0,25× y 4×. Se pueden marcar palabras clave para enfatizar.
+
+El teleprompter resalta palabras según las marcas temporales escaladas de la
+referencia (o una distribución estimada si no hay marcas). No sigue la voz en
+tiempo real. El color avanza de izquierda a derecha dentro de cada palabra,
+conserva coloreadas las anteriores y desplaza suavemente las líneas. Durante
+las pausas no se rellena la siguiente palabra. Puede pausarse sin detener el audio. La referencia gris aparece
+reducida y ajustada al tiempo elegido; la captura actual es azul, en la misma
+escala. Llegar al tiempo objetivo no detiene la grabación: se puede continuar
+hasta el máximo configurado. Se conservan como máximo dos intentos en memoria.
+Al cerrar o recargar se descartan; no se crean sesiones ni historial. Si falla
+la transcripción, puede reintentarse con el audio ya capturado.
+
 ## Audio y cámara en Análisis corporal
 
 En Análisis corporal, abrir «Práctica con audio y cámara», elegir un ejercicio y

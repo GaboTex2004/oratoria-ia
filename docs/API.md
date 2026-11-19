@@ -111,3 +111,13 @@ requestId donde corresponde. Los detalles no contienen claves ni transcripciones
 
 No hay fallback cloud ni descarga implícita de pesos. Un modelo ausente devuelve un
 error de configuración; preparar los pesos y reintentar es una acción explícita.
+# Entrenador temporal de voz
+
+`POST /api/voice-coach/analyze` requiere autenticación. Recibe multipart con
+`audio`, `durationSeconds` entero y `consent=true`. Devuelve transcripción,
+marcas temporales y métricas mediante el mismo proveedor Whisper local, sin
+crear sesiones ni conservar el audio en el almacenamiento de la aplicación.
+La respuesta exitosa usa `Cache-Control: no-store`. Aplica límites de tamaño,
+duración y formato; una petición concurrente recibe 429. Un error transitorio
+del proveedor devuelve 503. Las curvas y ajustes del teleprompter son locales
+al navegador y no se guardan en la base de datos.

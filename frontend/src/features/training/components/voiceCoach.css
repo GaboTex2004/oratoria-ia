@@ -1,0 +1,20 @@
+.voice-coach { width: min(960px, calc(100vw - 24px)); max-height: 92dvh; overflow: auto; border: 1px solid var(--border); border-radius: 18px; padding: 24px; color: var(--text); background: var(--surface, #fff); }
+.voice-coach::backdrop { background: rgb(15 23 42 / 65%); }
+.voice-coach__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.voice-coach h2 { margin: 8px 0; }
+.voice-coach p { line-height: 1.6; }
+.voice-coach label { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 16px 0; }
+.voice-coach input:not([type=checkbox]), .voice-coach select { max-width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; }
+.voice-coach__steps { display: flex; flex-wrap: wrap; gap: 12px; list-style: none; padding: 0; }
+.voice-coach__steps li { padding: 8px 12px; border-radius: 8px; background: #e8edf5; }
+.voice-coach__steps [aria-current] { background: #1e5ab5; color: white; }
+.voice-coach__wave, .voice-coach__pitch { width: 100%; height: 120px; border: 1px solid var(--border); border-radius: 8px; background: #f8fafc; }
+.voice-coach__legend { font-size: 13px; color: var(--muted); }
+.voice-coach__prompter { position: relative; max-height: 230px; overflow-y: auto; overflow-anchor: none; padding: 22px; border-radius: 12px; background: #122037; color: #a5b4c7; line-height: 2; }
+.voice-coach__word { --word-progress: 0%; display: inline-block; white-space: pre; color: transparent; background: linear-gradient(to right, #fde68a 0%, #fde68a var(--word-progress), #a5b4c7 var(--word-progress), #a5b4c7 100%); background-clip: text; -webkit-background-clip: text; }
+.voice-coach__word.is-current { filter: drop-shadow(0 0 5px rgb(253 230 138 / 20%)); }
+.voice-coach__prompter .is-emphasis { text-decoration: underline; text-decoration-color: #fbbf24; text-underline-offset: 6px; font-weight: 700; }
+.voice-coach__seek { border: 0; background: none; color: #1e5ab5; text-decoration: underline; cursor: pointer; }
+.voice-coach audio { width: 100%; margin: 12px 0; }
+@media (forced-colors: active) { .voice-coach__word { color: CanvasText; background: none; } .voice-coach__word.is-current { color: Highlight; text-decoration: underline; } }
+@media (max-width: 540px) { .voice-coach { padding: 14px; } .voice-coach__header { align-items: start; } .voice-coach__steps { gap: 6px; font-size: 12px; } }
