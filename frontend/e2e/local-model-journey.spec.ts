@@ -27,6 +27,18 @@ test('registro, grabación sintética, modelos locales, simulación, cámara sin
   const headers = { Authorization: `Bearer ${token}` }
   const api = process.env.E2E_API_URL || 'http://localhost:8081/api'
 
+  // Camera analysis is a Premium feature. Activate it through the same local demo checkout
+  // flow available to a user, so this end-to-end test respects the product's access rules.
+  const orderResponse = await page.request.post(`${api}/payments/orders`, {
+    headers: { ...headers, 'Idempotency-Key': `e2e-${randomUUID()}` },
+  })
+  expect(orderResponse.status()).toBe(200)
+  const order = await orderResponse.json()
+  const paymentResponse = await page.request.post(`${api}/payments/orders/${order.order.id}/process`, {
+    headers, data: { scenario: 'DEMO_APPROVED' },
+  })
+  expect(paymentResponse.status(), await paymentResponse.text()).toBe(200)
+
   await page.goto('/training?type=PRESENTATION')
   await page.getByRole('button', { name: /Practicar ahora/ }).first().click()
   await page.getByRole('button', { name: /Comenzar grabación/ }).click()
@@ -88,7 +100,7 @@ test('registro, grabación sintética, modelos locales, simulación, cámara sin
 
   await page.goto('/body')
   await page.getByLabel('Práctica', { exact: true }).selectOption(session.id)
-  await page.getByRole('checkbox').check()
+  await page.getByLabel('Autorizo la captura y el procesamiento local de estos fotogramas. Puedo apagar la cámara antes de enviarlos.').check()
   await page.getByRole('button', { name: 'Activar cámara' }).click()
   await page.getByRole('button', { name: 'Capturar y analizar' }).click()
   await expect(page.getByRole('heading', { name: 'Indicadores observados' })).toBeVisible({ timeout: 120000 })

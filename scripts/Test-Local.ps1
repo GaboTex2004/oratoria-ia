@@ -10,6 +10,8 @@ Push-Location (Join-Path $projectRoot 'ai-service')
 try {
     & .\.venv\Scripts\python.exe -m ruff check app tests scripts
     if ($LASTEXITCODE -ne 0) { throw 'Ruff detecto errores.' }
+    & .\.venv\Scripts\python.exe -m ruff format --check app tests scripts
+    if ($LASTEXITCODE -ne 0) { throw 'Ruff detecto archivos sin formatear.' }
     & .\.venv\Scripts\python.exe -m pytest -m 'not models' -q
     if ($LASTEXITCODE -ne 0) { throw 'Fallo la suite Python.' }
 } finally { Pop-Location }

@@ -234,7 +234,7 @@ services:
       context: ./ai-service
       target: test
     profiles: ["test"]
-    command: ["/bin/sh", "-c", "python -m ruff check app tests scripts && python -m pytest -m 'not models' -q"]
+    command: ["/bin/sh", "-c", "python -m ruff check app tests scripts && python -m ruff format --check app tests scripts && python -m pytest -m 'not models' -q"]
     environment:
       INTERNAL_API_KEY: docker-test-internal-key
     networks:
@@ -257,8 +257,9 @@ services:
       target: e2e
     profiles: ["test"]
     environment:
-      E2E_BASE_URL: http://frontend:8080
-      E2E_API_URL: http://frontend:8080/api
+      E2E_BASE_URL: http://127.0.0.1:15173
+      E2E_API_URL: http://127.0.0.1:15173/api
+      E2E_PROXY_UPSTREAM: http://frontend:8080
       E2E_ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       E2E_ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       PLAYWRIGHT_CHANNEL: chromium

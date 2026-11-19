@@ -10,12 +10,20 @@ try {
     & docker compose config --quiet
     if ($LASTEXITCODE -ne 0) { throw 'docker compose config fallo.' }
 
+    & docker compose --profile test build backend-tests ai-tests frontend-tests playwright-tests
+    if ($LASTEXITCODE -ne 0) { throw 'No se pudieron construir las imágenes de prueba desde el código actual.' }
+
     & docker compose --profile test run --rm backend-tests
     if ($LASTEXITCODE -ne 0) { throw 'Fallo la suite Java en el PostgreSQL efimero.' }
     & docker compose --profile test run --rm ai-tests
     if ($LASTEXITCODE -ne 0) { throw 'Fallo Ruff o la suite Python.' }
     & docker compose --profile test run --rm frontend-tests
     if ($LASTEXITCODE -ne 0) { throw 'Fallo frontend test, lint o build.' }
+
+    & docker compose build backend ai-service frontend
+    if ($LASTEXITCODE -ne 0) { throw 'No se pudieron construir los servicios actuales para E2E.' }
+    & docker compose up -d backend ai-service frontend
+    if ($LASTEXITCODE -ne 0) { throw 'No se pudieron actualizar los servicios locales antes de E2E.' }
 
     if ($Models) {
         $audioPath = Join-Path $projectRoot '.tools/synthetic-spanish.wav'
@@ -28,6 +36,7 @@ try {
         $env:E2E_MODELS = '0'
         $env:E2E_SYNTHETIC_AUDIO = ''
     }
+
     & docker compose --profile test run --rm playwright-tests
     if ($LASTEXITCODE -ne 0) { throw 'Fallo Playwright.' }
 } finally {

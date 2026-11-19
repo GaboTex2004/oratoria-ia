@@ -6,6 +6,12 @@ export default defineConfig({
   outputDir: '../.tools/browser-results',
   reporter: [['list']],
   grepInvert: process.env.E2E_MODELS === '1' ? undefined : /@models/,
+  webServer: process.env.E2E_PROXY_UPSTREAM ? {
+    command: 'node e2e/local-proxy.cjs',
+    url: 'http://127.0.0.1:15173/healthz',
+    timeout: 30000,
+    reuseExistingServer: false,
+  } : undefined,
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:5173',
     channel: process.env.PLAYWRIGHT_CHANNEL || 'msedge',
