@@ -46,13 +46,19 @@ def test_loopback_urls_are_allowed(url):
 
 
 def test_explicit_internal_ollama_hostname_is_allowed(monkeypatch):
-    monkeypatch.setattr("app.infrastructure.ollama.settings", replace(settings, ollama_allowed_hosts=("ollama",)))
+    monkeypatch.setattr(
+        "app.infrastructure.ollama.settings", replace(settings, ollama_allowed_hosts=("ollama",))
+    )
     assert local_base_url("http://ollama:11434") == "http://ollama:11434"
 
 
-@pytest.mark.parametrize("url", ["http://ollama.evil:11434", "https://ollama:11434", "http://user@ollama:11434"])
+@pytest.mark.parametrize(
+    "url", ["http://ollama.evil:11434", "https://ollama:11434", "http://user@ollama:11434"]
+)
 def test_internal_allowlist_does_not_weaken_transport_rules(monkeypatch, url):
-    monkeypatch.setattr("app.infrastructure.ollama.settings", replace(settings, ollama_allowed_hosts=("ollama",)))
+    monkeypatch.setattr(
+        "app.infrastructure.ollama.settings", replace(settings, ollama_allowed_hosts=("ollama",))
+    )
     with pytest.raises(LocalModelError):
         local_base_url(url)
 
