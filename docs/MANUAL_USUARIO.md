@@ -1,5 +1,18 @@
 # Manual de usuario
 
+## Audio y cámara en Análisis corporal
+
+En Análisis corporal, abrir «Práctica con audio y cámara», elegir un ejercicio y
+autorizar ambos dispositivos. Pulsar «Grabar audio y cámara» y después «Detener
+audio y cámara». Revisar el audio antes de «Guardar y analizar audio y cuerpo».
+Se crea una sesión nueva, sujeta al plan y cuota habituales, sin reemplazar otras
+grabaciones. Se toman hasta doce imágenes distribuidas durante la práctica; no se
+guarda video. La transcripción, las muletillas, el ritmo y la evaluación aparecen
+junto al resultado corporal y también en Resultados. Si falla uno de los envíos,
+«Reintentar pendientes» conserva el resultado exitoso y reenvía solo el pendiente.
+No recargar la página antes de guardar o reintentar: la captura pendiente está en
+memoria. La opción «Solo cámara» sigue disponible para prácticas existentes.
+
 Abrir http://localhost:5173 con los servicios del README iniciados. Las cuentas
 de demostración se crean únicamente en desarrollo; sus claves están en el archivo
 privado `backend/.env`. También se puede registrar una cuenta nueva FREE.

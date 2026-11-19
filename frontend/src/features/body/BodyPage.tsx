@@ -5,6 +5,7 @@ import { usePlanFeatures } from '../../shared/hooks/usePlanFeatures'
 import { PremiumLock } from '../../shared/components/PremiumLock'
 import { apiRequest } from '../../shared/services/api'
 import type { TrainingSession } from '../training/types/training'
+import { AudiovisualPractice } from './AudiovisualPractice'
 
 interface BodyResult {
   framesAnalyzed: number; framesWithPerson: number; presenceRatio: number
@@ -46,7 +47,7 @@ export function BodyPage() {
       const context = canvas.getContext('2d')
       for (let i = 0; i < 8; i++) {
         if (!video.current || !context || !alive.current || !stream.current) return
-        context.drawImage(video.current, 0, 0, 480, 360)
+        context.drawImage(video.current, 0, 0, canvas.width, canvas.height)
         frames.push(canvas.toDataURL('image/jpeg', 0.75).split(',')[1])
         await new Promise(resolve => setTimeout(resolve, 500))
       }
@@ -63,8 +64,10 @@ export function BodyPage() {
     finally { setBusy(false) }
   }
   return <WorkspaceLayout>
-    <header><span className="eyebrow">Práctica frente a cámara</span><h1>Comunicación no verbal</h1><p>Asocia ocho fotogramas a una práctica. Solo se conservan los indicadores resultantes.</p></header>
+    <header><span className="eyebrow">Práctica frente a cámara</span><h1>Análisis corporal y voz</h1><p>Practica con audio y cámara juntos o analiza solo tu postura sobre una práctica existente.</p></header>
     {locked && <PremiumLock feature="El análisis con cámara">Puedes consultar análisis anteriores, pero para capturar uno nuevo necesitas Premium.</PremiumLock>}
+    <AudiovisualPractice locked={locked} />
+    <h2>Solo cámara sobre una práctica existente</h2>
     {(error || sessions.error) && <p role="alert" className="training-alert training-alert--error">{error || sessions.error}</p>}
     {sessions.loading ? <p>Cargando sesiones…</p> : !sessions.data?.length ? <p>Primero inicia una práctica en Entrenamientos.</p> : <section className="panel-card workspace-form">
       <label>Práctica<select aria-label="Práctica" disabled={busy || cameraOn} value={sessionId} onChange={event => { setSessionId(event.target.value); setResult(null) }}>
