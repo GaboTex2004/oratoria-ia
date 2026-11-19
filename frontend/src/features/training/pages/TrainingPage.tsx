@@ -11,6 +11,7 @@ import { Sidebar } from '../../dashboard/components/Sidebar'
 import { Topbar } from '../../dashboard/components/Topbar'
 import '../../dashboard/components/dashboard.css'
 import { AudioRecorderPanel } from '../components/AudioRecorderPanel'
+import { VoiceCoachModal } from '../components/VoiceCoachModal'
 import '../components/training.css'
 import { trainingService } from '../services/trainingService'
 import {
@@ -30,6 +31,7 @@ function parseTrainingType(value: string | null): TrainingType | 'ALL' {
 }
 
 export function TrainingPage() {
+  const [voiceCoachOpen, setVoiceCoachOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const firstName = useAuth().user?.firstName || ''
@@ -151,6 +153,7 @@ export function TrainingPage() {
               </header>
 
               <div className="filter-bar">
+                <button className="button button--primary" onClick={() => setVoiceCoachOpen(true)}>Ajusta tu voz y entonación</button>
                 <label>Habilidad <select aria-label="Filtrar por habilidad" value={category} onChange={event => setCategory(event.target.value)}>
                   <option value="ALL">Todas</option>{[...new Set(exercises.map(exercise => exercise.category))].map(value => <option key={value}>{value}</option>)}
                 </select></label>
@@ -250,6 +253,7 @@ export function TrainingPage() {
           )}
         </div>
       </main>
+      {voiceCoachOpen && <VoiceCoachModal onClose={() => setVoiceCoachOpen(false)} />}
     </div>
   )
 }

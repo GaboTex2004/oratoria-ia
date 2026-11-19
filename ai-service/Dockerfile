@@ -4,13 +4,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PYTHONPATH=/app
 RUN apt-get update \
-    && apt-get install --yes --no-install-recommends ffmpeg libgl1 libglib2.0-0 libgomp1 \
+    && apt-get install --yes --no-install-recommends ffmpeg libgl1 libgles2 libglib2.0-0 libgomp1 \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --system --gid 10001 oratoria \
     && useradd --system --uid 10001 --gid 10001 --home-dir /app --shell /usr/sbin/nologin oratoria
 WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends libegl1 \
+    && rm -rf /var/lib/apt/lists/*
 COPY app ./app
 COPY scripts ./scripts
 RUN mkdir -p /models && chown -R 10001:10001 /app /models
