@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test": "node --test tests/training.test.ts tests/personalization.test.ts tests/voiceCoach.test.ts tests/pwa.test.ts",
+    "test": "node --test tests/training.test.ts tests/personalization.test.ts tests/voiceCoach.test.ts tests/pwa.test.ts tests/monitoring.test.ts",
     "preview": "vite preview",
     "test:e2e": "playwright test"
   },

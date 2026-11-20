@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { ApiError, apiRequest } from '../../../shared/services/api'
 import { errorText } from '../types'
+import { stepsFor } from '../monitoringSteps'
 import './monitoring.css'
 
 type Severity = 'NORMAL' | 'ATENCION' | 'CRITICO'
@@ -96,6 +97,7 @@ export function AdminMonitoringTab() {
         ? <p className="admin-muted">Sin alertas: todas las reglas están dentro de lo normal.</p>
         : <ul className="monitor-alerts">{snapshot.alerts.map(alert => <li key={alert.code} className={`monitor-alert monitor-alert--${alert.severity.toLowerCase()}`}>
             <strong>{alert.severity === 'CRITICO' ? 'Crítico' : 'Atención'}</strong><span>{alert.message}</span>
+            <ol className="monitor-alert__steps">{stepsFor(alert.code).map(step => <li key={step}>{step}</li>)}</ol>
           </li>)}</ul>}
     </section>}
 

@@ -61,6 +61,8 @@ POST .../analysis ─────────► toma un estado nuevo y envía S
 
 - Backend: `MonitoringIntegrationTests` (solo ADMIN, métricas reales y alertas con un análisis trabado simulado, el
   modelo recibe solo métricas y alertas, modelo ocupado sin respuesta inventada, preguntas largas rechazadas).
+- Frontend: `tests/monitoring.test.ts` (cada alerta tiene sus pasos) y `e2e/monitor-widget.spec.ts` (el botón aparece en
+  el inicio, se abre solo ante una alerta nueva, muestra los pasos y lleva al panel; API simulada, sin backend).
 - ai-service: `tests/test_monitoring.py` (evidencia limitada a métricas recibidas, piso de estado por alertas, resumen
   reemplazado si contradice las alertas, pregunta respondida, clave interna, límites de entrada y modelo ocupado).
 - Verificación manual (19-nov-2026, Windows, Ollama 0.40 con `qwen2.5:1.5b`): análisis real en 15 a 27 segundos desde
