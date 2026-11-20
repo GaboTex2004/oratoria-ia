@@ -58,6 +58,11 @@ Navegador                       Backend (Spring Boot)               Servicio pus
 
 ## Requisitos y limitaciones
 
+- En Docker Compose, el backend usa además la red `notifications` para alcanzar
+  los servicios push por HTTPS. La red `internal` por sí sola bloquea esa salida.
+  No se publican puertos adicionales; los servicios de IA y PostgreSQL siguen
+  en la red interna. La lista de endpoints permitidos se valida en la aplicación.
+
 - **HTTPS** (o `localhost`) para instalar y para push. El despliegue en Ubuntu ya usa HTTPS.
 - **Android, Windows, macOS y Linux:** Chrome, Edge y Firefox, desde el navegador o con la app instalada.
 - **iPhone/iPad:** iOS 16.4 o superior y **solo con la app instalada** desde Safari («Agregar a inicio»).

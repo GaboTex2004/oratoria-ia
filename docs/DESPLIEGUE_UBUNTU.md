@@ -13,6 +13,18 @@ publicación exclusiva en 127.0.0.1:15173. Configurar el dominio y certificado
 antes de activar el proxy. Los scripts suponen instalados Docker/Compose,
 Nginx, Certbot, Python 3 y acceso sudo.
 
+El backend también se conecta a la red `notifications`, con salida a Internet
+para entregar Web Push por HTTPS. Esta red no publica ningún puerto y no conecta
+PostgreSQL, Ollama ni ai-service a Internet. La lista de destinos admitidos para
+las suscripciones sigue controlada por `PUSH_ALLOWED_HOSTS`; la red Docker por sí
+sola no filtra dominios de destino. El grupo de seguridad debe permitir esa salida
+HTTPS; no se agregan reglas de entrada para las notificaciones.
+
+En Ubuntu, `PUSH_SUBJECT` toma el origen HTTPS público si no está definido. Las
+claves VAPID se generan y persisten en la base si se omiten ambas variables
+`PUSH_VAPID_PUBLIC_KEY` y `PUSH_VAPID_PRIVATE_KEY`. No hace falta regenerar el `.env`
+ni añadir otro contenedor para habilitar la PWA o el asistente de monitoreo.
+
 Desde la raíz de una copia de la versión aprobada, sin copiar archivos .env de
 otros equipos:
 
@@ -109,3 +121,34 @@ con personas. La evaluación final de simulación falló con JSON incompleto,
 también con contexto de 4096 tokens. Es una limitación pendiente del modelo y
 su generación; la salud HTTP no la detecta. No considerar esa función validada
 en la instancia ni presentar este despliegue como libre de fallos.
+
+## Validación de la actualización PWA (20 de noviembre de 2026)
+
+La actualización incorpora los cambios hasta fbb1000, la salida HTTPS del backend
+para Web Push y ajustes de las pruebas para distinguir los mensajes de estado del
+nuevo aviso de conexión de la PWA. El arranque de las pruebas espera salud y recarga
+Nginx para resolver la dirección actual del backend.
+
+Validación local realizada antes de actualizar Ubuntu:
+
+- `scripts/New-SyntheticAudio.ps1`: WAV sintético de Windows, sin grabaciones humanas.
+- `scripts/Test-Docker.ps1 -Models`: pasaron 192 pruebas Java, 66 Python, Ruff,
+  29 pruebas frontend, lint y build. Los intentos de E2E completos en Docker fueron
+  interrumpidos por el motor local; no se consideran una ejecución integral aprobada.
+- El recorrido E2E con Edge en Windows pasó 14 casos, incluido el de modelos reales,
+  simulación, cámara sintética, PDF de resultados y eliminación de datos. Falló la
+  impresión automática del comprobante mediante `Page.printToPDF` en ese navegador.
+- Tras reconstruir `playwright-tests`, los cinco casos de administración y pagos
+  pasaron en Chromium de Docker, incluida la generación del PDF del comprobante.
+  Junto con la ejecución anterior, quedan cubiertos los 15 casos ajenos a la PWA.
+- Los tres casos de `e2e/pwa.spec.ts` pasaron aparte con `E2E_PWA=1` y Edge:
+  manifiesto e iconos, apertura sin conexión, sesión sin cachear `/api` y ancho móvil.
+- El asistente de monitoreo respondió con Qwen y métricas sintéticas, sin consultar
+  una base de datos: 16,14 s, con evidencia limitada a las métricas recibidas.
+- El backend local alcanzó por HTTPS el servicio FCM (HTTP 404 en su ruta raíz,
+  esperado para esta comprobación de conectividad, sin enviar notificaciones).
+
+Se validaron respaldos de PostgreSQL y medios antes de la actualización y se guardó
+una copia fuera de la VM. La entrega push en un teléfono requiere permiso del
+usuario y sigue pendiente de comprobación manual. Estos resultados no garantizan
+precisión de los modelos ni capacidad para múltiples inferencias concurrentes.

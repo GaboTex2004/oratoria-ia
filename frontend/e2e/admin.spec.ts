@@ -27,7 +27,7 @@ test('administración real: acceso y creación de ejercicio inactivo', async ({ 
   const creation = page.waitForResponse(result => result.url().endsWith('/admin/exercises') && result.request().method() === 'POST')
   await exerciseForm.getByRole('button', { name: 'Guardar', exact: true }).click()
   expect((await creation).status()).toBe(201)
-  await expect(page.getByRole('status')).toContainText('Ejercicio guardado')
+  await expect(page.getByRole('status').filter({ hasText: 'Ejercicio guardado' })).toBeVisible()
   await expect(page.getByRole('cell', { name: title, exact: true })).toBeVisible()
   await page.setViewportSize({ width: 375, height: 900 })
   const width = await page.evaluate(() => document.documentElement.scrollWidth)

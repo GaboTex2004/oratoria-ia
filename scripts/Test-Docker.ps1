@@ -22,8 +22,10 @@ try {
 
     & docker compose build backend ai-service frontend
     if ($LASTEXITCODE -ne 0) { throw 'No se pudieron construir los servicios actuales para E2E.' }
-    & docker compose up -d backend ai-service frontend
+    & docker compose up -d --wait --wait-timeout 1800 backend ai-service frontend
     if ($LASTEXITCODE -ne 0) { throw 'No se pudieron actualizar los servicios locales antes de E2E.' }
+    & docker compose exec -T frontend nginx -s reload
+    if ($LASTEXITCODE -ne 0) { throw 'No se pudo renovar la resolución del backend en Nginx antes de E2E.' }
 
     if ($Models) {
         $audioPath = Join-Path $projectRoot '.tools/synthetic-spanish.wav'
