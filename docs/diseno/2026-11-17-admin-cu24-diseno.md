@@ -49,9 +49,9 @@ ejercicios. Falta todo lo demás que lista el documento.
 - B: páginas separadas por área (`/admin/plans`, `/admin/system`…). Más rutas y navegación sin ganancia.
 - C: parámetros en `application.properties` editados a mano. No cumple "gestión de parámetros" desde la plataforma.
 
-## Decisiones del builder (Claude)
+## Decisiones de diseño
 
-- Los 3 parámetros del sistema arriba son propuesta de Claude; el usuario puede pedir otros.
+- Los 3 parámetros del sistema arriba son una propuesta inicial; se pueden cambiar.
 - Estadísticas se calculan con consultas agregadas en el backend, sin tabla nueva.
 - Gráficas con barras CSS simples (sin librería nueva).
 - Pruebas de integración backend (`AdminSystemIntegrationTests`) por cada endpoint nuevo,

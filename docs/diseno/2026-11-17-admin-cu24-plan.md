@@ -1,6 +1,5 @@
 # CU-24 Administración — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Completar el módulo de administración del Documento Grupal (categorías, planes, parámetros del sistema, estado de módulos y estadísticas) sobre el panel `/admin` existente.
 
@@ -8,7 +7,7 @@
 
 **Tech Stack:** Spring Boot 4, Java 21, JPA + Flyway, PostgreSQL, React 19 + TS + Vite.
 
-**Spec:** `docs/superpowers/specs/2026-11-17-admin-cu24-design.md`
+**Spec:** `docs/diseno/2026-11-17-admin-cu24-diseno.md`
 
 ## Global Constraints
 
