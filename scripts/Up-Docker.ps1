@@ -87,7 +87,8 @@ try {
 
     & docker compose exec -T ai-service python scripts/download_models.py --whisper base --pose --verify-only
     if ($LASTEXITCODE -ne 0) { throw 'Los modelos Whisper/MediaPipe no superaron la verificacion.' }
-    & docker compose exec -T ollama ollama show $values['OLLAMA_MODEL'] *> $null
+    $effectiveOllamaModel = if ($env:OLLAMA_MODEL) { $env:OLLAMA_MODEL } else { $values['OLLAMA_MODEL'] }
+    & docker compose exec -T ollama ollama show $effectiveOllamaModel *> $null
     if ($LASTEXITCODE -ne 0) { throw 'El modelo configurado de Ollama no esta disponible.' }
 
     $baseUrl = 'http://127.0.0.1:' + $values['FRONTEND_PORT']
