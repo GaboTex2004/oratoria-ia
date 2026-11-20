@@ -6,6 +6,14 @@ servicios de IA en la nube, no necesita cuentas externas y lo puede usar cualqui
 
 ## Cómo se usa
 
+**En toda la plataforma:** el administrador ve abajo a la derecha, en cualquier pantalla, un botón con el estado
+(*En orden*, *N alertas* o *Sin conexión*, en verde, ámbar o rojo). Consulta el estado solo cada 15 segundos. Si aparece
+una alerta nueva, se abre por sí mismo y muestra el problema con **los pasos a seguir** (por ejemplo, qué contenedor
+revisar). **Ver panel completo** lleva a Administración → Monitoreo. Los pasos son fijos por tipo de alerta
+(`frontend/src/features/admin/monitoringSteps.ts`), no los genera la IA.
+
+**En el panel completo:**
+
 1. Entrar como administrador y abrir **Administración → Monitoreo**.
 2. El panel se actualiza solo cada 10 segundos (se pausa si la pestaña del navegador no está visible). Los botones
    **Pausar** y **Actualizar ahora** controlan la actualización.
