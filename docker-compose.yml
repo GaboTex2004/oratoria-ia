@@ -153,6 +153,9 @@ services:
       BILLING_PREMIUM_PRICE: ${BILLING_PREMIUM_PRICE:-49.00}
       BILLING_GRACE_DAYS: ${BILLING_GRACE_DAYS:-3}
       AUDIO_STORAGE_DIR: /app/data/audio
+      PUSH_VAPID_PUBLIC_KEY: ${PUSH_VAPID_PUBLIC_KEY:-}
+      PUSH_VAPID_PRIVATE_KEY: ${PUSH_VAPID_PRIVATE_KEY:-}
+      PUSH_SUBJECT: ${PUSH_SUBJECT:-mailto:soporte@oratoria.local}
       JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "--show-error", "http://127.0.0.1:8081/api/test"]

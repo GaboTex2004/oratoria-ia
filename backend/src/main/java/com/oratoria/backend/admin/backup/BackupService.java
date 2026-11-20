@@ -23,7 +23,7 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * Logical backups of the application database (all public tables except schema history, the audit log and the
- * backup catalog itself). Rows are exported with row_to_json and loaded back with json_populate_record, so
+ * backup catalog itself, and the VAPID key pair, which never leaves the server). Rows are exported with row_to_json and loaded back with json_populate_record, so
  * PostgreSQL does every type conversion. Recorded audio lives in the file storage and is not part of the backup.
  */
 @Service
@@ -31,7 +31,7 @@ public class BackupService {
     static final String FORMAT = "oratoria-backup";
     static final int FORMAT_VERSION = 1;
     public static final String CONFIRMATION = "RESTAURAR";
-    static final Set<String> EXCLUDED = Set.of("flyway_schema_history", "audit_log", "system_backups");
+    static final Set<String> EXCLUDED = Set.of("flyway_schema_history", "audit_log", "system_backups", "push_vapid_keys");
     private static final Pattern SAFE_NAME = Pattern.compile("[a-z_][a-z0-9_]*");
     private static final DateTimeFormatter FILE_TIME = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").withZone(ZoneId.of("America/La_Paz"));
 

@@ -38,7 +38,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.oratoria.backend.notification.PracticeEvaluatedEvent;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -70,6 +72,7 @@ public class SpeechEvaluationService {
     private final int maxAttempts;
     private final Set<UUID> activeJobs = ConcurrentHashMap.newKeySet();
     private final ExecutorService workerExecutor;
+    private final ApplicationEventPublisher events;
 
     public SpeechEvaluationService(
             SpeechEvaluationRepository evaluations,
@@ -79,8 +82,10 @@ public class SpeechEvaluationService {
             AiSpeechEvaluationClient aiEvaluationClient,
             ObjectMapper objectMapper,
             PlatformTransactionManager transactionManager,
+            ApplicationEventPublisher events,
             @Value("${app.analysis.async-enabled:true}") boolean asyncEnabled,
             @Value("${app.analysis.max-attempts:5}") int maxAttempts) {
+        this.events = events;
         this.evaluations = evaluations;
         this.analyses = analyses;
         this.sessions = sessions;
@@ -397,6 +402,7 @@ public class SpeechEvaluationService {
                         payload.overallScore()
                 );
             });
+            events.publishEvent(new PracticeEvaluatedEvent(sessionId));
         } catch (AiEvaluationClientException clientEx) {
             long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000L;
             log.warn(

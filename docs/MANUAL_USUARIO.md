@@ -43,6 +43,15 @@ evaluar y guardar necesitan conectarse al servidor: el service worker nunca guar
 dispositivo respuestas de `/api`, audio ni resultados. Las actualizaciones se aplican solas
 al volver a abrir la app con conexión.
 
+## Notificaciones
+
+En **Perfil → Notificaciones** tocar **Activar notificaciones** y aceptar el permiso del navegador. Desde ahí se elige
+recibir un aviso cuando el resultado de una práctica está listo y un recordatorio diario a la hora preferida (solo si ese
+día todavía no practicaste). **Enviar notificación de prueba** comprueba el dispositivo. Los avisos llegan aunque la app
+esté cerrada. En iPhone o iPad hay que instalar primero la app con «Agregar a inicio»; en ventanas de incógnito no
+funcionan. Al cerrar sesión, ese dispositivo deja de recibir los avisos de la cuenta. Detalles técnicos en
+`docs/NOTIFICACIONES_PUSH.md`.
+
 ## Audio y cámara en Análisis corporal
 
 En Análisis corporal, abrir «Práctica con audio y cámara», elegir un ejercicio y

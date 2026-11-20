@@ -138,7 +138,9 @@ class BackupIntegrationTests extends AdminTestSupport {
         UserAccount admin = user(UserRole.ADMIN);
         String token = "Bearer " + jwt.createToken(admin);
         long users = count("app_users"), plans = count("plans");
-        expectRejectedUpload(token, "{\"format\":\"oratoria-backup\",\"formatVersion\":1,\"schemaVersion\":\"7\",\"tables\":{}}", "falta la tabla");
+        // Versión actual del esquema: el archivo pasa esa validación y debe frenarse por las tablas que faltan.
+        String current = jdbc.queryForObject("SELECT version FROM flyway_schema_history WHERE success AND version IS NOT NULL ORDER BY installed_rank DESC LIMIT 1", String.class);
+        expectRejectedUpload(token, "{\"format\":\"oratoria-backup\",\"formatVersion\":1,\"schemaVersion\":\"" + current + "\",\"tables\":{}}", "falta la tabla");
         assertThat(count("app_users")).isEqualTo(users);
         assertThat(count("plans")).isEqualTo(plans);
     }

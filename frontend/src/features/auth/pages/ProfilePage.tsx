@@ -3,6 +3,7 @@ import { useAuth } from '../context/useAuth'
 import { apiRequest } from '../../../shared/services/api'
 import { WorkspaceLayout } from '../../../shared/components/WorkspaceLayout'
 import { PreferencesSection } from '../../profile/PreferencesForm'
+import { NotificationSettings } from '../../profile/NotificationSettings'
 
 export function ProfilePage() {
   const { user, refresh, logout } = useAuth()
@@ -38,6 +39,7 @@ export function ProfilePage() {
       <button className="button button--primary" disabled={busy}>Guardar perfil</button>
     </form>
     <PreferencesSection />
+    <NotificationSettings />
     <form className="panel-card workspace-form" onSubmit={e => save(e, true)}>
       <h2>Cambiar contraseña</h2><p>Al cambiarla se cerrarán tus sesiones. Inicia sesión con la nueva contraseña.</p>
       <label>Contraseña actual<input type="password" autoComplete="current-password" required value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} /></label>

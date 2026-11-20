@@ -1,7 +1,7 @@
 /* Service worker de OratoriaAI: instala la app y conserva la interfaz para abrirla sin conexión.
    Nunca guarda respuestas de /api: audio, transcripciones, resultados y datos personales siempre
    van directo al servidor. Si cambias la estrategia de caché, sube VERSION. */
-const VERSION = 'v2'
+const VERSION = 'v3'
 const SHELL_CACHE = `oratoria-shell-${VERSION}`
 const ASSET_CACHE = `oratoria-assets-${VERSION}`
 const SHELL = ['/index.html', '/manifest.webmanifest', '/favicon.svg', '/icons/icon-192.png', '/icons/icon-512.png']
@@ -35,6 +35,36 @@ self.addEventListener('fetch', event => {
   if (request.mode === 'navigate') event.respondWith(networkFirstPage(event))
   else if (url.pathname.startsWith('/assets/')) event.respondWith(cacheFirst(event))
   else if (SHELL.includes(url.pathname) || url.pathname.startsWith('/icons/')) event.respondWith(staleWhileRevalidate(event))
+})
+
+// Notificaciones push: el servidor manda {title, body, url, tag} cifrado; aquí se muestra aunque la app esté cerrada.
+self.addEventListener('push', event => {
+  let data = {}
+  try { data = event.data ? event.data.json() : {} } catch { data = { body: event.data ? event.data.text() : '' } }
+  const url = typeof data.url === 'string' && data.url.startsWith('/') ? data.url : '/home'
+  event.waitUntil(self.registration.showNotification(data.title || 'OratoriaAI', {
+    body: data.body || '',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    tag: data.tag || undefined,
+    lang: 'es',
+    data: { url },
+  }))
+})
+
+// Al tocarla se abre la pantalla del aviso, reutilizando una ventana de la app si ya hay una abierta.
+self.addEventListener('notificationclick', event => {
+  event.notification.close()
+  const target = new URL(event.notification.data?.url || '/home', self.location.origin).href
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+    const existing = windows.find(client => new URL(client.url).origin === self.location.origin)
+    if (existing) {
+      await existing.focus()
+      return existing.navigate(target).catch(() => self.clients.openWindow(target))
+    }
+    return self.clients.openWindow(target)
+  })())
 })
 
 /** Rutas /assets/ que necesita un index.html: las del HTML y las fuentes que referencia su CSS. */

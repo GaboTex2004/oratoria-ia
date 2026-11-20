@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useResource } from '../../../shared/hooks/useResource'
 import { apiRequest } from '../../../shared/services/api'
 import { MODULE_LABELS, errorText, type ModuleStatus } from '../types'
+import { AdminBroadcastCard } from './AdminBroadcastCard'
 
 type Settings = Record<string, string>
 
@@ -43,5 +44,6 @@ export function AdminSystemTab() {
     {saved && <p role="status" className="workspace-notice">Parámetros guardados.</p>}
     {!settings.data && settings.loading ? <p>Cargando parámetros…</p> : settings.error ? <div role="alert" className="workspace-notice">{settings.error}<button className="button button--ghost" onClick={settings.reload}>Reintentar</button></div>
       : settings.data && <SettingsForm key={JSON.stringify(settings.data)} initial={settings.data} onStart={() => setSaved(false)} onSaved={() => { setSaved(true); settings.reload() }} />}
+    <AdminBroadcastCard />
   </>
 }

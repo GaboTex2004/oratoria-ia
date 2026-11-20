@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { authService } from '../services/authService'
 import { ApiError } from '../../../shared/services/api'
+import { forgetPushOnServer } from '../../../shared/pwa/push'
 import type { LoginRequest, RegisterRequest, User } from '../types/auth'
 import { tokenStorage } from '../../../shared/services/tokenStorage'
 import { AuthContext } from './authContextValue'
@@ -37,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function register(request: RegisterRequest) {
     const session = await authService.register(request); setUser(session.user); return session.user
   }
-  function logout() { authService.logout(); setUser(null) }
+  function logout() { forgetPushOnServer(tokenStorage.get()); authService.logout(); setUser(null) }
   async function refresh() { setUser(await authService.me()) }
 
   return <AuthContext.Provider value={{ user, loading, login, register, logout, refresh }}>{children}</AuthContext.Provider>
