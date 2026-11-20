@@ -1,5 +1,16 @@
 # Manual de usuario
 
+## Asistente
+
+En todas las pantallas, también antes de iniciar sesión, hay un botón **Asistente** abajo a la derecha. Al abrirlo
+muestra los pasos para usar la pantalla actual. Se le puede escribir una pregunta (por ejemplo «¿cómo grabo mi
+discurso?» o «dónde veo mi nota») o tocar una de las preguntas sugeridas, y responde con los pasos y un enlace al
+módulo. **Esta pantalla** vuelve a mostrar la guía de donde estás. Cada cuenta ve solo lo que le corresponde: el
+visitante, cómo entrar o registrarse; el usuario, todos los módulos; el administrador, además, cada pestaña de
+Administración y el estado de la plataforma en vivo, con aviso automático y pasos cuando aparece una alerta.
+Responde por palabras clave con guías escritas (`frontend/src/features/assistant/guides.ts`): es instantáneo y no usa
+el modelo de IA, así que no compite con las prácticas.
+
 ## Ajusta tu voz y entonación
 
 En Entrenamientos, abrir «Ajusta tu voz y entonación». Autorizar el micrófono,

@@ -2,12 +2,12 @@ import { BrowserRouter } from 'react-router-dom'
 import { AppRouter } from './router/AppRouter'
 import { AuthProvider } from '../features/auth/context/AuthContext'
 import { OfflineBanner } from '../shared/pwa/InstallApp'
-import { MonitorWidget } from '../features/admin/components/MonitorWidget'
+import { Assistant } from '../features/assistant/Assistant'
 
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider><AppRouter /><MonitorWidget /></AuthProvider>
+      <AuthProvider><AppRouter /><Assistant /></AuthProvider>
       <OfflineBanner />
     </BrowserRouter>
   )

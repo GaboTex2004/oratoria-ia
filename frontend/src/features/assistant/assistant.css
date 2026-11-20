@@ -1,0 +1,33 @@
+.assistant { position: fixed; right: 16px; bottom: 16px; z-index: 900; display: grid; justify-items: end; gap: 10px; }
+.assistant__button { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; border: 0; border-radius: 999px; color: #fff; background: var(--secondary); box-shadow: var(--shadow); font: inherit; font-weight: 600; cursor: pointer; }
+.assistant__button--atencion { background: #9a6700; }
+.assistant__button--critico { background: var(--error); }
+.assistant__panel { display: flex; flex-direction: column; width: min(380px, calc(100vw - 32px)); height: min(72vh, 600px); border: 1px solid var(--border); border-radius: 16px; background: #fff; color: var(--text); box-shadow: var(--shadow); overflow: hidden; }
+.assistant__header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--primary-soft); color: #fff; }
+.assistant__header strong { display: inline-flex; align-items: center; gap: 8px; }
+.assistant__header button { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #fff; cursor: pointer; }
+.assistant__status { display: flex; align-items: center; gap: 8px; margin: 0; padding: 8px 14px; border: 0; background: #e6f6ee; color: #1f7a52; font: inherit; font-size: 14px; font-weight: 600; text-align: left; cursor: pointer; }
+.assistant__status--atencion { background: #fff7e0; color: #7a5200; }
+.assistant__status--critico { background: #ffe9e7; color: var(--error); }
+.assistant__messages { flex: 1; overflow-y: auto; display: grid; align-content: start; gap: 10px; padding: 12px 14px; background: var(--surface); }
+.assistant__message { max-width: 92%; padding: 10px 12px; border-radius: 12px; line-height: 1.45; font-size: 14px; }
+.assistant__message p { margin: 0; }
+.assistant__message--bot { justify-self: start; background: #fff; border: 1px solid var(--border); }
+.assistant__message--user { justify-self: end; background: var(--secondary); color: #fff; }
+.assistant__message a { display: inline-block; margin-top: 6px; color: var(--secondary); font-weight: 600; }
+.assistant__guide { margin-top: 8px; }
+.assistant__guide ol, .assistant__alert ol { margin: 6px 0 0; padding-left: 20px; }
+.assistant__guide li, .assistant__alert li { margin-bottom: 4px; }
+.assistant__alert { margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: #fff7e0; }
+.assistant__alert--critico { background: #ffe9e7; }
+.assistant__chips { display: flex; gap: 6px; padding: 8px 14px; overflow-x: auto; border-top: 1px solid var(--border); }
+.assistant__chips button { flex-shrink: 0; padding: 6px 10px; border: 1px solid var(--surface-high); border-radius: 999px; background: var(--surface-low); color: var(--primary); font: inherit; font-size: 13px; cursor: pointer; }
+.assistant__form { display: flex; gap: 8px; padding: 10px 14px 14px; }
+.assistant__form input { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; font: inherit; }
+.assistant__form button { display: grid; place-items: center; width: 42px; border: 0; border-radius: 10px; background: var(--primary-soft); color: #fff; cursor: pointer; }
+.assistant__form button:disabled { opacity: .5; cursor: default; }
+@media print { .assistant { display: none; } }
+/* No tapar la tarjeta «Instala OratoriaAI» ni el aviso sin conexión, que también van abajo. */
+body:has(.install-banner) .assistant { bottom: 200px; }
+body:has(.install-banner) .assistant__panel { height: min(72vh, 600px, calc(100dvh - 290px)); }
+body:has(.offline-banner) .assistant { bottom: 76px; }

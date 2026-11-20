@@ -6,11 +6,11 @@ servicios de IA en la nube, no necesita cuentas externas y lo puede usar cualqui
 
 ## Cómo se usa
 
-**En toda la plataforma:** el administrador ve abajo a la derecha, en cualquier pantalla, un botón con el estado
-(*En orden*, *N alertas* o *Sin conexión*, en verde, ámbar o rojo). Consulta el estado solo cada 15 segundos. Si aparece
-una alerta nueva, se abre por sí mismo y muestra el problema con **los pasos a seguir** (por ejemplo, qué contenedor
-revisar). **Ver panel completo** lleva a Administración → Monitoreo. Los pasos son fijos por tipo de alerta
-(`frontend/src/features/admin/monitoringSteps.ts`), no los genera la IA.
+**En toda la plataforma:** el botón **Asistente** (abajo a la derecha, en cualquier pantalla) muestra a los
+administradores el estado de la plataforma, que se revisa solo cada 15 segundos. Si aparece una alerta nueva, el asistente
+se abre por sí mismo con el problema y **los pasos a seguir**; el botón cambia a *N alertas* en ámbar o rojo. Los pasos
+son fijos por tipo de alerta (`frontend/src/features/admin/monitoringSteps.ts`), no los genera la IA. Ver
+`docs/MANUAL_USUARIO.md`, sección Asistente.
 
 **En el panel completo:**
 
@@ -69,8 +69,8 @@ POST .../analysis ─────────► toma un estado nuevo y envía S
 
 - Backend: `MonitoringIntegrationTests` (solo ADMIN, métricas reales y alertas con un análisis trabado simulado, el
   modelo recibe solo métricas y alertas, modelo ocupado sin respuesta inventada, preguntas largas rechazadas).
-- Frontend: `tests/monitoring.test.ts` (cada alerta tiene sus pasos) y `e2e/monitor-widget.spec.ts` (el botón aparece en
-  el inicio, se abre solo ante una alerta nueva, muestra los pasos y lleva al panel; API simulada, sin backend).
+- Frontend: `tests/monitoring.test.ts` (cada alerta tiene sus pasos) y `e2e/assistant.spec.ts` (el asistente se abre solo
+  ante una alerta nueva y muestra los pasos; API simulada, sin backend).
 - ai-service: `tests/test_monitoring.py` (evidencia limitada a métricas recibidas, piso de estado por alertas, resumen
   reemplazado si contradice las alertas, pregunta respondida, clave interna, límites de entrada y modelo ocupado).
 - Verificación manual (19-nov-2026, Windows, Ollama 0.40 con `qwen2.5:1.5b`): análisis real en 15 a 27 segundos desde
