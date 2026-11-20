@@ -26,11 +26,14 @@ public class AdminManagementService {
     private final org.springframework.security.crypto.password.PasswordEncoder encoder;
     private final com.oratoria.backend.admin.category.CategoryAdminService categories;
     private final com.oratoria.backend.style.CommunicationStyleCatalog styles;
+    private final org.springframework.context.ApplicationEventPublisher events;
     public AdminManagementService(UserAccountRepository users, ExerciseRepository exercises,
             SubscriptionRepository subscriptions, PlanInitializationService plans, TrainingSessionRepository sessions,
             org.springframework.security.crypto.password.PasswordEncoder encoder,
             com.oratoria.backend.admin.category.CategoryAdminService categories,
-            com.oratoria.backend.style.CommunicationStyleCatalog styles) {
+            com.oratoria.backend.style.CommunicationStyleCatalog styles,
+            org.springframework.context.ApplicationEventPublisher events) {
+        this.events = events;
         this.styles = styles;
         this.users = users; this.exercises = exercises; this.subscriptions = subscriptions;
         this.plans = plans; this.sessions = sessions;
@@ -72,6 +75,7 @@ public class AdminManagementService {
         if (user.getRole() == UserRole.ADMIN) throw new BadRequestException("Un administrador debe cambiar su contraseña desde su perfil.");
         user.changePassword(encoder.encode(password));
         users.save(user);
+        events.publishEvent(new com.oratoria.backend.notification.AccountSessionsRevokedEvent(user.getId()));
     }
 
     @Transactional(readOnly = true)

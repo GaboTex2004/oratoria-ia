@@ -61,13 +61,17 @@ public class NotificationService {
         }
         UUID userId = userId(email);
         String agent = userAgent == null ? null : userAgent.substring(0, Math.min(userAgent.length(), 300));
-        // El mismo navegador puede pasar a otra cuenta: el endpoint queda con el último usuario que lo registró.
-        jdbc.update("""
+        // El mismo navegador puede pasar a otra cuenta (mismas claves). Con claves distintas solo el dueño puede
+        // actualizarlo: así nadie se apropia del endpoint de otra persona aunque lo conozca.
+        int saved = jdbc.update("""
                 INSERT INTO push_subscriptions (id, user_id, endpoint, p256dh, auth_secret, user_agent)
                 VALUES (?, ?, ?, ?, ?, ?)
                 ON CONFLICT (endpoint) DO UPDATE SET user_id = EXCLUDED.user_id, p256dh = EXCLUDED.p256dh,
-                    auth_secret = EXCLUDED.auth_secret, user_agent = EXCLUDED.user_agent, failure_count = 0""",
+                    auth_secret = EXCLUDED.auth_secret, user_agent = EXCLUDED.user_agent, failure_count = 0
+                WHERE push_subscriptions.user_id = EXCLUDED.user_id
+                   OR (push_subscriptions.p256dh = EXCLUDED.p256dh AND push_subscriptions.auth_secret = EXCLUDED.auth_secret)""",
                 UUID.randomUUID(), userId, endpoint, p256dh, auth, agent);
+        if (saved == 0) throw new BadRequestException("Este dispositivo ya está registrado en otra cuenta. Desactiva las notificaciones allí primero.");
     }
 
     public boolean isRegistered(String email, String endpoint) {
@@ -111,14 +115,16 @@ public class NotificationService {
         return sendToUser(userId, new PushMessage("OratoriaAI", "¡Listo! Las notificaciones funcionan en este dispositivo.", "/home", "prueba"));
     }
 
-    public SendSummary broadcast(String title, String body) {
-        String cleanTitle = clean(title, 60, "El título");
-        String cleanBody = clean(body, 200, "El mensaje");
+    public record Broadcast(PushMessage message, List<UUID> recipients, int devices) {}
+
+    /** Valida el aviso masivo y calcula los destinatarios; el envío lo hace la cola de NotificationEvents. */
+    public Broadcast prepareBroadcast(String title, String body) {
+        PushMessage message = new PushMessage(clean(title, 60, "El título"), clean(body, 200, "El mensaje"), "/home", "aviso");
         List<UUID> recipients = jdbc.queryForList("""
                 SELECT DISTINCT s.user_id FROM push_subscriptions s JOIN app_users u ON u.id = s.user_id WHERE u.enabled = true""", UUID.class);
-        SendSummary total = new SendSummary(0, 0, 0, 0);
-        for (UUID userId : recipients) total = add(total, sendToUser(userId, new PushMessage(cleanTitle, cleanBody, "/home", "aviso")));
-        return total;
+        Integer devices = jdbc.queryForObject("""
+                SELECT count(*) FROM push_subscriptions s JOIN app_users u ON u.id = s.user_id WHERE u.enabled = true""", Integer.class);
+        return new Broadcast(message, recipients, devices == null ? 0 : devices);
     }
 
     /** Aviso cuando la evaluación de una práctica terminó, si la persona lo tiene activado. */
@@ -140,7 +146,7 @@ public class NotificationService {
         List<Map.Entry<UUID, Target>> targets = jdbc.query("SELECT id, endpoint, p256dh, auth_secret FROM push_subscriptions WHERE user_id = ?",
                 (rs, row) -> Map.entry(rs.getObject(1, UUID.class), new Target(rs.getString(2), rs.getString(3), rs.getString(4))), userId);
         byte[] payload = serialize(message);
-        int delivered = 0, removed = 0, failed = 0;
+        int delivered = 0, removed = 0, failed = 0, rejected = 0;
         for (var target : targets) {
             Delivery result = gateway.send(target.getValue(), payload);
             switch (result) {
@@ -152,6 +158,7 @@ public class NotificationService {
                     removed++;
                     jdbc.update("DELETE FROM push_subscriptions WHERE id = ?", target.getKey());
                 }
+                case REJECTED -> rejected++;
                 case FAILED -> {
                     failed++;
                     jdbc.update("UPDATE push_subscriptions SET failure_count = failure_count + 1 WHERE id = ?", target.getKey());
@@ -159,7 +166,7 @@ public class NotificationService {
                 }
             }
         }
-        return new SendSummary(targets.size(), delivered, removed, failed);
+        return new SendSummary(targets.size(), delivered, removed, failed + rejected);
     }
 
     private byte[] serialize(PushMessage message) {
@@ -202,7 +209,4 @@ public class NotificationService {
         return text;
     }
 
-    private static SendSummary add(SendSummary a, SendSummary b) {
-        return new SendSummary(a.devices() + b.devices(), a.delivered() + b.delivered(), a.removed() + b.removed(), a.failed() + b.failed());
-    }
 }

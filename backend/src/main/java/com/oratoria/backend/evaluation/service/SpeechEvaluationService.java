@@ -402,7 +402,9 @@ public class SpeechEvaluationService {
                         payload.overallScore()
                 );
             });
-            events.publishEvent(new PracticeEvaluatedEvent(sessionId));
+            // La evaluación ya quedó guardada: un fallo al avisar no debe marcarla como fallida.
+            try { events.publishEvent(new PracticeEvaluatedEvent(sessionId)); }
+            catch (RuntimeException notifyFailure) { log.warn("No se pudo programar el aviso de resultado [sessionId={}]", sessionId); }
         } catch (AiEvaluationClientException clientEx) {
             long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000L;
             log.warn(

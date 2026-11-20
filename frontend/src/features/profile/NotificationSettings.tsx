@@ -48,8 +48,12 @@ export function NotificationSettings() {
   })
 
   const save = (next: Settings) => run(async () => {
+    const previous = settings
     setSettings(next)
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || next.timeZone
+    // La zona horaria se toma de este dispositivo solo al configurar el recordatorio, para que marcar otra casilla
+    // desde un dispositivo en otra zona no habilite un segundo recordatorio el mismo día.
+    const reminderChanged = !previous || previous.dailyReminder !== next.dailyReminder || previous.reminderHour !== next.reminderHour
+    const timeZone = reminderChanged ? Intl.DateTimeFormat().resolvedOptions().timeZone || next.timeZone : next.timeZone
     setSettings(await apiRequest<Settings>('/notifications/settings', { method: 'PUT', body: JSON.stringify({ ...next, timeZone }) }))
     return 'Preferencias de notificaciones guardadas.'
   })

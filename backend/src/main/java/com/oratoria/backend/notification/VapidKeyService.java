@@ -7,7 +7,8 @@ import org.springframework.stereotype.Service;
 
 /**
  * Claves VAPID del servidor. Si llegan por variables de entorno se usan esas; si no, se generan una vez y se
- * guardan en la base para que sobrevivan reinicios (cambiarlas invalidaría todas las suscripciones).
+ * guardan en la base para que sobrevivan reinicios (cambiarlas invalida todas las suscripciones).
+ * La tabla no entra en los respaldos: la clave privada nunca sale del servidor.
  */
 @Service
 public class VapidKeyService {
@@ -22,6 +23,11 @@ public class VapidKeyService {
         this.jdbc = jdbc;
         this.configuredPublic = configuredPublic.trim();
         this.configuredPrivate = configuredPrivate.trim();
+        if (this.configuredPublic.isEmpty() != this.configuredPrivate.isEmpty()) {
+            throw new IllegalStateException("Define ambas claves VAPID (PUSH_VAPID_PUBLIC_KEY y PUSH_VAPID_PRIVATE_KEY) o ninguna.");
+        }
+        // Falla al arrancar, y no en cada envío, si el par configurado no es válido o no corresponde entre sí.
+        if (!this.configuredPublic.isEmpty()) WebPushCrypto.normalizeVapidKeys(this.configuredPublic, this.configuredPrivate);
     }
 
     public VapidKeys keys() {
@@ -34,7 +40,7 @@ public class VapidKeyService {
     }
 
     private VapidKeys load() {
-        if (!configuredPublic.isEmpty() && !configuredPrivate.isEmpty()) return new VapidKeys(configuredPublic, configuredPrivate);
+        if (!configuredPublic.isEmpty()) return WebPushCrypto.normalizeVapidKeys(configuredPublic, configuredPrivate);
         var stored = jdbc.query("SELECT public_key, private_key FROM push_vapid_keys WHERE id = 1",
                 (rs, row) -> new VapidKeys(rs.getString(1), rs.getString(2)));
         if (!stored.isEmpty()) return stored.getFirst();
@@ -45,7 +51,4 @@ public class VapidKeyService {
         return jdbc.queryForObject("SELECT public_key, private_key FROM push_vapid_keys WHERE id = 1",
                 (rs, row) -> new VapidKeys(rs.getString(1), rs.getString(2)));
     }
-
-    /** Tras restaurar un respaldo la tabla puede traer otro par. */
-    public void forget() { cached = null; }
 }

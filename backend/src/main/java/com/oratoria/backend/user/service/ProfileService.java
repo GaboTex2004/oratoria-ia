@@ -8,6 +8,8 @@ import com.oratoria.backend.user.entity.UserAccount;
 import com.oratoria.backend.user.repository.UserAccountRepository;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import com.oratoria.backend.notification.AccountSessionsRevokedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,8 +19,10 @@ public class ProfileService {
     private final UserAccountRepository users;
     private final PasswordEncoder encoder;
     private final AuthService auth;
+    private final ApplicationEventPublisher events;
 
-    public ProfileService(UserAccountRepository users, PasswordEncoder encoder, AuthService auth) {
+    public ProfileService(UserAccountRepository users, PasswordEncoder encoder, AuthService auth, ApplicationEventPublisher events) {
+        this.events = events;
         this.users = users;
         this.encoder = encoder;
         this.auth = auth;
@@ -47,6 +51,7 @@ public class ProfileService {
         }
         user.changePassword(encoder.encode(request.newPassword()));
         users.save(user);
+        events.publishEvent(new AccountSessionsRevokedEvent(user.getId()));
     }
 
     private UserAccount find(String email) {

@@ -46,8 +46,15 @@ Navegador                       Backend (Spring Boot)               Servicio pus
 - **Privacidad:** el servicio push del navegador solo ve el destino; el texto viaja cifrado. Nunca se envían audios,
   transcripciones ni puntajes, solo frases como «Tu resultado está listo».
 - **Seguridad:** solo se aceptan endpoints HTTPS de servicios push conocidos (`PUSH_ALLOWED_HOSTS`), lo que evita que el
-  servidor haga peticiones a direcciones arbitrarias (SSRF). Las suscripciones anuladas (404/410/403) se borran solas y
-  las que fallan 5 veces seguidas también. Al cerrar sesión, ese dispositivo deja de recibir los avisos de la cuenta.
+  servidor haga peticiones a direcciones arbitrarias (SSRF). Nadie puede apropiarse del endpoint de otra cuenta con claves
+  distintas. Al cerrar sesión o cambiar la contraseña, los dispositivos dejan de recibir los avisos de la cuenta.
+- **Fiabilidad:** las suscripciones anuladas por el navegador (404/410) se borran solas y las que fallan 5 veces seguidas
+  también. Un rechazo del servidor (401/403/413/429: VAPID, reloj o cuota) se registra en el log y **no** borra
+  suscripciones. Los envíos salen de una cola propia: el aviso masivo responde 202 al instante y un servicio push lento
+  no frena las evaluaciones ni los trabajos programados.
+- **Claves y responsable:** si se configuran `PUSH_VAPID_*`, el backend verifica al arrancar que el par corresponda.
+  `PUSH_SUBJECT` debe ser un `mailto:` o `https:` real; en el despliegue de Ubuntu toma `PUBLIC_ORIGIN` por defecto.
+- **Respaldos:** restaurar un respaldo devuelve también las suscripciones que existían cuando se generó.
 
 ## Requisitos y limitaciones
 

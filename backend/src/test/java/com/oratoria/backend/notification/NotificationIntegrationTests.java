@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Base64;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -51,6 +52,7 @@ class NotificationIntegrationTests {
     @Autowired JdbcTemplate jdbc;
     @Autowired NotificationService notifications;
     @Autowired ApplicationEventPublisher events;
+    @Autowired NotificationEvents queue;
     @MockitoBean PushGateway gateway;
 
     @BeforeEach void deliverByDefault() {
@@ -77,6 +79,18 @@ class NotificationIntegrationTests {
                 .contentType(MediaType.APPLICATION_JSON).content(subscription(endpoint))).andExpect(status().isNoContent());
     }
 
+    void expectRegistered(UserAccount user, String endpoint, boolean expected) throws Exception {
+        mvc.perform(post("/api/notifications/subscriptions/status").header("Authorization", auth(user))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"endpoint\":\"" + endpoint + "\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.registered").value(expected));
+    }
+
+    /** Sin @Transactional: cada prueba borra lo que creó para no dejar suscripciones a las siguientes corridas. */
+    @AfterEach void cleanUp() {
+        jdbc.update("DELETE FROM push_subscriptions WHERE user_id IN (SELECT id FROM app_users WHERE email LIKE '%@example.test' AND last_name = 'Push')");
+        jdbc.update("DELETE FROM notification_settings WHERE user_id IN (SELECT id FROM app_users WHERE email LIKE '%@example.test' AND last_name = 'Push')");
+    }
+
     @Test void configExposesOnlyThePublicKeyAndRequiresLogin() throws Exception {
         mvc.perform(get("/api/notifications/config")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/notifications/config").header("Authorization", auth(user())))
@@ -89,21 +103,18 @@ class NotificationIntegrationTests {
         UserAccount user = user();
         String endpoint = fcm();
         mvc.perform(post("/api/notifications/test").header("Authorization", auth(user))).andExpect(status().isBadRequest());
-        mvc.perform(get("/api/notifications/subscriptions/current").param("endpoint", endpoint).header("Authorization", auth(user)))
-                .andExpect(jsonPath("$.registered").value(false));
+        expectRegistered(user, endpoint, false);
         subscribe(user, endpoint);
         subscribe(user, endpoint); // repetir no duplica
-        mvc.perform(get("/api/notifications/subscriptions/current").param("endpoint", endpoint).header("Authorization", auth(user)))
-                .andExpect(jsonPath("$.registered").value(true));
+        expectRegistered(user, endpoint, true);
         // Otra cuenta en el mismo navegador no lo ve como propio.
-        mvc.perform(get("/api/notifications/subscriptions/current").param("endpoint", endpoint).header("Authorization", auth(user())))
-                .andExpect(jsonPath("$.registered").value(false));
+        expectRegistered(user(), endpoint, false);
         mvc.perform(get("/api/notifications/settings").header("Authorization", auth(user))).andExpect(jsonPath("$.devices").value(1));
 
         mvc.perform(post("/api/notifications/test").header("Authorization", auth(user)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.delivered").value(1));
         ArgumentCaptor<byte[]> payload = ArgumentCaptor.forClass(byte[].class);
-        verify(gateway).send(any(Target.class), payload.capture());
+        verify(gateway).send(argThat(target -> target.endpoint().equals(endpoint)), payload.capture());
         assertThat(new String(payload.getValue(), StandardCharsets.UTF_8)).contains("\"title\":\"OratoriaAI\"").contains("\"url\":\"/home\"");
 
         mvc.perform(delete("/api/notifications/subscriptions").header("Authorization", auth(user))
@@ -129,6 +140,35 @@ class NotificationIntegrationTests {
         when(gateway.send(any(), any())).thenReturn(Delivery.GONE);
         mvc.perform(post("/api/notifications/test").header("Authorization", auth(user))).andExpect(jsonPath("$.removed").value(1));
         mvc.perform(get("/api/notifications/settings").header("Authorization", auth(user))).andExpect(jsonPath("$.devices").value(0));
+    }
+
+    @Test void aServerSideRejectionKeepsTheSubscription() throws Exception {
+        UserAccount user = user();
+        subscribe(user, fcm());
+        // 401/403/413/429: problema del servidor (VAPID, reloj, cuota), no de la suscripción.
+        when(gateway.send(any(), any())).thenReturn(Delivery.REJECTED);
+        for (int attempt = 0; attempt < NotificationService.MAX_FAILURES + 1; attempt++) {
+            mvc.perform(post("/api/notifications/test").header("Authorization", auth(user))).andExpect(jsonPath("$.failed").value(1));
+        }
+        mvc.perform(get("/api/notifications/settings").header("Authorization", auth(user))).andExpect(jsonPath("$.devices").value(1));
+    }
+
+    @Test void changingThePasswordUnlinksEveryDevice() throws Exception {
+        UserAccount user = user();
+        subscribe(user, fcm());
+        mvc.perform(post("/api/users/me/password").header("Authorization", auth(user)).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"currentPassword\":\"TestPassword123!\",\"newPassword\":\"OtraClave-456!\"}")).andExpect(status().is2xxSuccessful());
+        Integer devices = jdbc.queryForObject("SELECT count(*) FROM push_subscriptions WHERE user_id = ?", Integer.class, user.getId());
+        assertThat(devices).isZero();
+    }
+
+    @Test void anotherAccountCannotTakeOverAnEndpointWithDifferentKeys() throws Exception {
+        UserAccount owner = user();
+        String endpoint = fcm();
+        subscribe(owner, endpoint);
+        mvc.perform(post("/api/notifications/subscriptions").header("Authorization", auth(user()))
+                .contentType(MediaType.APPLICATION_JSON).content(subscription(endpoint))).andExpect(status().isBadRequest());
+        expectRegistered(owner, endpoint, true);
     }
 
     @Test void settingsAreValidatedAndPersisted() throws Exception {
@@ -192,16 +232,16 @@ class NotificationIntegrationTests {
         Instant now = Instant.now();
         // 18:30 en La Paz (UTC-4): todavía no.
         Clock before = Clock.fixed(now.atZone(ZoneOffset.ofHours(-4)).withHour(18).withMinute(30).toInstant(), ZoneOffset.UTC);
-        new DailyReminderScheduler(jdbc, notifications, before).run();
+        new DailyReminderScheduler(jdbc, notifications, queue, before).run();
         verify(gateway, never()).send(argThat(target -> target.endpoint().equals(waitingEndpoint)), any());
 
         // 23:59 de hoy en La Paz: la sesión creada ahora cuenta como práctica de hoy.
         Clock after = Clock.fixed(now.atZone(ZoneOffset.ofHours(-4)).withHour(23).withMinute(59).toInstant(), ZoneOffset.UTC);
-        DailyReminderScheduler scheduler = new DailyReminderScheduler(jdbc, notifications, after);
+        DailyReminderScheduler scheduler = new DailyReminderScheduler(jdbc, notifications, queue, after);
         scheduler.run();
         scheduler.run();
         ArgumentCaptor<byte[]> payload = ArgumentCaptor.forClass(byte[].class);
-        verify(gateway, times(1)).send(argThat(target -> target.endpoint().equals(waitingEndpoint)), payload.capture());
+        verify(gateway, timeout(5000).times(1)).send(argThat(target -> target.endpoint().equals(waitingEndpoint)), payload.capture());
         verify(gateway, never()).send(argThat(target -> target.endpoint().equals(practicedEndpoint)), any());
         assertThat(new String(payload.getValue(), StandardCharsets.UTF_8)).contains("Hora de practicar");
     }
@@ -217,9 +257,13 @@ class NotificationIntegrationTests {
                 encoder.encode("TestPassword123!"), UserRole.ADMIN));
         mvc.perform(post("/api/admin/notifications/broadcast").header("Authorization", auth(admin))
                 .contentType(MediaType.APPLICATION_JSON).content("{\"title\":\"\",\"body\":\"x\"}")).andExpect(status().isBadRequest());
+        String regularEndpoint = jdbc.queryForObject("SELECT endpoint FROM push_subscriptions WHERE user_id = ?", String.class, regular.getId());
         mvc.perform(post("/api/admin/notifications/broadcast").header("Authorization", auth(admin))
                 .contentType(MediaType.APPLICATION_JSON).content(body))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.delivered").isNumber());
+                .andExpect(status().isAccepted()).andExpect(jsonPath("$.devices").isNumber());
+        ArgumentCaptor<byte[]> payload = ArgumentCaptor.forClass(byte[].class);
+        verify(gateway, timeout(5000)).send(argThat(target -> target.endpoint().equals(regularEndpoint)), payload.capture());
+        assertThat(new String(payload.getValue(), StandardCharsets.UTF_8)).contains("Mantenimiento");
         Integer audited = jdbc.queryForObject("SELECT count(*) FROM audit_log WHERE action = 'NOTIFICATION_BROADCAST' AND actor_email = ?",
                 Integer.class, admin.getEmail());
         assertThat(audited).isEqualTo(1);

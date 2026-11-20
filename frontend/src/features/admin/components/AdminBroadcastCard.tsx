@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { apiRequest } from '../../../shared/services/api'
 import { errorText } from '../types'
 
-interface SendSummary { devices: number; delivered: number; removed: number; failed: number }
+interface BroadcastQueued { devices: number; recipients: number }
 
 /** Notificación push para todos los dispositivos suscritos; queda registrada en la bitácora. */
 export function AdminBroadcastCard() {
@@ -17,8 +17,10 @@ export function AdminBroadcastCard() {
     if (!window.confirm('¿Enviar esta notificación a todos los dispositivos suscritos?')) return
     setBusy(true); setError(''); setResult('')
     try {
-      const summary = await apiRequest<SendSummary>('/admin/notifications/broadcast', { method: 'POST', body: JSON.stringify({ title, body }) })
-      setResult(`Enviada a ${summary.delivered} de ${summary.devices} dispositivos.${summary.removed ? ` ${summary.removed} suscripciones vencidas se eliminaron.` : ''}`)
+      const queued = await apiRequest<BroadcastQueued>('/admin/notifications/broadcast', { method: 'POST', body: JSON.stringify({ title, body }) })
+      setResult(queued.devices
+        ? `Enviando a ${queued.devices} dispositivo${queued.devices === 1 ? '' : 's'} de ${queued.recipients} persona${queued.recipients === 1 ? '' : 's'}. Llegará en unos segundos.`
+        : 'Nadie tiene las notificaciones activadas todavía.')
       setTitle(''); setBody('')
     } catch (reason) { setError(errorText(reason, 'No se pudo enviar la notificación.')) }
     finally { setBusy(false) }

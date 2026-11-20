@@ -63,6 +63,18 @@ class WebPushCryptoTests {
                 B64.encodeToString(auth))).isNotEqualTo(body);
     }
 
+    @Test void configuredVapidKeysAreNormalizedAndMustMatch() {
+        WebPushCrypto.VapidKeys keys = WebPushCrypto.generateVapidKeys();
+        // Base64 estándar con relleno: se acepta y se devuelve en base64url sin relleno.
+        String padded = Base64.getEncoder().encodeToString(WebPushCrypto.decode(keys.publicKey()));
+        assertThat(WebPushCrypto.normalizeVapidKeys(padded, keys.privateKey())).isEqualTo(keys);
+        WebPushCrypto.VapidKeys other = WebPushCrypto.generateVapidKeys();
+        assertThatThrownBy(() -> WebPushCrypto.normalizeVapidKeys(keys.publicKey(), other.privateKey())).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> new VapidKeyService(null, keys.publicKey(), "")).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> PushSubject.validate("soporte@oratoria")).isInstanceOf(IllegalStateException.class);
+        assertThat(PushSubject.validate("https://oratoria.example.org")).isEqualTo("https://oratoria.example.org");
+    }
+
     @Test void invalidSubscriptionKeysAreRejected() {
         assertThatThrownBy(() -> WebPushCrypto.encrypt(new byte[]{1}, B64.encodeToString(new byte[10]), B64.encodeToString(new byte[16])))
                 .isInstanceOf(IllegalArgumentException.class);

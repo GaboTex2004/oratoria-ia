@@ -81,7 +81,9 @@ export async function disablePush() {
 export async function isEnabledHere() {
   const subscription = await currentSubscription().catch(() => null)
   if (!subscription || Notification.permission !== 'granted') return false
-  const { registered } = await apiRequest<{ registered: boolean }>(`/notifications/subscriptions/current?endpoint=${encodeURIComponent(subscription.endpoint)}`)
+  const { registered } = await apiRequest<{ registered: boolean }>('/notifications/subscriptions/status', {
+    method: 'POST', body: JSON.stringify({ endpoint: subscription.endpoint }),
+  })
   return registered
 }
 

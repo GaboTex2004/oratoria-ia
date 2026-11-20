@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -42,9 +41,10 @@ public class NotificationController {
         service.subscribe(principal.getName(), request.endpoint().trim(), request.keys().p256dh(), request.keys().auth(), userAgent);
     }
 
-    @GetMapping("/subscriptions/current")
-    Map<String, Boolean> current(Principal principal, @RequestParam String endpoint) {
-        return Map.of("registered", service.isRegistered(principal.getName(), endpoint.trim()));
+    /** POST para no dejar la URL secreta del endpoint en los logs del proxy. */
+    @PostMapping("/subscriptions/status")
+    Map<String, Boolean> status(Principal principal, @Valid @RequestBody EndpointRequest request) {
+        return Map.of("registered", service.isRegistered(principal.getName(), request.endpoint().trim()));
     }
 
     @DeleteMapping("/subscriptions")

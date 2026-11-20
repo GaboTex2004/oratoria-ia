@@ -49,6 +49,29 @@ public final class WebPushCrypto {
                 B64.encodeToString(unsigned32(((ECPrivateKey) pair.getPrivate()).getS())));
     }
 
+    /**
+     * Valida un par VAPID configurado a mano: tamaños correctos y que la privada corresponda a la pública (firma y
+     * verifica un mensaje). Devuelve ambas en base64url sin relleno, el formato que esperan navegadores y servicios push.
+     */
+    public static VapidKeys normalizeVapidKeys(String publicKey, String privateKey) {
+        try {
+            byte[] pub = decode(publicKey);
+            byte[] priv = decode(privateKey);
+            if (pub.length != 65 || pub[0] != 4 || priv.length != 32) throw new IllegalStateException("Las claves VAPID no tienen el formato P-256 esperado.");
+            byte[] probe = "oratoria-vapid".getBytes(StandardCharsets.US_ASCII);
+            Signature signer = Signature.getInstance("SHA256withECDSAinP1363Format");
+            signer.initSign(privateKey(priv));
+            signer.update(probe);
+            Signature verifier = Signature.getInstance("SHA256withECDSAinP1363Format");
+            verifier.initVerify(publicKey(pub));
+            verifier.update(probe);
+            if (!verifier.verify(signer.sign())) throw new IllegalStateException("La clave VAPID privada no corresponde a la pública.");
+            return new VapidKeys(B64.encodeToString(pub), B64.encodeToString(priv));
+        } catch (GeneralSecurityException | IllegalArgumentException invalid) {
+            throw new IllegalStateException("Las claves VAPID configuradas no son válidas.", invalid);
+        }
+    }
+
     /** Cuerpo cifrado listo para enviar con {@code Content-Encoding: aes128gcm}. */
     public static byte[] encrypt(byte[] plaintext, String p256dh, String authSecret) {
         try {

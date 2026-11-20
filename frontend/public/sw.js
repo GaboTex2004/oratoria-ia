@@ -1,7 +1,7 @@
 /* Service worker de OratoriaAI: instala la app y conserva la interfaz para abrirla sin conexión.
    Nunca guarda respuestas de /api: audio, transcripciones, resultados y datos personales siempre
    van directo al servidor. Si cambias la estrategia de caché, sube VERSION. */
-const VERSION = 'v3'
+const VERSION = 'v4'
 const SHELL_CACHE = `oratoria-shell-${VERSION}`
 const ASSET_CACHE = `oratoria-assets-${VERSION}`
 const SHELL = ['/index.html', '/manifest.webmanifest', '/favicon.svg', '/icons/icon-192.png', '/icons/icon-512.png']
@@ -41,7 +41,8 @@ self.addEventListener('fetch', event => {
 self.addEventListener('push', event => {
   let data = {}
   try { data = event.data ? event.data.json() : {} } catch { data = { body: event.data ? event.data.text() : '' } }
-  const url = typeof data.url === 'string' && data.url.startsWith('/') ? data.url : '/home'
+  // Solo rutas internas de la app ("/algo"), nunca "//otro-sitio".
+  const url = typeof data.url === 'string' && /^\/(?!\/)/.test(data.url) ? data.url : '/home'
   event.waitUntil(self.registration.showNotification(data.title || 'OratoriaAI', {
     body: data.body || '',
     icon: '/icons/icon-192.png',
@@ -59,10 +60,9 @@ self.addEventListener('notificationclick', event => {
   event.waitUntil((async () => {
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
     const existing = windows.find(client => new URL(client.url).origin === self.location.origin)
-    if (existing) {
-      await existing.focus()
-      return existing.navigate(target).catch(() => self.clients.openWindow(target))
-    }
+    // Primero se intenta navegar (no consume el permiso del clic); si la ventana no lo admite, se abre una nueva.
+    const navigated = existing ? await existing.navigate(target).catch(() => null) : null
+    if (navigated) return navigated.focus()
     return self.clients.openWindow(target)
   })())
 })

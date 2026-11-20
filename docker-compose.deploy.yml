@@ -27,6 +27,8 @@ services:
     environment:
       APP_PROFILE: ${APP_PROFILE:-demo}
       CORS_ALLOWED_ORIGIN: ${PUBLIC_ORIGIN:?Define PUBLIC_ORIGIN en .env}
+      # VAPID exige un responsable real (Apple rechaza dominios de prueba): por defecto, la URL pública del despliegue.
+      PUSH_SUBJECT: ${PUSH_SUBJECT:-${PUBLIC_ORIGIN}}
       JAVA_TOOL_OPTIONS: -Xms128m -Xmx512m -XX:+ExitOnOutOfMemoryError
     logging: *deploy-logging
   frontend:
