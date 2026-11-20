@@ -1,6 +1,8 @@
 import { defineConfig } from '@playwright/test'
 import process from 'node:process'
 
+const pwa = process.env.E2E_PWA === '1'
+
 export default defineConfig({
   testDir: './e2e', workers: 1, fullyParallel: false, timeout: 90000,
   outputDir: '../.tools/browser-results',
@@ -11,9 +13,17 @@ export default defineConfig({
     url: 'http://127.0.0.1:15173/healthz',
     timeout: 30000,
     reuseExistingServer: false,
+  } : pwa ? {
+    // El service worker solo se registra en el build de producción.
+    command: 'npx vite preview --port 4173 --strictPort',
+    url: 'http://localhost:4173/manifest.webmanifest',
+    timeout: 30000,
+    reuseExistingServer: false,
   } : undefined,
   use: {
-    baseURL: process.env.E2E_BASE_URL || 'http://localhost:5173',
+    baseURL: process.env.E2E_BASE_URL || (pwa ? 'http://localhost:4173' : 'http://localhost:5173'),
+    // Fuera de las pruebas PWA el service worker se bloquea para que no tome la página a mitad de prueba.
+    serviceWorkers: pwa ? 'allow' : 'block',
     channel: process.env.PLAYWRIGHT_CHANNEL || 'msedge',
     headless: true,
     screenshot: 'only-on-failure',

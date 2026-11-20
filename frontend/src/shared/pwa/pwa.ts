@@ -53,8 +53,13 @@ export async function promptInstall() {
   const prompt = deferredPrompt
   if (!prompt) return false
   deferredPrompt = null
-  await prompt.prompt()
-  const { outcome } = await prompt.userChoice
-  notify()
-  return outcome === 'accepted'
+  try {
+    await prompt.prompt()
+    const { outcome } = await prompt.userChoice
+    return outcome === 'accepted'
+  } catch {
+    return false
+  } finally {
+    notify()
+  }
 }

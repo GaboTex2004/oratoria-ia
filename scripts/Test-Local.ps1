@@ -21,6 +21,12 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Fallo la suite frontend.' }
     & npm.cmd run lint
     if ($LASTEXITCODE -ne 0) { throw 'ESLint detecto errores.' }
+    if (!$env:VITE_API_URL) { $env:VITE_API_URL = '/api' }
     & npm.cmd run build
     if ($LASTEXITCODE -ne 0) { throw 'Fallo la compilacion frontend.' }
+    $env:E2E_PWA = '1'
+    & npx.cmd playwright test e2e/pwa.spec.ts
+    $pwaExit = $LASTEXITCODE
+    Remove-Item Env:E2E_PWA
+    if ($pwaExit -ne 0) { throw 'Fallo la prueba PWA (instalacion y modo sin conexion).' }
 } finally { Pop-Location }

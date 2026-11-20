@@ -1,11 +1,12 @@
 import type { AuthSession, LoginRequest, RegisterRequest } from '../types/auth'
 import { apiRequest } from '../../../shared/services/api'
-import { tokenStorage } from '../../../shared/services/tokenStorage'
+import { cachedUserStorage, tokenStorage } from '../../../shared/services/tokenStorage'
 
 export const authService = {
   async login(request: LoginRequest): Promise<AuthSession> {
     const session = await apiRequest<AuthSession>('/auth/login', { method: 'POST', body: JSON.stringify(request) })
     tokenStorage.set(session.token)
+    cachedUserStorage.set(session.user)
     return session
   },
 
@@ -15,10 +16,17 @@ export const authService = {
       body: JSON.stringify({ firstName: request.firstName, lastName: request.lastName, email: request.email, password: request.password }),
     })
     tokenStorage.set(session.token)
+    cachedUserStorage.set(session.user)
     return session
   },
 
-  me: () => apiRequest<AuthSession['user']>('/users/me'),
+  async me() {
+    const user = await apiRequest<AuthSession['user']>('/users/me')
+    cachedUserStorage.set(user)
+    return user
+  },
+
+  cachedUser: () => cachedUserStorage.get<AuthSession['user']>(),
 
   logout() {
     tokenStorage.clear()

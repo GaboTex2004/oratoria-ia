@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Icon } from '../components/Icon'
 import { useInstallApp } from './useInstallApp'
 import { useOnline } from './useOnline'
@@ -25,10 +26,13 @@ function IosSteps() {
 /** Tarjeta flotante que ofrece instalar la app una vez; se puede descartar. */
 export function InstallAppBanner() {
   const { mode, install } = useInstallApp()
+  const online = useOnline()
   const [dismissed, setDismissed] = useState(readDismissed)
-  if (dismissed || (mode !== 'prompt' && mode !== 'ios')) return null
+  if (dismissed || !online || (mode !== 'prompt' && mode !== 'ios')) return null
   const close = () => { saveDismissed(); setDismissed(true) }
-  return <aside className="install-banner" aria-label="Instalar aplicación">
+  const installNow = async () => { if (!await install()) close() }
+  // Se monta al final de <body> para que con teclado se recorra después del contenido de la página.
+  return createPortal(<aside className="install-banner" aria-label="Instalar aplicación">
     <img src="/icons/icon-192.png" alt="" width="44" height="44" />
     <div className="install-banner__copy">
       <strong>Instala OratoriaAI</strong>
@@ -37,10 +41,10 @@ export function InstallAppBanner() {
         : <span>En Safari toca <Icon name="ios_share" /> <strong>Compartir</strong> y luego <strong>«Agregar a inicio»</strong>.</span>}
     </div>
     <div className="install-banner__actions">
-      {mode === 'prompt' && <button className="button button--primary" type="button" onClick={() => { void install() }}>Instalar</button>}
+      {mode === 'prompt' && <button className="button button--primary" type="button" onClick={() => { void installNow() }}>Instalar</button>}
       <button className="install-banner__later" type="button" onClick={close}>{mode === 'prompt' ? 'Ahora no' : 'Entendido'}</button>
     </div>
-  </aside>
+  </aside>, document.body)
 }
 
 /** Botón del menú lateral: sigue disponible aunque se haya descartado la tarjeta. */
@@ -59,8 +63,8 @@ export function InstallAppButton() {
 
 export function OfflineBanner() {
   const online = useOnline()
-  if (online) return null
-  return <div className="offline-banner" role="status">
-    <Icon name="cloud_off" /> Sin conexión. Puedes navegar la app, pero practicar, analizar y guardar necesitan internet.
+  // La región viva queda siempre montada: los lectores de pantalla anuncian el cambio de texto.
+  return <div className={`offline-banner ${online ? '' : 'is-visible'}`} role="status">
+    {!online && <><Icon name="cloud_off" /> Sin conexión: practicar y guardar necesitan internet.</>}
   </div>
 }
