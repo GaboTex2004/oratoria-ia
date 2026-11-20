@@ -25,6 +25,24 @@ hasta el máximo configurado. Se conservan como máximo dos intentos en memoria.
 Al cerrar o recargar se descartan; no se crean sesiones ni historial. Si falla
 la transcripción, puede reintentarse con el audio ya capturado.
 
+## Instalar la aplicación (PWA)
+
+OratoriaAI se puede instalar desde el navegador, sin tienda de aplicaciones. Queda un
+ícono en el escritorio o la pantalla de inicio y abre en su propia ventana, con las
+mismas funciones y la misma cuenta que la versión web.
+
+- **Android, Windows, macOS o Linux (Chrome o Edge):** después de iniciar sesión aparece
+  la tarjeta «Instala OratoriaAI»; elegir **Instalar**. También está en el menú lateral,
+  en **Instalar aplicación**, o en el ícono de instalación de la barra de direcciones.
+- **iPhone o iPad (Safari):** tocar **Compartir** y luego **«Agregar a inicio»**. El menú
+  lateral muestra los mismos pasos.
+
+La instalación solo está disponible cuando el sitio se sirve por **HTTPS** (o en
+`localhost`). Sin conexión, la app abre y muestra un aviso, pero practicar, transcribir,
+evaluar y guardar necesitan conectarse al servidor: el service worker nunca guarda en el
+dispositivo respuestas de `/api`, audio ni resultados. Las actualizaciones se aplican solas
+al volver a abrir la app con conexión.
+
 ## Audio y cámara en Análisis corporal
 
 En Análisis corporal, abrir «Práctica con audio y cámara», elegir un ejercicio y

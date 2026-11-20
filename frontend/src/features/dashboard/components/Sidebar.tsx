@@ -3,6 +3,7 @@ import { useAuth } from '../../auth/context/useAuth'
 import type { SubscriptionProgressSummary } from '../../progress/types/progress'
 import { Brand } from '../../../shared/components/Brand'
 import { Icon } from '../../../shared/components/Icon'
+import { InstallAppBanner, InstallAppButton } from '../../../shared/pwa/InstallApp'
 
 const navigation = [
   ['/home', 'home', 'Inicio'], ['/training', 'fitness_center', 'Entrenamientos'],
@@ -55,10 +56,12 @@ export function Sidebar({ open, onClose, subscription }: SidebarProps) {
             {usage != null && <div className="progress-track"><span style={{ width: `${usage}%` }} /></div>}
             <button type="button" onClick={() => { onClose(); navigate('/plans') }}>Ver planes</button>
           </section>
+          <InstallAppButton />
           <button className="sidebar-link sidebar-link--button" type="button" onClick={() => { onClose(); navigate('/profile') }}><Icon name="settings" /><span>Configuración</span></button>
           <button className="sidebar-link sidebar-link--button sidebar-link--danger" type="button" onClick={logout}><Icon name="logout" /><span>Cerrar sesión</span></button>
         </div>
       </aside>
+      {!open && <InstallAppBanner />}
     </>
   )
 }
