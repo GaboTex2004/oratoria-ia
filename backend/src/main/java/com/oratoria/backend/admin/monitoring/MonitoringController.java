@@ -38,6 +38,11 @@ public class MonitoringController {
     AnalysisResponse analyze(@RequestBody(required = false) AnalysisRequest request) {
         String question = request == null || request.question() == null ? null : request.question().strip();
         if (question != null && question.length() > 300) throw new BadRequestException("La pregunta admite hasta 300 caracteres.");
+        // El asistente usa el mismo modelo que las evaluaciones: con prácticas pendientes, ellas tienen prioridad.
+        if (monitoring.evaluationsInProgress()) {
+            throw new AiMonitoringException("PRACTICES_IN_PROGRESS",
+                    "Hay evaluaciones de prácticas en curso; el análisis se habilita cuando terminen, para no hacerlas esperar.", true);
+        }
         MonitoringService.Snapshot snapshot = monitoring.snapshot();
         AiMonitoringClient.Analysis analysis = ai.analyze(snapshot.values(), snapshot.alerts(), question == null || question.isEmpty() ? null : question);
         return new AnalysisResponse(snapshot.generatedAt(), snapshot.status(), analysis, snapshot.values());
@@ -45,7 +50,8 @@ public class MonitoringController {
 
     @ExceptionHandler(AiMonitoringException.class)
     ResponseEntity<Map<String, Object>> modelUnavailable(AiMonitoringException failure) {
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+        HttpStatus status = "PRACTICES_IN_PROGRESS".equals(failure.code()) ? HttpStatus.CONFLICT : HttpStatus.SERVICE_UNAVAILABLE;
+        return ResponseEntity.status(status)
                 .body(Map.of("code", failure.code(), "message", failure.getMessage(), "retryable", failure.retryable()));
     }
 }

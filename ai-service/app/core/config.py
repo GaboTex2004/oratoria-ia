@@ -28,6 +28,8 @@ class Settings:
     )
     ollama_model: str = os.getenv("OLLAMA_MODEL", "qwen2.5:1.5b")
     llm_timeout_seconds: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "240"))
+    # Cuánto espera una práctica (evaluación o simulación) a que el modelo se libere antes de responder «ocupado».
+    llm_slot_wait_seconds: float = float(os.getenv("LLM_SLOT_WAIT_SECONDS", "90"))
     llm_context_tokens: int = int(os.getenv("LLM_CONTEXT_TOKENS", "4096"))
     pose_model_path: str = os.getenv(
         "POSE_MODEL_PATH", str(SERVICE_ROOT / "models" / "pose_landmarker_lite.task")

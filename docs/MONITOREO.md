@@ -42,9 +42,13 @@ POST .../analysis ─────────► toma un estado nuevo y envía S
   - Junto a cada hallazgo se muestran los valores reales de las métricas citadas, para comprobarlo a simple vista.
 - **Privacidad:** el modelo recibe solo nombres de métricas, números, estados y los textos de las alertas; nunca
   correos, nombres, transcripciones ni audios.
-- **Rendimiento:** el análisis se ejecuta solo cuando el administrador lo pide. El ai-service usa el modelo de a una
-  petición a la vez; si está ocupado con una práctica, el panel lo avisa («El modelo local está ocupado…») y no inventa
-  una respuesta. Cada análisis queda en la bitácora.
+- **Prioridad de las prácticas:** el análisis se ejecuta solo cuando el administrador lo pide y nunca hace esperar a
+  un usuario. Si hay evaluaciones en cola o en curso, el backend no lo inicia. En el ai-service el modelo atiende de a
+  una petición: las prácticas esperan su turno hasta `LLM_SLOT_WAIT_SECONDS` (90 s), mientras que el monitoreo no
+  espera (si el modelo está ocupado lo avisa y no inventa nada) y tiene su propio límite de 120 s, menor que el del
+  backend. La salida tiene un máximo de hallazgos y recomendaciones para no cortarse.
+- **Bitácora:** cada análisis completado queda registrado; los intentos rechazados (modelo ocupado) no.
+- **Si la base de datos no responde,** el panel muestra igual el estado de los servicios con la alerta crítica.
 
 ## Limitaciones
 
@@ -60,4 +64,5 @@ POST .../analysis ─────────► toma un estado nuevo y envía S
 - ai-service: `tests/test_monitoring.py` (evidencia limitada a métricas recibidas, piso de estado por alertas, resumen
   reemplazado si contradice las alertas, pregunta respondida, clave interna, límites de entrada y modelo ocupado).
 - Verificación manual (19-nov-2026, Windows, Ollama 0.40 con `qwen2.5:1.5b`): análisis real en 15 a 27 segundos desde
-  el panel, con hallazgos y evidencia; sin errores en el navegador; sin desborde a 375 px.
+  el panel, con hallazgos y evidencia; con 11 alertas, 43 a 69 segundos; un intento de inyección en la pregunta
+  quedó neutralizado (resumen armado con las alertas y respuesta descartada); sin errores en el navegador.

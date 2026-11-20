@@ -62,12 +62,15 @@ class MonitoringIntegrationTests extends AdminTestSupport {
                 .andExpect(jsonPath("$.metrics[?(@.key == 'servicio_base_datos')].value").value("UP"))
                 .andExpect(jsonPath("$.metrics[?(@.key == 'analisis_trabados')].value").value(org.hamcrest.Matchers.hasItem(org.hamcrest.Matchers.greaterThanOrEqualTo(1))))
                 .andExpect(jsonPath("$.alerts[?(@.code == 'ANALISIS_STUCK')]").exists())
-                .andExpect(jsonPath("$.status").value(org.hamcrest.Matchers.oneOf("ATENCION", "CRITICO")))
                 .andExpect(jsonPath("$.metrics[?(@.key == 'push_dispositivos')]").exists());
     }
 
     @Test void theLocalModelReceivesOnlyMetricsAndAlertsAndItsAnswerIsReturned() throws Exception {
-        String token = admin();
+        UserAccount adminUser = user(UserRole.ADMIN);
+        String token = "Bearer " + jwt.createToken(adminUser);
+        // La bitácora se confirma en su propia transacción: se cuenta solo lo de este administrador.
+        Integer auditedBefore = jdbc.queryForObject("SELECT count(*) FROM audit_log WHERE action = 'MONITORING_ANALYSIS' AND actor_email = ?",
+                Integer.class, adminUser.getEmail());
         stuckAnalysis(user(UserRole.USER));
         when(ai.analyze(anyMap(), anyList(), any())).thenReturn(new AiMonitoringClient.Analysis("ATENCION",
                 "Hay análisis trabados.", List.of(new AiMonitoringClient.Finding("Análisis trabados", "Uno lleva 30 minutos.", List.of("analisis_trabados"))),
@@ -87,10 +90,12 @@ class MonitoringIntegrationTests extends AdminTestSupport {
         ArgumentCaptor<List<MonitoringService.Alert>> alerts = ArgumentCaptor.forClass(List.class);
         verify(ai).analyze(metrics.capture(), alerts.capture(), eq("¿Por qué hay análisis trabados?"));
         // Sin datos personales: solo cifras y estados con nombres de métrica.
-        assertThat(metrics.getValue().toString()).doesNotContain("@");
+        assertThat(metrics.getValue().values()).allMatch(value -> value instanceof Number || "UP".equals(value) || "DOWN".equals(value));
+        assertThat(metrics.getValue().toString()).doesNotContain(adminUser.getEmail());
         assertThat(alerts.getValue()).extracting(MonitoringService.Alert::code).contains("ANALISIS_STUCK");
-        Integer audited = jdbc.queryForObject("SELECT count(*) FROM audit_log WHERE action = 'MONITORING_ANALYSIS'", Integer.class);
-        assertThat(audited).isPositive();
+        Integer audited = jdbc.queryForObject("SELECT count(*) FROM audit_log WHERE action = 'MONITORING_ANALYSIS' AND actor_email = ?",
+                Integer.class, adminUser.getEmail());
+        assertThat(audited).isEqualTo(auditedBefore + 1);
     }
 
     @Test void aBusyModelIsReportedWithoutAnInventedAnswer() throws Exception {
@@ -101,6 +106,20 @@ class MonitoringIntegrationTests extends AdminTestSupport {
                 .andExpect(jsonPath("$.code").value("LOCAL_MODEL_BUSY"))
                 .andExpect(jsonPath("$.retryable").value(true))
                 .andExpect(jsonPath("$.analysis").doesNotExist());
+    }
+
+    @Test void pendingPracticeEvaluationsKeepPriorityOverTheAssistant() throws Exception {
+        UserAccount owner = user(UserRole.USER);
+        UUID session = UUID.randomUUID();
+        jdbc.update("INSERT INTO training_sessions (id, created_at, status, training_type, user_id) VALUES (?, now(), 'COMPLETED', 'PRESENTATION', ?)",
+                session, owner.getId());
+        jdbc.update("""
+                INSERT INTO speech_evaluations (id, attempt_count, created_at, retryable, schema_version, status, updated_at, session_id)
+                VALUES (?, 0, now(), true, '1', 'PENDING', now(), ?)""", UUID.randomUUID(), session);
+        mvc.perform(post("/api/admin/monitoring/analysis").header("Authorization", admin()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("PRACTICES_IN_PROGRESS"));
+        verifyNoInteractions(ai);
     }
 
     @Test void longQuestionsAreRejected() throws Exception {

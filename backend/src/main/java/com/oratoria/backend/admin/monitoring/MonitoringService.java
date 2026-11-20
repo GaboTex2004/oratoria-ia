@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -68,6 +69,31 @@ public class MonitoringService {
             if (!"UP".equals(module.status())) alerts.add(new Alert(key.toUpperCase() + "_DOWN", Severity.CRITICO, label + " no responde."));
         }
 
+        boolean databaseUp = metrics.stream().anyMatch(metric -> metric.key().equals("servicio_base_datos") && "UP".equals(metric.value()));
+        if (databaseUp) {
+            try {
+                databaseMetrics(metrics, alerts);
+            } catch (DataAccessException failure) {
+                alerts.add(new Alert("DATABASE_QUERY_FAILED", Severity.CRITICO, "La base de datos responde, pero no se pudieron leer las métricas."));
+            }
+        }
+        serverMetrics(metrics, alerts);
+
+        List<Event> events = List.of();
+        if (databaseUp) {
+            try { events = recentEvents(); } catch (DataAccessException failure) { /* ya informado por la alerta de métricas */ }
+        }
+        Severity status = alerts.stream().map(Alert::severity).max(Enum::compareTo).orElse(Severity.NORMAL);
+        return new Snapshot(Instant.now(), status, metrics, alerts, events);
+    }
+
+    /** Hay evaluaciones esperando o en curso: usan el mismo modelo local que el asistente. */
+    public boolean evaluationsInProgress() {
+        Long active = jdbc.queryForObject("SELECT count(*) FROM speech_evaluations WHERE status IN ('PENDING', 'PROCESSING')", Long.class);
+        return active != null && active > 0;
+    }
+
+    private void databaseMetrics(List<Metric> metrics, List<Alert> alerts) {
         processing("speech_analyses", "analisis", "Análisis de voz", metrics, alerts);
         processing("speech_evaluations", "evaluaciones", "Evaluaciones", metrics, alerts);
 
@@ -90,40 +116,50 @@ public class MonitoringService {
         if (oldestDeletion > 30) alerts.add(new Alert("MEDIA_DELETION_DELAYED", Severity.ATENCION,
                 "Hay audios esperando borrado desde hace " + oldestDeletion + " minutos."));
 
+        pushMetrics(metrics, alerts);
+    }
+
+    private void pushMetrics(List<Metric> metrics, List<Alert> alerts) {
         NotificationService.PushStats push = notifications.stats();
         metrics.add(new Metric("push_dispositivos", "Dispositivos con notificaciones", push.devices(), null, "Notificaciones"));
         metrics.add(new Metric("push_entregadas", "Notificaciones entregadas (desde el arranque)", push.delivered(), null, "Notificaciones"));
         metrics.add(new Metric("push_fallidas", "Notificaciones fallidas (desde el arranque)", push.failed(), null, "Notificaciones"));
         if (push.failed() >= 5 && push.failed() > push.delivered()) alerts.add(new Alert("PUSH_FAILING", Severity.ATENCION,
                 "Fallan más notificaciones de las que se entregan: revisa las claves VAPID y PUSH_SUBJECT."));
+    }
 
+    private void serverMetrics(List<Metric> metrics, List<Alert> alerts) {
         Runtime runtime = Runtime.getRuntime();
         long usedPct = Math.round(100.0 * (runtime.totalMemory() - runtime.freeMemory()) / runtime.maxMemory());
         long uptime = ManagementFactory.getRuntimeMXBean().getUptime() / 60000;
         metrics.add(new Metric("memoria_backend_pct", "Memoria usada por el backend", usedPct, "%", "Servidor"));
         metrics.add(new Metric("backend_activo_min", "Tiempo desde el arranque", uptime, "min", "Servidor"));
         if (usedPct >= 85) alerts.add(new Alert("BACKEND_MEMORY", Severity.ATENCION, "El backend usa el " + usedPct + " % de su memoria."));
+    }
 
-        List<Event> events = jdbc.query("""
+    private List<Event> recentEvents() {
+        return jdbc.query("""
                 SELECT occurred_at, action, detail FROM audit_log
                 WHERE action IN ('LOGIN_FAILED', 'BACKUP_RESTORED', 'BACKUP_CREATED', 'SETTINGS_UPDATED', 'NOTIFICATION_BROADCAST', 'PLAN_UPDATED')
                 ORDER BY occurred_at DESC LIMIT 8""",
                 (rs, row) -> new Event(rs.getTimestamp(1).toInstant(), label(rs.getString(2)), rs.getString(3)));
-
-        Severity status = alerts.stream().map(Alert::severity).max(Enum::compareTo).orElse(Severity.NORMAL);
-        return new Snapshot(Instant.now(), status, metrics, alerts, events);
     }
 
-    /** Cola de un trabajo asíncrono (análisis o evaluación): pendientes, en curso, trabados, fallidos y tiempo medio. */
+    /** Cola de un trabajo asíncrono (análisis o evaluación; el nombre de tabla es fijo, nunca del usuario): pendientes, en curso, trabados, fallidos y tiempo medio. */
     private void processing(String table, String prefix, String label, List<Metric> metrics, List<Alert> alerts) {
-        long pending = count("SELECT count(*) FROM " + table + " WHERE status = 'PENDING'");
-        long running = count("SELECT count(*) FROM " + table + " WHERE status = 'PROCESSING'");
-        long stuck = count("SELECT count(*) FROM " + table + " WHERE status = 'PROCESSING' AND COALESCE(started_at, updated_at) < now() - interval '"
-                + STUCK_MINUTES + " minutes'");
-        long failed = count("SELECT count(*) FROM " + table + " WHERE status = 'FAILED' AND updated_at > now() - interval '1 hour'");
-        long completed = count("SELECT count(*) FROM " + table + " WHERE status = 'COMPLETED' AND completed_at > now() - interval '1 hour'");
-        long average = count("SELECT COALESCE(avg(EXTRACT(EPOCH FROM completed_at - started_at)), 0)::bigint FROM " + table
-                + " WHERE status = 'COMPLETED' AND started_at IS NOT NULL AND completed_at > now() - interval '24 hours'");
+        long[] row = jdbc.queryForObject("""
+                SELECT count(*) FILTER (WHERE status = 'PENDING'),
+                       count(*) FILTER (WHERE status = 'PROCESSING'),
+                       count(*) FILTER (WHERE status = 'PROCESSING' AND COALESCE(started_at, updated_at) < now() - make_interval(mins => ?)),
+                       count(*) FILTER (WHERE status = 'FAILED' AND updated_at > now() - interval '1 hour'),
+                       count(*) FILTER (WHERE status = 'COMPLETED' AND completed_at > now() - interval '1 hour'),
+                       COALESCE(avg(EXTRACT(EPOCH FROM completed_at - started_at))
+                           FILTER (WHERE status = 'COMPLETED' AND started_at IS NOT NULL AND completed_at > now() - interval '24 hours'), 0)::bigint
+                FROM %s
+                WHERE status IN ('PENDING', 'PROCESSING') OR updated_at > now() - interval '24 hours'""".formatted(table),
+                (rs, rowNum) -> new long[]{rs.getLong(1), rs.getLong(2), rs.getLong(3), rs.getLong(4), rs.getLong(5), rs.getLong(6)},
+                STUCK_MINUTES);
+        long pending = row[0], running = row[1], stuck = row[2], failed = row[3], completed = row[4], average = row[5];
         String group = label;
         metrics.add(new Metric(prefix + "_en_cola", label + " en cola", pending, null, group));
         metrics.add(new Metric(prefix + "_en_proceso", label + " en proceso", running, null, group));

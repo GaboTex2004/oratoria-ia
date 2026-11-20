@@ -6,7 +6,7 @@
 .monitor-alerts { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .monitor-alert { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 10px 14px; border-radius: 10px; background: #fff7e0; color: #5c4300; }
 .monitor-alert--critico { background: #ffe9e7; color: var(--error); }
-.monitor-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+.monitor-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 24px; }
 .monitor-groups > * { min-width: 0; }
 .monitor-metrics { display: grid; gap: 8px; margin: 0; }
 .monitor-metric { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }

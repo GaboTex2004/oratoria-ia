@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import { apiRequest } from '../../../shared/services/api'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { ApiError, apiRequest } from '../../../shared/services/api'
 import { errorText } from '../types'
 import './monitoring.css'
 
@@ -32,17 +32,34 @@ export function AdminMonitoringTab() {
   const [analysisError, setAnalysisError] = useState('')
   const [thinking, setThinking] = useState(false)
 
+  const latest = useRef(0)
+
+  // Solo se aplica la respuesta más reciente: un refresco viejo nunca pisa a uno nuevo.
   const load = useCallback(async () => {
-    try { setSnapshot(await apiRequest<Snapshot>('/admin/monitoring')); setError('') }
-    catch (reason) { setError(errorText(reason, 'No se pudo obtener el estado de la plataforma.')) }
+    const id = ++latest.current
+    try {
+      const next = await apiRequest<Snapshot>('/admin/monitoring')
+      if (id === latest.current) { setSnapshot(next); setError('') }
+    } catch (reason) {
+      if (id !== latest.current) return
+      setError(errorText(reason, 'No se pudo obtener el estado de la plataforma.'))
+      // Sesión vencida o sin permiso: no tiene sentido seguir consultando.
+      if (reason instanceof ApiError && (reason.status === 401 || reason.status === 403)) setLive(false)
+    }
   }, [])
 
   useEffect(() => {
-    // Primera carga en cuanto se monta la pestaña; después se repite mientras la pestaña del navegador esté visible.
-    const first = window.setTimeout(() => { void load() }, 0)
-    if (!live) return () => window.clearTimeout(first)
-    const timer = window.setInterval(() => { if (document.visibilityState === 'visible') void load() }, REFRESH_MS)
-    return () => { window.clearTimeout(first); window.clearInterval(timer) }
+    // La siguiente consulta se programa al terminar la anterior: nunca se acumulan peticiones colgadas.
+    let timer = 0
+    let active = true
+    const tick = async () => {
+      if (document.visibilityState === 'visible') await load()
+      if (active && live) timer = window.setTimeout(tick, REFRESH_MS)
+    }
+    timer = window.setTimeout(tick, 0)
+    const onVisible = () => { if (document.visibilityState === 'visible' && live) { window.clearTimeout(timer); timer = window.setTimeout(tick, 0) } }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => { active = false; window.clearTimeout(timer); document.removeEventListener('visibilitychange', onVisible) }
   }, [live, load])
 
   async function analyze(event: FormEvent) {
@@ -60,10 +77,10 @@ export function AdminMonitoringTab() {
   const labelOf = (key: string) => snapshot?.metrics.find(metric => metric.key === key)?.label ?? key
 
   return <>
-    <section className={`panel-card monitor-status monitor-status--${(snapshot?.status ?? 'NORMAL').toLowerCase()}`} aria-live="polite">
+    <section className={`panel-card monitor-status monitor-status--${(snapshot?.status ?? 'NORMAL').toLowerCase()}`}>
       <div>
         <span className="eyebrow">Monitoreo en tiempo real</span>
-        <h2>{snapshot ? STATUS_TEXT[snapshot.status] : 'Cargando estado…'}</h2>
+        <h2 aria-live="polite">{snapshot ? STATUS_TEXT[snapshot.status] : 'Cargando estado…'}</h2>
         <p className="admin-muted">{snapshot ? `Actualizado a las ${time(snapshot.generatedAt)}` : ''}{live ? ` · se actualiza cada ${REFRESH_MS / 1000} s` : ' · pausado'}</p>
       </div>
       <div className="workspace-actions">
@@ -93,11 +110,11 @@ export function AdminMonitoringTab() {
         <p>{analysis.analysis.summary}</p>
         {analysis.analysis.summaryFromRules && <p className="monitor-analysis__meta">El modelo minimizó las alertas activas, así que este resumen se armó directamente con ellas.</p>}
         {analysis.analysis.answer && <p className="monitor-analysis__answer"><strong>Respuesta:</strong> {analysis.analysis.answer}</p>}
-        {analysis.analysis.findings.length > 0 && <><h3>Hallazgos</h3><ul className="monitor-findings">{analysis.analysis.findings.map(finding => <li key={finding.title}>
+        {analysis.analysis.findings.length > 0 && <><h3>Hallazgos</h3><ul className="monitor-findings">{analysis.analysis.findings.map((finding, index) => <li key={index}>
           <strong>{finding.title}</strong><span>{finding.detail}</span>
           <small>Basado en: {finding.evidence.map(key => `${labelOf(key)} = ${String(analysis.metricsUsed[key])}`).join(' · ')}</small>
         </li>)}</ul></>}
-        {analysis.analysis.recommendations.length > 0 && <><h3>Qué revisar</h3><ol>{analysis.analysis.recommendations.map(item => <li key={item}>{item}</li>)}</ol></>}
+        {analysis.analysis.recommendations.length > 0 && <><h3>Qué revisar</h3><ol>{analysis.analysis.recommendations.map((item, index) => <li key={index}>{item}</li>)}</ol></>}
       </div>}
     </form>
 

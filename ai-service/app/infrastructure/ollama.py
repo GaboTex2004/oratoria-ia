@@ -49,10 +49,26 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         raise LocalModelError("INFERENCE_REDIRECT_FORBIDDEN", "Redirección de inferencia bloqueada.")
 
 
-def chat_json(system: str, user: str, schema: dict | None = None, max_tokens: int = 1200) -> dict:
-    """Generate a bounded object; fail explicitly if Ollama/model is unavailable."""
+def chat_json(
+    system: str,
+    user: str,
+    schema: dict | None = None,
+    max_tokens: int = 1200,
+    *,
+    wait_seconds: float | None = None,
+    timeout_seconds: float | None = None,
+) -> dict:
+    """Generate a bounded object; fail explicitly if Ollama/model is unavailable.
+
+    Las prácticas esperan su turno (``llm_slot_wait_seconds``); tareas secundarias como el monitoreo pasan
+    ``wait_seconds=0`` para no hacer esperar nunca a los usuarios.
+    """
     base = local_base_url(settings.ollama_url)
-    if not _generation_slot.acquire(blocking=False):
+    wait = settings.llm_slot_wait_seconds if wait_seconds is None else max(0.0, wait_seconds)
+    acquired = (
+        _generation_slot.acquire(timeout=wait) if wait > 0 else _generation_slot.acquire(blocking=False)
+    )
+    if not acquired:
         raise LocalModelError(
             "LOCAL_MODEL_BUSY", "El modelo local está ocupado. Reintenta al finalizar.", 429
         )
@@ -80,7 +96,7 @@ def chat_json(system: str, user: str, schema: dict | None = None, max_tokens: in
             method="POST",
         )
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect())
-        with opener.open(request, timeout=settings.llm_timeout_seconds) as response:
+        with opener.open(request, timeout=timeout_seconds or settings.llm_timeout_seconds) as response:
             outer = json.loads(response.read(262145))
         if not outer.get("done") or outer.get("done_reason") == "length":
             raise ValueError("truncated output")

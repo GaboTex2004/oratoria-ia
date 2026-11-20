@@ -47,7 +47,8 @@ public class HttpAiMonitoringClient implements AiMonitoringClient {
             JsonNode root = json.readTree(response.body());
             if (response.statusCode() != 200) {
                 String code = root.path("code").asString("LOCAL_MODEL_ERROR");
-                throw new AiMonitoringException(code, message(code, root.path("message").asString("")), root.path("retryable").asBoolean(true));
+                int status = response.statusCode();
+                throw new AiMonitoringException(code, message(code, root.path("message").asString("")), status == 429 || status == 503 || status == 504);
             }
             List<Finding> findings = new ArrayList<>();
             for (JsonNode item : root.path("findings")) {

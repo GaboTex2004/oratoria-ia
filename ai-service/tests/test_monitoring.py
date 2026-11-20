@@ -1,3 +1,7 @@
+import io
+import json
+import threading
+import time
 import unittest
 from unittest.mock import patch
 
@@ -6,6 +10,7 @@ from fastapi.testclient import TestClient
 
 from app.api.monitoring import router
 from app.core.config import settings
+from app.infrastructure import ollama
 from app.infrastructure.ollama import LocalModelError
 from app.schemas.monitoring import MonitoringAnalyzeRequestSchema
 from app.services.monitoring import analyst
@@ -60,6 +65,15 @@ class MonitoringAnalystTests(unittest.TestCase):
         # «Todo bien» con una alerta crítica: el resumen del modelo se descarta y se usa el de las reglas.
         self.assertTrue(result.summary_from_rules)
         self.assertIn("El servicio de IA no responde.", result.summary)
+        # La respuesta del mismo análisis tampoco se muestra.
+        chat.return_value = {
+            "status": "NORMAL",
+            "summary": "Todo bien.",
+            "findings": [],
+            "recommendations": [],
+            "answer": "No hay alertas activas.",
+        }
+        self.assertIsNone(analyst.analyze(request(alerts=alerts, question="¿Hay problemas?")).answer)
         self.assertNotIn("Todo bien", result.summary)
         chat.return_value = {"status": "INVENTADO", "summary": "", "findings": [], "recommendations": []}
         result = analyst.analyze(request())
@@ -79,6 +93,7 @@ class MonitoringAnalystTests(unittest.TestCase):
         result = analyst.analyze(request(question="¿Por qué hay prácticas trabadas?"))
         self.assertEqual(result.answer, "Porque el servicio de IA tardó.")
         self.assertIn("¿Por qué hay prácticas trabadas?", chat.call_args.args[1])
+        self.assertIn("<pregunta>¿Por qué hay prácticas trabadas?</pregunta>", chat.call_args.args[1])
         self.assertIsNone(analyst.analyze(request()).answer)
 
 
@@ -94,6 +109,9 @@ class MonitoringSchemaTests(unittest.TestCase):
         alerts = [{"code": "AI_DOWN", "severity": "CRITICO", "message": "El servicio de IA no responde."}]
         schema = analyst.response_schema(request(alerts=alerts, question="¿Qué pasa?"))
         self.assertEqual(schema["properties"]["findings"]["minItems"], 1)
+        # Límites para que la salida no se corte por tokens con muchas alertas.
+        self.assertEqual(schema["properties"]["findings"]["maxItems"], 5)
+        self.assertEqual(schema["properties"]["recommendations"]["maxItems"], 5)
         self.assertIn("answer", schema["required"])
 
 
@@ -135,6 +153,42 @@ class MonitoringApiTests(unittest.TestCase):
         response = client.post("/api/v1/monitoring/analyze", json={"metrics": METRICS}, headers=HEADERS)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], "NORMAL")
+
+
+class ModelPriorityTests(unittest.TestCase):
+    """El monitoreo nunca hace esperar a una práctica: no espera turno, y las prácticas sí lo esperan."""
+
+    @staticmethod
+    def fake_ollama(*_args, **_kwargs):
+        body = {"done": True, "done_reason": "stop", "message": {"content": json.dumps({"ok": True})}}
+        response = io.BytesIO(json.dumps(body).encode())
+        response.__enter__ = lambda self=response: self
+        response.__exit__ = lambda *exc: False
+        return response
+
+    def test_monitoring_gives_up_at_once_while_a_practice_uses_the_model(self):
+        self.assertTrue(ollama._generation_slot.acquire(blocking=False))
+        try:
+            started = time.monotonic()
+            with self.assertRaises(LocalModelError) as busy:
+                ollama.chat_json("s", "u", wait_seconds=0)
+            self.assertEqual(busy.exception.code, "LOCAL_MODEL_BUSY")
+            self.assertLess(time.monotonic() - started, 0.5)
+        finally:
+            ollama._generation_slot.release()
+
+    def test_a_practice_waits_for_its_turn(self):
+        self.assertTrue(ollama._generation_slot.acquire(blocking=False))
+        threading.Timer(0.2, ollama._generation_slot.release).start()
+        with patch("urllib.request.OpenerDirector.open", side_effect=self.fake_ollama):
+            self.assertEqual(ollama.chat_json("s", "u", wait_seconds=5), {"ok": True})
+
+    @patch("app.infrastructure.ollama.chat_json")
+    def test_the_analyst_asks_for_low_priority_and_a_short_timeout(self, chat):
+        chat.return_value = {"status": "NORMAL", "summary": "ok", "findings": [], "recommendations": []}
+        analyst.analyze(request())
+        self.assertEqual(chat.call_args.kwargs["wait_seconds"], 0)
+        self.assertLess(chat.call_args.kwargs["timeout_seconds"], 150)
 
 
 if __name__ == "__main__":
