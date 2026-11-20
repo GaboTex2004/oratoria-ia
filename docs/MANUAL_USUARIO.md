@@ -52,6 +52,14 @@ esté cerrada. En iPhone o iPad hay que instalar primero la app con «Agregar a 
 funcionan. Al cerrar sesión, ese dispositivo deja de recibir los avisos de la cuenta. Detalles técnicos en
 `docs/NOTIFICACIONES_PUSH.md`.
 
+## Monitoreo de la plataforma (administradores)
+
+En **Administración → Monitoreo** se ve en vivo el estado de los servicios, las prácticas en cola, en proceso, trabadas
+o fallidas, el uso, la seguridad, la privacidad y las notificaciones, con alertas automáticas. **Analizar estado** le
+pide a la IA local de la plataforma un diagnóstico en lenguaje natural (opcionalmente con una pregunta); tarda unos
+segundos y muestra en qué cifras se basa. Es orientativo: las cifras del panel son la referencia. Detalles en
+`docs/MONITOREO.md`.
+
 ## Audio y cámara en Análisis corporal
 
 En Análisis corporal, abrir «Práctica con audio y cámara», elegir un ejercicio y

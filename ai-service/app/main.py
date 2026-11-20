@@ -6,6 +6,7 @@ from app.api.health import router as health_router
 from app.api.speech import router as speech_router
 from app.api.simulation import router as simulation_router
 from app.api.pose import router as pose_router
+from app.api.monitoring import router as monitoring_router
 
 app = FastAPI(
     title="Oratoria IA Service",
@@ -18,6 +19,7 @@ app.include_router(speech_router)
 app.include_router(evaluation_router)
 app.include_router(simulation_router)
 app.include_router(pose_router)
+app.include_router(monitoring_router)
 app.add_middleware(LocalBoundaryMiddleware)
 
 

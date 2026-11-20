@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,8 @@ public class NotificationService {
     private final VapidKeyService vapid;
     private final ObjectMapper json;
     private final List<String> allowedHosts;
+    private final AtomicLong delivered = new AtomicLong();
+    private final AtomicLong failedDeliveries = new AtomicLong();
 
     public NotificationService(JdbcTemplate jdbc, UserAccountRepository users, PushGateway gateway, VapidKeyService vapid,
                                ObjectMapper json, @Value("${app.push.allowed-hosts}") String allowedHosts) {
@@ -41,6 +44,14 @@ public class NotificationService {
     }
 
     public record PushMessage(String title, String body, String url, String tag) {}
+
+    public record PushStats(int devices, long delivered, long failed) {}
+
+    /** Para el panel de monitoreo: dispositivos suscritos y entregas desde el arranque del backend. */
+    public PushStats stats() {
+        Integer devices = jdbc.queryForObject("SELECT count(*) FROM push_subscriptions", Integer.class);
+        return new PushStats(devices == null ? 0 : devices, delivered.get(), failedDeliveries.get());
+    }
 
     public record SendSummary(int devices, int delivered, int removed, int failed) {}
 
@@ -166,6 +177,8 @@ public class NotificationService {
                 }
             }
         }
+        this.delivered.addAndGet(delivered);
+        failedDeliveries.addAndGet(failed + rejected);
         return new SendSummary(targets.size(), delivered, removed, failed + rejected);
     }
 

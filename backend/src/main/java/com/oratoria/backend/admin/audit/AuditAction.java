@@ -19,6 +19,7 @@ public enum AuditAction {
     BACKUP_DELETED("Respaldo eliminado"),
     BACKUP_RESTORED("Respaldo restaurado"),
     NOTIFICATION_BROADCAST("Notificación push enviada a todos"),
+    MONITORING_ANALYSIS("Análisis de monitoreo con IA local"),
     ADMIN_ACTION("Otra acción administrativa");
 
     private final String label;

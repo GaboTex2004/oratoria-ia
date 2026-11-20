@@ -33,7 +33,8 @@ public class AdminAuditInterceptor implements HandlerInterceptor {
             new Rule("POST", Pattern.compile("/api/admin/backups/restore"), AuditAction.BACKUP_RESTORED, "backup"),
             new Rule("POST", Pattern.compile("/api/admin/backups/" + ID + "/restore"), AuditAction.BACKUP_RESTORED, "backup"),
             new Rule("DELETE", Pattern.compile("/api/admin/backups/" + ID), AuditAction.BACKUP_DELETED, "backup"),
-            new Rule("POST", Pattern.compile("/api/admin/notifications/broadcast"), AuditAction.NOTIFICATION_BROADCAST, "notification"));
+            new Rule("POST", Pattern.compile("/api/admin/notifications/broadcast"), AuditAction.NOTIFICATION_BROADCAST, "notification"),
+            new Rule("POST", Pattern.compile("/api/admin/monitoring/analysis"), AuditAction.MONITORING_ANALYSIS, "monitoring"));
 
     private final AuditService audit;
 

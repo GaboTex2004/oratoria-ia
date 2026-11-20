@@ -8,10 +8,12 @@ import { AdminUsersTab } from '../../admin/components/AdminUsersTab'
 import { AdminReportsTab } from '../../admin/components/AdminReportsTab'
 import { AdminAuditTab } from '../../admin/components/AdminAuditTab'
 import { AdminBackupsTab } from '../../admin/components/AdminBackupsTab'
+import { AdminMonitoringTab } from '../../admin/components/AdminMonitoringTab'
 import '../../admin/components/admin.css'
 
 const TABS = [
   { id: 'resumen', label: 'Resumen', render: () => <AdminOverviewTab /> },
+  { id: 'monitoreo', label: 'Monitoreo', render: () => <AdminMonitoringTab /> },
   { id: 'usuarios', label: 'Usuarios', render: () => <AdminUsersTab /> },
   { id: 'catalogo', label: 'Ejercicios y categorías', render: () => <AdminCatalogTab /> },
   { id: 'planes', label: 'Planes', render: () => <AdminPlansTab /> },
